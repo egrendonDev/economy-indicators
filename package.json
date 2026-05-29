@@ -7,7 +7,8 @@
     "fetch:weekly": "node scripts/fetch-weekly.js",
     "fetch:monthly": "node scripts/fetch-monthly.js",
     "fetch:quarterly": "node scripts/fetch-quarterly.js",
-    "fetch:all": "node scripts/fetch-weekly.js && node scripts/fetch-monthly.js && node scripts/fetch-quarterly.js"
+    "fetch:all": "node scripts/fetch-weekly.js && node scripts/fetch-monthly.js && node scripts/fetch-quarterly.js",
+    "serve": "npx serve . --listen 3000"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

@@ -285,15 +285,15 @@ export const indicators = [
     id: 'foreclosure_rate',
     label: 'Foreclosure Rate',
     description: 'Loans entering foreclosure; measures depth of housing distress',
-    source: 'FRED',
-    access: 'fred_api',
+    source: 'MBA',
+    access: 'scrape',
     type: 'lagging',
     importance: 'medium',
     category: 'residential',
     frequency: 'quarterly',
-    fredSeries: 'QUSRHTSA',
+    fredSeries: null,
     unit: '%',
-    url: 'https://fred.stlouisfed.org/series/QUSRHTSA'
+    url: 'https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey'
   },
   {
     id: 'conventional_delinquency',
