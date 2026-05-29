@@ -496,9 +496,9 @@ const MANUAL_STEPS = {
 // ─── STALE DETECTION ──────────────────────────────────────────────────────────
 const STALE_THRESHOLDS = { Weekly: 14, Monthly: 45, Quarterly: 100 };
 
-function isStale(dateStr, frequency) {
-  if (!dateStr || !frequency) return false;
-  const days = (Date.now() - new Date(dateStr)) / 86400000;
+function isStale(fileUpdated, frequency) {
+  if (!fileUpdated || !frequency) return false;
+  const days = (Date.now() - new Date(fileUpdated)) / 86400000;
   return days > (STALE_THRESHOLDS[frequency] || 999);
 }
 
@@ -650,10 +650,10 @@ function renderCard(indicator, dataMap) {
   const pillLabel = status === 'pending' ? 'Pending' : status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : 'Warning';
 
   const meta = INDICATOR_META[indicator.id] || {};
-  const sourceLabel = meta.access === 'fred_api' ? 'Auto API' : 'Manually Updated';
+  const sourceLabel = meta.access === 'fred_api' ? 'Updated-Auto API' : 'Updated-Manually';
   const dateLabel = formatDate(d?.latest?.date);
   const trend = getTrend(hist, value);
-  const stale = isStale(d?.latest?.date, meta.frequency);
+  const stale = isStale(d?.file_updated, meta.frequency);
 
   const tooltipText = (TOOLTIPS[indicator.id] || indicator.description).replace(/"/g, '&quot;');
   const badges = [
@@ -796,7 +796,10 @@ async function loadAllData() {
   const results = await Promise.allSettled(DATA_FILES.map(f => fetch(f).then(r => r.ok ? r.json() : null)));
   results.forEach(r => {
     if (r.status === 'fulfilled' && r.value?.indicators) {
-      r.value.indicators.forEach(ind => { if (ind.id) dataMap[ind.id] = ind; });
+      const fileUpdated = r.value.last_updated || null;
+      r.value.indicators.forEach(ind => {
+        if (ind.id) dataMap[ind.id] = { ...ind, file_updated: fileUpdated };
+      });
     }
   });
   return dataMap;
@@ -851,7 +854,7 @@ function renderManualTab() {
       <div class="guide-card-title">${item.label}</div>
       <div class="guide-card-meta">
         <span class="badge">${meta.frequency || ''}</span>
-        <span class="badge">Manually Updated</span>
+        <span class="badge">Updated-Manually</span>
         ${indicator.url ? `<a href="${indicator.url}" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38">View Source</a>` : ''}
       </div>
       <ol class="guide-steps">
