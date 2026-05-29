@@ -25,7 +25,33 @@
 import { readFileSync, writeFileSync, readdirSync, renameSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join, basename, extname } from 'path';
-import * as XLSX from 'xlsx';
+import { createRequire } from 'module';
+
+// xlsx uses CommonJS exports - must load via require in an ES module project
+const require = createRequire(import.meta.url);
+const XLSX = require('xlsx');
+
+// ─── Logging helpers ──────────────────────────────────────────────────────────
+const c = {
+  reset:  '\x1b[0m',
+  bold:   '\x1b[1m',
+  green:  '\x1b[32m',
+  red:    '\x1b[31m',
+  yellow: '\x1b[33m',
+  cyan:   '\x1b[36m',
+  gray:   '\x1b[90m',
+};
+const log  = (msg)       => console.log(`  ${msg}`);
+const info = (msg)       => console.log(`${c.cyan}  >${c.reset} ${msg}`);
+const ok   = (msg)       => console.log(`${c.green}  OK${c.reset}  ${msg}`);
+const warn = (msg)       => console.warn(`${c.yellow}  WARN${c.reset} ${msg}`);
+const fail = (msg, exit) => { console.error(`${c.red}  ERR${c.reset} ${msg}`); if (exit) process.exit(1); };
+const banner = (msg, color) => {
+  const line = '─'.repeat(52);
+  console.log(`\n${color}${c.bold}  ${line}${c.reset}`);
+  console.log(`${color}${c.bold}  ${msg}${c.reset}`);
+  console.log(`${color}${c.bold}  ${line}${c.reset}\n`);
+};
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
