@@ -4,9 +4,19 @@ import { fetchSeries } from './utils/fred-client.js';
 import { byFrequency } from './utils/series-map.js';
 import { shouldRefresh, logRefreshDecision } from './utils/should-refresh.js';
 
+// ─── Logging helpers ──────────────────────────────────────────────────────────
+const c = { reset:'\x1b[0m', bold:'\x1b[1m', green:'\x1b[32m', red:'\x1b[31m', yellow:'\x1b[33m', cyan:'\x1b[36m', gray:'\x1b[90m' };
+const info  = (msg) => console.log(`${c.cyan}  >${c.reset} ${msg}`);
+const ok    = (msg) => console.log(`${c.green}  OK${c.reset}  ${msg}`);
+const skip  = (msg) => console.log(`${c.gray}  --${c.reset}  ${msg}`);
+const warn  = (msg) => console.warn(`${c.yellow}  WARN${c.reset} ${msg}`);
+const fail  = (msg) => console.error(`${c.red}  ERR${c.reset} ${msg}`);
+const section = (msg) => console.log(`\n${c.bold}  [ ${msg} ]${c.reset}`);
+const banner  = (msg, color) => { const l = '─'.repeat(52); console.log(`\n${color}${c.bold}  ${l}\n  ${msg}\n  ${l}${c.reset}\n`); };
+
 const API_KEY = process.env.FRED_API_KEY;
 if (!API_KEY) {
-  console.error('ERROR: FRED_API_KEY environment variable is not set.');
+  fail('FRED_API_KEY environment variable is not set.');
   process.exit(1);
 }
 
@@ -27,11 +37,11 @@ async function fetchWeeklyMacro() {
 
   for (const indicator of indicators) {
     if (indicator.access !== 'fred_api' || !indicator.fredSeries) {
-      console.log(`Skipping non-FRED indicator: ${indicator.label}`);
+      skip(`${indicator.label} - not a FRED indicator, skipping`);
       continue;
     }
 
-    console.log(`Fetching ${indicator.label} (${indicator.fredSeries})...`);
+    info(`Fetching  ${indicator.label} (${indicator.fredSeries})`);
 
     try {
       const limit = OBSERVATION_LIMITS[indicator.fredSeries] ?? DEFAULT_LIMIT;
@@ -51,14 +61,10 @@ async function fetchWeeklyMacro() {
         history
       });
 
-      console.log(`  OK - latest: ${latest.value} ${indicator.unit} on ${latest.date}`);
+      ok(`${indicator.label.padEnd(32)} ${latest.value} ${indicator.unit}  (${latest.date})`);
     } catch (err) {
-      console.error(`  FAILED: ${err.message}`);
-      results.push({
-        id:    indicator.id,
-        label: indicator.label,
-        error: err.message
-      });
+      fail(`${indicator.label} - ${err.message}`);
+      results.push({ id: indicator.id, label: indicator.label, error: err.message });
     }
   }
 
@@ -66,31 +72,29 @@ async function fetchWeeklyMacro() {
 }
 
 async function main() {
-  console.log('=== Weekly Macro Fetch ===');
-  console.log(`Started: ${new Date().toISOString()}\n`);
+  banner('Weekly Macro Fetch - FRED API', c.cyan);
 
-  const force   = process.argv.includes('--force');
-  const check   = shouldRefresh('data/weekly/macro.json', 'weekly', force);
+  const force = process.argv.includes('--force');
+  const check = shouldRefresh('data/weekly/macro.json', 'weekly', force);
   logRefreshDecision('Weekly Macro', 'data/weekly/macro.json', 'weekly', check);
-  if (!check.needed) process.exit(0);
+  if (!check.needed) { skip('Data is fresh - skipping fetch (use --force to override)'); return; }
 
+  section('Fetching Weekly / Macro');
   const indicators = await fetchWeeklyMacro();
 
-  const output = {
-    last_updated: new Date().toISOString(),
-    indicators
-  };
-
   mkdirSync('data/weekly', { recursive: true });
-  writeFileSync('data/weekly/macro.json', JSON.stringify(output, null, 2));
+  writeFileSync('data/weekly/macro.json', JSON.stringify({ last_updated: new Date().toISOString(), indicators }, null, 2));
+  ok(`Saved: data/weekly/macro.json`);
 
   const succeeded = indicators.filter(i => !i.error).length;
   const failed    = indicators.filter(i =>  i.error).length;
 
-  console.log(`\nDone. ${succeeded} succeeded, ${failed} failed.`);
-  console.log(`Output: data/weekly/macro.json`);
-
-  if (failed > 0) process.exit(1);
+  if (failed > 0) {
+    banner(`DONE - ${succeeded} fetched, ${failed} FAILED`, c.red);
+    process.exit(1);
+  } else {
+    banner(`SUCCESS - ${succeeded} indicators fetched`, c.green);
+  }
 }
 
 main();
