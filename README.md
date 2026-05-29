@@ -54,6 +54,25 @@ economy-indicators/
 
 ---
 
+## npm Scripts
+
+| Script | What it does |
+|--------|-------------|
+| `npm start` | Fetch all data fresh (force), then start local server at port 3000 |
+| `npm run serve` | Start local server only (no fetch) at http://localhost:3000 |
+| `npm run fetch:all` | Run all three fetch scripts in sequence (respects freshness check) |
+| `npm run fetch:weekly` | Fetch weekly indicators - yield curve, jobless claims, credit spreads |
+| `npm run fetch:monthly` | Fetch monthly indicators - macro, stock market, residential, auto, credit cards |
+| `npm run fetch:quarterly` | Fetch quarterly indicators - macro, residential, commercial, auto, credit cards |
+
+Add `-- --force` to any fetch script to bypass the freshness check and always pull new data:
+```bash
+npm run fetch:all -- --force
+npm run fetch:weekly -- --force
+```
+
+---
+
 ## Initial Setup (Local)
 
 ### 1. Clone the repo
@@ -220,6 +239,23 @@ Use `--force` to override.
 - **Sparklines** - Inline chart of recent history per indicator
 - **Healthy average** - Historical normal shown next to each current value
 - **Plain-English explanations** - What each status means in plain language
+
+---
+
+## Screenshots
+
+> Add screenshots to the `docs/screenshots/` folder and they will appear here.
+
+**To capture the Actions tab for documentation:**
+1. Go to `https://github.com/egrendonDev/economy-indicators/actions`
+2. Click **Data Refresh** in the left sidebar
+3. Screenshot the full page showing the workflow run list and **Run workflow** button
+4. Save as `docs/screenshots/actions-tab.png`
+
+```markdown
+![Actions Tab](docs/screenshots/actions-tab.png)
+![Dashboard](docs/screenshots/dashboard.png)
+```
 
 ---
 

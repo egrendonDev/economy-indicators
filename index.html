@@ -119,12 +119,19 @@
     .card-manual { font-size: 11px; color: var(--muted); font-style: italic; }
     .card-manual a { color: var(--blue); }
 
+    .badge-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .badge { font-size: 10px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+    .badge-info { cursor: help; }
+    #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 12px; line-height: 1.6; padding: 10px 12px; border-radius: 8px; width: 260px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
+
     /* ---- Footer ---- */
     footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 16px 0; color: var(--muted); font-size: 11px; text-align: center; }
     footer a { color: var(--blue); }
   </style>
 </head>
 <body>
+
+<div id="tooltip"></div>
 
 <div id="loading">
   <div class="spinner"></div>
@@ -310,6 +317,74 @@ const LAYOUT = {
   ]
 };
 
+// ─── INDICATOR METADATA ───────────────────────────────────────────────────────
+// frequency, access, importance live here - not in JSON data files
+
+const INDICATOR_META = {
+  yield_curve:              { frequency: 'Weekly',    access: 'fred_api', importance: 'Critical' },
+  jobless_claims:           { frequency: 'Weekly',    access: 'fred_api', importance: 'High' },
+  credit_spreads:           { frequency: 'Weekly',    access: 'fred_api', importance: 'High' },
+  ism_pmi:                  { frequency: 'Monthly',   access: 'fred_api', importance: 'High' },
+  real_m2:                  { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
+  weekly_hours:             { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
+  durable_goods:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
+  loan_officer_survey:      { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
+  shiller_cape:             { frequency: 'Monthly',   access: 'scrape',   importance: 'High' },
+  buffett_indicator:        { frequency: 'Monthly',   access: 'scrape',   importance: 'High' },
+  trailing_pe:              { frequency: 'Monthly',   access: 'scrape',   importance: 'High' },
+  margin_debt:              { frequency: 'Monthly',   access: 'scrape',   importance: 'Medium' },
+  sp500_dividend_yield:     { frequency: 'Monthly',   access: 'scrape',   importance: 'Medium' },
+  price_to_sales:           { frequency: 'Monthly',   access: 'scrape',   importance: 'Medium' },
+  tobins_q:                 { frequency: 'Monthly',   access: 'scrape',   importance: 'Low' },
+  housing_starts:           { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
+  vehicle_sales:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
+  revolving_credit:         { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
+  fha_delinquency:          { frequency: 'Monthly',   access: 'pdf',      importance: 'Medium' },
+  mortgage_delinquency:     { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
+  foreclosure_rate:         { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
+  conventional_delinquency: { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
+  mba_delinquency:          { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
+  commercial_re_delinquency:{ frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
+  ci_loan_delinquency:      { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
+  auto_delinquency:         { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
+  cc_delinquency:           { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
+  cc_chargeoff:             { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' }
+};
+
+// ─── TOOLTIPS ─────────────────────────────────────────────────────────────────
+// Hover explanations: what the data is, what signals trouble, why it matters
+
+const TOOLTIPS = {
+  yield_curve:              'Measures the gap between 10-year and 2-year Treasury yields. When short-term rates exceed long-term rates (inversion), banks cannot profit from lending and tighten credit. Every U.S. recession since 1950 was preceded by an inverted yield curve.',
+  jobless_claims:           'Tracks how many people filed for unemployment benefits in the past week. A sustained rise above 300K signals layoffs are accelerating across the economy. Reported weekly, making it one of the fastest-moving labor market signals available.',
+  credit_spreads:           'Measures the extra interest rate high-risk companies must pay vs. safe U.S. Treasuries. When spreads widen sharply, investors are demanding higher compensation for risk - a sign credit markets are stressed and lending conditions are tightening economy-wide.',
+  ism_pmi:                  'Tracks employment levels in U.S. manufacturing. Declining manufacturing employment signals factories are cutting workers due to falling orders - often an early sign of broader economic contraction spreading from goods production to services.',
+  real_m2:                  'Measures total money in circulation adjusted for inflation. When real M2 shrinks, there is less economic fuel available - consumer spending and business investment typically slow 6-12 months later as households and companies have less purchasing power.',
+  weekly_hours:             'Tracks average hours worked per week across all private industries. Employers typically cut hours before cutting headcount, making this an early warning of layoffs. A drop of 0.5 hours or more sustained over several months is historically significant.',
+  durable_goods:            'Measures new orders for long-lasting manufactured goods like machinery and equipment. When businesses stop investing in equipment, they are signaling lower demand expectations ahead - a leading indicator of economic slowdown 3-6 months out.',
+  loan_officer_survey:      'Federal Reserve survey asking bank officers if they are tightening lending standards. When banks tighten, fewer businesses and consumers can access credit. Tightening typically slows economic activity 2-4 quarters later as credit becomes harder to obtain.',
+  shiller_cape:             'Price-to-earnings ratio using 10 years of inflation-adjusted earnings to smooth economic cycles. High values mean investors are paying a large premium relative to long-run earnings capacity. Historically, CAPE above 30 has preceded significant multi-year market corrections.',
+  buffett_indicator:        'Total U.S. stock market capitalization divided by GDP. When market cap far exceeds economic output, stocks are priced well beyond what the economy can support. Warren Buffett described this as the single best measure of where valuations stand at any given moment.',
+  trailing_pe:              'Current S&P 500 price divided by the past 12 months of actual reported earnings. A high P/E means investors pay a large premium per dollar of real earnings, leaving little margin of safety when earnings disappoint or economic conditions soften.',
+  margin_debt:              'Total money borrowed from brokers to buy stocks on leverage. Rising margin debt amplifies gains on the way up but creates forced selling on the way down - when prices drop, margin calls trigger cascading sell-offs that can accelerate market declines rapidly.',
+  sp500_dividend_yield:     'Annual dividend income as a percentage of the S&P 500 index price. Very low yields mean stocks provide almost no income cushion. Historically, yields below 1.5% have coincided with overvalued markets that are highly vulnerable to sharp price corrections.',
+  price_to_sales:           'Stock market price divided by company revenues. Unlike earnings, revenues are harder to manipulate with accounting adjustments. A high P/S ratio means investors are paying a steep premium per dollar of actual sales, signaling potential overvaluation.',
+  tobins_q:                 'Market value of all stocks divided by the replacement cost of corporate assets. A ratio above 1 means the market values companies above what it would cost to physically rebuild them - a sign that financial valuations have detached from real asset values.',
+  housing_starts:           'Number of new residential construction projects begun each month. Declining starts signal builders and buyers are losing confidence. Housing drives significant economic activity through materials, labor, and furnishings - weakness here spreads broadly.',
+  fha_delinquency:          'Percentage of FHA-insured loans that are past due. FHA borrowers have lower down payments and are more financially vulnerable than conventional borrowers. Rising FHA delinquency is an early stress signal that spreads to the broader mortgage market.',
+  mortgage_delinquency:     'Percentage of single-family mortgages 30+ days past due. Rising delinquency means homeowners are struggling with payments, which leads to foreclosures, bank losses, and tighter lending standards - a lagging confirmation that a downturn is underway.',
+  foreclosure_rate:         'Percentage of mortgages actively in the foreclosure process. Foreclosures represent the final stage of homeowner financial distress and confirm that housing market weakness has become severe enough to produce widespread property losses for lenders.',
+  conventional_delinquency: 'Delinquency rate on conventional prime mortgages backed by Fannie Mae and Freddie Mac. When even prime borrowers miss payments, financial stress has moved beyond subprime into the mainstream market - indicating a broad and severe downturn.',
+  mba_delinquency:          'The Mortgage Bankers Association industry-wide survey covering delinquency across all loan types. This is the broadest available measure of mortgage market health and is considered the benchmark for tracking housing distress across the full market.',
+  commercial_re_delinquency:'Percentage of commercial real estate loans past due at banks. Stress in office, retail, and industrial loans signals businesses are unable to service debt, which flows back to falling property values, bank losses, and tighter credit conditions.',
+  ci_loan_delinquency:      'Percentage of commercial and industrial business loans past due. When businesses miss loan payments it confirms corporate financial distress is deepening - typically a lagging signal that an economic downturn has spread across multiple sectors of the economy.',
+  vehicle_sales:            'Seasonally adjusted annualized rate of total vehicle sales. Cars are major purchases that consumers delay when uncertain about the future. A sharp sustained drop signals deteriorating consumer confidence and tightening credit conditions in auto lending.',
+  auto_delinquency:         'Percentage of auto loans 30+ days past due. Auto loans often show delinquency early in a downturn since they are smaller than mortgages and consumers prioritize housing payments. Rising rates signal spreading consumer financial stress.',
+  revolving_credit:         'Total revolving credit (primarily credit card balances) outstanding. Rapid growth signals consumers are funding everyday expenses with debt rather than income - a warning that household finances are stretched and spending is not supported by real earnings.',
+  cc_delinquency:           'Percentage of credit card balances 30+ days past due. Credit card delinquency is often the first consumer stress indicator since cards are unsecured - consumers prioritize mortgage and auto payments first, making card delinquency an early warning signal.',
+  cc_chargeoff:             'Percentage of credit card debt written off by banks as uncollectible losses. Charge-offs are a lagging confirmation that delinquencies have materialized into actual bank losses, measuring the true depth of consumer financial distress in the economy.'
+};
+
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 function getStatus(id, value) {
@@ -357,6 +432,22 @@ function formatValue(id, value, unit) {
   return v.toFixed(2);
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return null;
+  const [y, m, d] = dateStr.split('-');
+  return `${m}/${d}/${y}`;
+}
+
+function getTrend(history, currentValue) {
+  if (!history || history.length < 2 || currentValue === null) return null;
+  const prev = Number(history[history.length - 2].value);
+  const curr = Number(currentValue);
+  if (isNaN(prev) || isNaN(curr)) return null;
+  if (curr > prev) return '↑';
+  if (curr < prev) return '↓';
+  return '→';
+}
+
 function getRiskLevel(score) {
   if (score >= 20) return { label: 'Critical',     cls: 'risk-critical' };
   if (score >= 14) return { label: 'High Risk',    cls: 'risk-high' };
@@ -396,6 +487,21 @@ function renderCard(indicator, dataMap) {
   const hist = d?.history || [];
   const pillLabel = status === 'pending' ? 'Pending' : status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : 'Warning';
 
+  const meta = INDICATOR_META[indicator.id] || {};
+  const sourceLabel = meta.access === 'fred_api' ? 'Auto - FRED API' : meta.access === 'pdf' ? 'Manual - PDF' : 'Manual';
+  const dateLabel = formatDate(d?.latest?.date);
+  const trend = getTrend(hist, value);
+
+  const tooltipText = (TOOLTIPS[indicator.id] || indicator.description).replace(/"/g, '&quot;');
+  const badges = [
+    meta.frequency  ? `<span class="badge">${meta.frequency}</span>` : '',
+    meta.importance ? `<span class="badge">${meta.importance}</span>` : '',
+    meta.access     ? `<span class="badge">${sourceLabel}</span>` : '',
+    trend           ? `<span class="badge">${trend} Trend</span>` : '',
+    dateLabel       ? `<span class="badge">Updated ${dateLabel}</span>` : '',
+    `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`
+  ].filter(Boolean).join('');
+
   return `<div class="ind-card ${status}">
     <div class="card-top">
       <div class="card-name">${indicator.label}</div>
@@ -411,6 +517,7 @@ function renderCard(indicator, dataMap) {
         ? `Manual update required - <a href="${indicator.url}" target="_blank">view source</a>`
         : (msg || indicator.description)}
     </div>
+    ${badges ? `<div class="badge-row">${badges}</div>` : ''}
   </div>`;
 }
 
@@ -549,6 +656,34 @@ function togglePanel(btn) {
   const body = btn.nextElementSibling;
   body.classList.toggle('open');
 }
+
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+const tooltipEl = document.getElementById('tooltip');
+
+document.addEventListener('mouseover', e => {
+  const badge = e.target.closest('.badge-info');
+  if (badge && badge.dataset.tooltip) {
+    tooltipEl.textContent = badge.dataset.tooltip;
+    tooltipEl.style.display = 'block';
+  }
+});
+
+document.addEventListener('mouseout', e => {
+  if (e.target.closest('.badge-info')) {
+    tooltipEl.style.display = 'none';
+  }
+});
+
+document.addEventListener('mousemove', e => {
+  if (tooltipEl.style.display === 'block') {
+    let x = e.clientX + 14;
+    let y = e.clientY - 10;
+    if (x + 270 > window.innerWidth)  x = e.clientX - 274;
+    if (y + tooltipEl.offsetHeight > window.innerHeight) y = e.clientY - tooltipEl.offsetHeight - 4;
+    tooltipEl.style.left = x + 'px';
+    tooltipEl.style.top  = y + 'px';
+  }
+});
 
 init();
 </script>
