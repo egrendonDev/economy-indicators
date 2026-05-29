@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { writeFileSync, mkdirSync } from 'fs';
 import { fetchSeries } from './utils/fred-client.js';
-import { byFrequency, byCategory } from './utils/series-map.js';
+import { byFrequency } from './utils/series-map.js';
+import { shouldRefresh, logRefreshDecision } from './utils/should-refresh.js';
 
 const API_KEY = process.env.FRED_API_KEY;
 if (!API_KEY) {
@@ -67,6 +68,11 @@ async function fetchWeeklyMacro() {
 async function main() {
   console.log('=== Weekly Macro Fetch ===');
   console.log(`Started: ${new Date().toISOString()}\n`);
+
+  const force   = process.argv.includes('--force');
+  const check   = shouldRefresh('data/weekly/macro.json', 'weekly', force);
+  logRefreshDecision('Weekly Macro', 'data/weekly/macro.json', 'weekly', check);
+  if (!check.needed) process.exit(0);
 
   const indicators = await fetchWeeklyMacro();
 
