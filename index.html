@@ -430,9 +430,9 @@ const MANUAL_STEPS = {
   margin_debt: {
     label: 'Margin Debt',
     steps: [
-      'Go to finra.org/investors/learn-to-invest/advanced-investing/margin-statistics and download the margin statistics file.',
-      'Find "Debit Balances in Customers\' Accounts" column - use the latest month\'s value in millions.',
-      'Open data/monthly/stock_market.json, find margin_debt, update latest.date and latest.value.'
+      'Go to finra.org/investors/learn-to-invest/advanced-investing/margin-statistics and download the Excel file under "Monthly Margin Statistics". Save it as margin-statistics.xlsx in the data/manual/ folder of the project.',
+      'From the project root, run: npm run fetch:margin-debt',
+      'The script reads the Excel file, extracts the last 36 months of debit balance data, and automatically updates data/monthly/stock_market.json. No manual JSON editing needed.'
     ]
   },
   sp500_dividend_yield: {
