@@ -16,6 +16,9 @@ on:
           - 'false'
           - 'true'
 
+permissions:
+  contents: write
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
