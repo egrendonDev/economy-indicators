@@ -398,7 +398,7 @@ export const indicators = [
     category: 'credit_cards',
     frequency: 'monthly',
     fredSeries: 'REVOLSL',
-    unit: 'billions USD',
+    unit: 'millions USD',
     url: 'https://fred.stlouisfed.org/series/REVOLSL'
   },
 

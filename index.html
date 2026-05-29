@@ -256,7 +256,7 @@ const THRESHOLDS = {
   ci_loan_delinquency:      { warn: 1,     danger: 2,     direction: 'higher',   avg: '0.8%' },
   vehicle_sales:            { warn: 14,    danger: 12,    direction: 'lower',    avg: '16M' },
   auto_delinquency:         { warn: 4,     danger: 6,     direction: 'higher',   avg: '2.5%' },
-  revolving_credit:         { warn: 1150,  danger: 1250,  direction: 'higher',   avg: '~$1T' },
+  revolving_credit:         { warn: 1100000, danger: 1250000, direction: 'higher', avg: '~$1.1T' },
   cc_delinquency:           { warn: 3,     danger: 5,     direction: 'higher',   avg: '2.5%' },
   cc_chargeoff:             { warn: 3.5,   danger: 6,     direction: 'higher',   avg: '3.5%' }
 };
@@ -345,6 +345,7 @@ function formatValue(id, value, unit) {
 
   if (unit === '%') return v.toFixed(2) + '%';
   if (unit === 'thousands') return (v / 1000).toFixed(0) + 'K';
+  if (unit === 'trillions USD') return '$' + (v / 1000000).toFixed(2) + 'T';
   if (unit === 'billions USD') return '$' + v.toFixed(0) + 'B';
   if (unit === 'millions USD') return '$' + (v / 1000).toFixed(1) + 'B';
   if (unit === 'millions of units') return v.toFixed(1) + 'M';
@@ -505,7 +506,7 @@ const ALL_INDICATORS = [
   { id:'tobins_q',                 label:"Tobin's Q Ratio",                 type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.longtermtrends.net/tobins-q/' },
   { id:'housing_starts',           label:'Housing Starts & Permits',        type:'leading',  category:'residential',  unit:'thousands of units',url:'https://fred.stlouisfed.org/series/HOUST' },
   { id:'vehicle_sales',            label:'Total Vehicle Sales (SAAR)',      type:'leading',  category:'auto',         unit:'millions of units', url:'https://fred.stlouisfed.org/series/TOTALSA' },
-  { id:'revolving_credit',         label:'Revolving Credit Outstanding',    type:'leading',  category:'credit_cards', unit:'billions USD',     url:'https://fred.stlouisfed.org/series/REVOLSL' },
+  { id:'revolving_credit',         label:'Revolving Credit Outstanding',    type:'leading',  category:'credit_cards', unit:'trillions USD',    url:'https://fred.stlouisfed.org/series/REVOLSL' },
   { id:'fha_delinquency',          label:'FHA Delinquency Rate',            type:'lagging',  category:'residential',  unit:'%',               url:'https://www.hud.gov/program_offices/housing/rmra/oe/rpts/sfnotes/index' },
   { id:'mortgage_delinquency',     label:'Mortgage Delinquency Rate',       type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/DRSFRMACBS' },
   { id:'foreclosure_rate',         label:'Foreclosure Rate',                type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/QUSRHTSA' },

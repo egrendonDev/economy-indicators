@@ -9,7 +9,7 @@
     "fetch:quarterly": "node scripts/fetch-quarterly.js",
     "fetch:all": "node scripts/fetch-weekly.js && node scripts/fetch-monthly.js && node scripts/fetch-quarterly.js",
     "serve": "npx serve . --listen 3000",
-    "start:local": "npm run fetch:all -- --force && npx serve . --listen 3000"
+    "pulldata:then:serve:local": "npm run fetch:all -- --force && npx serve . --listen 3000"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
