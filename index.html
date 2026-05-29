@@ -25,6 +25,24 @@
 
     body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
 
+    /* ---- Tabs ---- */
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+    .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 16px; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .tab-btn:hover:not(.active) { color: var(--text); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ---- Manual guide tab ---- */
+    .guide-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 16px; }
+    .guide-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .guide-card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .guide-card-meta { font-size: 11px; color: var(--muted); margin-bottom: 12px; display: flex; gap: 8px; }
+    .guide-steps { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 8px; }
+    .guide-steps li { counter-increment: steps; display: flex; gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .guide-steps li::before { content: counter(steps); background: var(--border); color: var(--text); border-radius: 50%; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .guide-source { display: inline-block; margin-top: 10px; font-size: 11px; color: var(--blue); }
+
     /* ---- Loading ---- */
     #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
     .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -148,6 +166,15 @@
     <div class="header-sub" id="last-updated">Last updated: --</div>
   </header>
 
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('dashboard', this)">Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('manual', this)">Manual Updates</button>
+  </div>
+
+  <!-- Dashboard tab -->
+  <div id="tab-dashboard" class="tab-panel active">
+
   <!-- How to Read panel -->
   <div class="panel">
     <button class="panel-toggle" onclick="togglePanel(this)">
@@ -212,6 +239,16 @@
   <div class="section-title"><i class="ti ti-trending-down"></i> LAGGING INDICATORS</div>
   <div class="section-desc">These confirm a downturn already in progress. Rising stress here means the damage is real.</div>
   <div id="lagging-section"></div>
+
+  </div><!-- end tab-dashboard -->
+
+  <!-- Manual Updates tab -->
+  <div id="tab-manual" class="tab-panel">
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><i class="ti ti-clipboard-list" style="color:var(--blue)"></i> Manual Update Guide</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">These indicators cannot be fetched automatically. Follow the steps below to update each one. All edits go directly into the JSON data files in your repo.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">After updating any JSON file locally, run <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px">git add data/ && git commit -m "chore: manual data update" && git push</code> to publish to the dashboard.</p>
+    <div class="guide-grid" id="manual-guide-grid"></div>
+  </div>
 
   <footer>
     Data sources: <a href="https://fred.stlouisfed.org" target="_blank">FRED / Federal Reserve Bank of St. Louis</a>,
@@ -353,6 +390,117 @@ const INDICATOR_META = {
   cc_delinquency:           { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
   cc_chargeoff:             { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' }
 };
+
+// ─── MANUAL STEPS ─────────────────────────────────────────────────────────────
+// 3-step instructions for each manually updated indicator
+
+const MANUAL_STEPS = {
+  loan_officer_survey: {
+    label: 'Senior Loan Officer Survey',
+    steps: [
+      'Go to federalreserve.gov/releases/sloos and open the latest quarterly survey report.',
+      'Find the "Changes in Credit Standards" table - note the net % of banks tightening C&I loan standards.',
+      'Open data/quarterly/macro.json, find loan_officer_survey, update latest.date (YYYY-MM-DD) and latest.value.'
+    ]
+  },
+  shiller_cape: {
+    label: 'Shiller CAPE Ratio',
+    steps: [
+      'Go to multpl.com/shiller-pe.',
+      'The current CAPE ratio is displayed prominently at the top of the page.',
+      'Open data/monthly/stock_market.json, find shiller_cape, update latest.date and latest.value.'
+    ]
+  },
+  buffett_indicator: {
+    label: 'Buffett Indicator',
+    steps: [
+      'Go to longtermtrends.net/market-cap-to-gdp-the-buffett-indicator.',
+      'Find the current ratio value shown in the chart or data table.',
+      'Open data/monthly/stock_market.json, find buffett_indicator, update latest.date and latest.value.'
+    ]
+  },
+  trailing_pe: {
+    label: 'Trailing P/E (S&P 500)',
+    steps: [
+      'Go to macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart.',
+      'The current P/E ratio appears in the chart header or latest row of the data table.',
+      'Open data/monthly/stock_market.json, find trailing_pe, update latest.date and latest.value.'
+    ]
+  },
+  margin_debt: {
+    label: 'Margin Debt',
+    steps: [
+      'Go to finra.org/investors/learn-to-invest/advanced-investing/margin-statistics and download the margin statistics file.',
+      'Find "Debit Balances in Customers\' Accounts" column - use the latest month\'s value in millions.',
+      'Open data/monthly/stock_market.json, find margin_debt, update latest.date and latest.value.'
+    ]
+  },
+  sp500_dividend_yield: {
+    label: 'S&P 500 Dividend Yield',
+    steps: [
+      'Go to multpl.com/s-p-500-dividend-yield.',
+      'The current dividend yield % is shown prominently at the top of the page.',
+      'Open data/monthly/stock_market.json, find sp500_dividend_yield, update latest.date and latest.value.'
+    ]
+  },
+  price_to_sales: {
+    label: 'Price-to-Sales (S&P 500)',
+    steps: [
+      'Go to multpl.com/s-p-500-price-to-sales.',
+      'The current P/S ratio is shown at the top of the page.',
+      'Open data/monthly/stock_market.json, find price_to_sales, update latest.date and latest.value.'
+    ]
+  },
+  tobins_q: {
+    label: "Tobin's Q Ratio",
+    steps: [
+      'Go to longtermtrends.net/tobins-q.',
+      'Find the current Q ratio value in the chart or data section.',
+      'Open data/monthly/stock_market.json, find tobins_q, update latest.date and latest.value.'
+    ]
+  },
+  fha_delinquency: {
+    label: 'FHA Delinquency Rate',
+    steps: [
+      'Go to hud.gov/program_offices/housing/rmra/oe/rpts/sfnotes/index and download the latest Single Family Notes PDF.',
+      'Find the "Delinquency and Default" table - record the total delinquency rate %.',
+      'Open data/monthly/residential.json, find fha_delinquency, update latest.date and latest.value.'
+    ]
+  },
+  foreclosure_rate: {
+    label: 'Foreclosure Rate',
+    steps: [
+      'Go to mba.org and find the latest National Delinquency Survey (free registration may be required).',
+      'Look for the "In Foreclosure" percentage in the quarterly summary table.',
+      'Open data/quarterly/residential.json, find foreclosure_rate, update latest.date and latest.value.'
+    ]
+  },
+  conventional_delinquency: {
+    label: 'Conventional Delinquency Rate',
+    steps: [
+      'Go to fhfa.gov/data and find "Mortgage Performance Trends".',
+      'Look for the delinquency rate on conventional (Fannie/Freddie) loans for the latest quarter.',
+      'Open data/quarterly/residential.json, find conventional_delinquency, update latest.date and latest.value.'
+    ]
+  },
+  mba_delinquency: {
+    label: 'MBA National Delinquency Survey',
+    steps: [
+      'Go to mba.org and access the National Delinquency Survey (free registration required).',
+      'Find "Total Past Due" percentage across all mortgage types in the latest quarterly report.',
+      'Open data/quarterly/residential.json, find mba_delinquency, update latest.date and latest.value.'
+    ]
+  }
+};
+
+// ─── STALE DETECTION ──────────────────────────────────────────────────────────
+const STALE_THRESHOLDS = { Weekly: 14, Monthly: 45, Quarterly: 100 };
+
+function isStale(dateStr, frequency) {
+  if (!dateStr || !frequency) return false;
+  const days = (Date.now() - new Date(dateStr)) / 86400000;
+  return days > (STALE_THRESHOLDS[frequency] || 999);
+}
 
 // ─── TOOLTIPS ─────────────────────────────────────────────────────────────────
 // Hover explanations: what the data is, what signals trouble, why it matters
@@ -502,9 +650,10 @@ function renderCard(indicator, dataMap) {
   const pillLabel = status === 'pending' ? 'Pending' : status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : 'Warning';
 
   const meta = INDICATOR_META[indicator.id] || {};
-  const sourceLabel = meta.access === 'fred_api' ? 'Auto - FRED API' : meta.access === 'pdf' ? 'Manual - PDF' : 'Manual';
+  const sourceLabel = meta.access === 'fred_api' ? 'Auto API' : 'Manually Updated';
   const dateLabel = formatDate(d?.latest?.date);
   const trend = getTrend(hist, value);
+  const stale = isStale(d?.latest?.date, meta.frequency);
 
   const tooltipText = (TOOLTIPS[indicator.id] || indicator.description).replace(/"/g, '&quot;');
   const badges = [
@@ -512,8 +661,10 @@ function renderCard(indicator, dataMap) {
     meta.importance ? `<span class="badge">${meta.importance}</span>` : '',
     meta.access     ? `<span class="badge">${sourceLabel}</span>` : '',
     trend           ? `<span class="badge ${getTrendClass(indicator.id, trend)}">${trend} Trend</span>` : '',
-    dateLabel       ? `<span class="badge">Updated ${dateLabel}</span>` : '',
-    `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`
+    dateLabel       ? `<span class="badge ${stale ? 'badge-trend-bad' : ''}">Updated ${dateLabel}${stale ? ' - Stale' : ''}</span>` : '',
+    hasPending && MANUAL_STEPS[indicator.id]
+      ? `<span class="badge" style="cursor:pointer;color:var(--blue);border-color:var(--blue);background:#0d1f38" onclick="switchTab('manual',null,'${indicator.id}')">📋 Update Guide</span>`
+      : `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`
   ].filter(Boolean).join('');
 
   return `<div class="ind-card ${status}">
@@ -657,6 +808,7 @@ async function init() {
     renderSummary(ALL_INDICATORS, dataMap);
     renderSection('leading-section', 'leading', ALL_INDICATORS, dataMap);
     renderSection('lagging-section', 'lagging', ALL_INDICATORS, dataMap);
+    renderManualTab();
   } catch (e) {
     console.error('Dashboard error:', e);
   } finally {
@@ -669,6 +821,44 @@ function togglePanel(btn) {
   btn.classList.toggle('open');
   const body = btn.nextElementSibling;
   body.classList.toggle('open');
+}
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+
+function switchTab(tabId, btn, scrollToId) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  if (btn) btn.classList.add('active');
+  else document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(tabId === 'dashboard' ? 'dashboard' : 'manual')) b.classList.add('active');
+  });
+  if (scrollToId) {
+    setTimeout(() => {
+      const el = document.getElementById('guide-' + scrollToId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  }
+}
+
+function renderManualTab() {
+  const grid = document.getElementById('manual-guide-grid');
+  if (!grid) return;
+  grid.innerHTML = Object.entries(MANUAL_STEPS).map(([id, item]) => {
+    const meta = INDICATOR_META[id] || {};
+    const indicator = ALL_INDICATORS.find(i => i.id === id) || {};
+    return `<div class="guide-card" id="guide-${id}">
+      <div class="guide-card-title">${item.label}</div>
+      <div class="guide-card-meta">
+        <span class="badge">${meta.frequency || ''}</span>
+        <span class="badge">Manually Updated</span>
+        ${indicator.url ? `<a href="${indicator.url}" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38">View Source</a>` : ''}
+      </div>
+      <ol class="guide-steps">
+        ${item.steps.map(s => `<li>${s}</li>`).join('')}
+      </ol>
+    </div>`;
+  }).join('');
 }
 
 // ─── TOOLTIP ─────────────────────────────────────────────────────────────────
