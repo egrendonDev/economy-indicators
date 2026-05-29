@@ -1,0 +1,20 @@
+{
+  "name": "economy-indicators",
+  "version": "1.0.0",
+  "description": "Economic downturn indicator dashboard - fetches data from FRED API and other sources",
+  "type": "module",
+  "scripts": {
+    "fetch:weekly": "node scripts/fetch-weekly.js",
+    "fetch:monthly": "node scripts/fetch-monthly.js",
+    "fetch:quarterly": "node scripts/fetch-quarterly.js",
+    "fetch:all": "node scripts/fetch-weekly.js && node scripts/fetch-monthly.js && node scripts/fetch-quarterly.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "node-fetch": "^3.3.2",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
