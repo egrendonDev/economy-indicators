@@ -122,6 +122,9 @@
     .badge-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
     .badge { font-size: 10px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
     .badge-info { cursor: help; }
+    .badge-trend-good { color: var(--green); border-color: var(--green); background: var(--green-bg); font-size: 12px; font-weight: 700; }
+    .badge-trend-bad  { color: var(--red);   border-color: var(--red);   background: var(--red-bg);   font-size: 12px; font-weight: 700; }
+    .badge-trend-flat { font-size: 12px; font-weight: 700; }
     #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 12px; line-height: 1.6; padding: 10px 12px; border-radius: 8px; width: 260px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
 
     /* ---- Footer ---- */
@@ -443,9 +446,20 @@ function getTrend(history, currentValue) {
   const prev = Number(history[history.length - 2].value);
   const curr = Number(currentValue);
   if (isNaN(prev) || isNaN(curr)) return null;
-  if (curr > prev) return '↑';
-  if (curr < prev) return '↓';
+  if (curr > prev) return '▲';
+  if (curr < prev) return '▼';
   return '→';
+}
+
+function getTrendClass(id, trend) {
+  if (!trend || trend === '→') return 'badge-trend-flat';
+  const cfg = THRESHOLDS[id];
+  if (!cfg) return 'badge-trend-flat';
+  const upIsBad = cfg.direction === 'higher';
+  const upIsGood = cfg.direction === 'lower' || cfg.direction === 'inverted';
+  if (trend === '▲') return upIsBad ? 'badge-trend-bad' : upIsGood ? 'badge-trend-good' : 'badge-trend-flat';
+  if (trend === '▼') return upIsBad ? 'badge-trend-good' : upIsGood ? 'badge-trend-bad' : 'badge-trend-flat';
+  return 'badge-trend-flat';
 }
 
 function getRiskLevel(score) {
@@ -497,7 +511,7 @@ function renderCard(indicator, dataMap) {
     meta.frequency  ? `<span class="badge">${meta.frequency}</span>` : '',
     meta.importance ? `<span class="badge">${meta.importance}</span>` : '',
     meta.access     ? `<span class="badge">${sourceLabel}</span>` : '',
-    trend           ? `<span class="badge">${trend} Trend</span>` : '',
+    trend           ? `<span class="badge ${getTrendClass(indicator.id, trend)}">${trend} Trend</span>` : '',
     dateLabel       ? `<span class="badge">Updated ${dateLabel}</span>` : '',
     `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`
   ].filter(Boolean).join('');
