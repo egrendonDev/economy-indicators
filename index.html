@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Economy Downturn Indicators</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --text:     #e6edf3;
+      --muted:    #8b949e;
+      --green:    #3fb950;
+      --green-bg: #0d2a17;
+      --orange:   #d29922;
+      --orange-bg:#2d2200;
+      --red:      #f85149;
+      --red-bg:   #2d0e0e;
+      --blue:     #58a6ff;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
+
+    /* ---- Loading ---- */
+    #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- Layout ---- */
+    .container { max-width: 1300px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    header { padding: 24px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    header h1 { font-size: 22px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    header h1 i { color: var(--blue); font-size: 24px; }
+    .header-sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    /* ---- Collapsible panels ---- */
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+    .panel-toggle { width: 100%; background: none; border: none; color: var(--text); cursor: pointer; padding: 12px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; text-align: left; }
+    .panel-toggle i { color: var(--muted); transition: transform 0.2s; }
+    .panel-toggle.open i.chevron { transform: rotate(180deg); }
+    .panel-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
+    .panel-body.open { display: block; }
+
+    .help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+    .help-item h4 { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--blue); }
+    .help-item p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    .risk-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+    .risk-item { border-radius: 6px; padding: 10px 12px; font-size: 12px; }
+    .risk-item strong { display: block; font-size: 13px; margin-bottom: 2px; }
+    .risk-item.normal  { background: var(--green-bg);  border: 1px solid var(--green);  color: var(--green); }
+    .risk-item.mild    { background: #1a2a10; border: 1px solid #85c46c; color: #85c46c; }
+    .risk-item.elevated{ background: var(--orange-bg); border: 1px solid var(--orange); color: var(--orange); }
+    .risk-item.high    { background: #2d1400; border: 1px solid #e07b22; color: #e07b22; }
+    .risk-item.critical{ background: var(--red-bg);    border: 1px solid var(--red);    color: var(--red); }
+
+    /* ---- Summary row ---- */
+    .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .summary-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .summary-card .value { font-size: 24px; font-weight: 700; }
+    .summary-card .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .summary-card.risk-normal   { border-left: 4px solid var(--green);  }
+    .summary-card.risk-mild     { border-left: 4px solid #85c46c; }
+    .summary-card.risk-elevated { border-left: 4px solid var(--orange); }
+    .summary-card.risk-high     { border-left: 4px solid #e07b22; }
+    .summary-card.risk-critical { border-left: 4px solid var(--red);    }
+
+    /* ---- Alert boxes ---- */
+    .alerts { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .alert-box { border-radius: 8px; padding: 12px 16px; font-size: 13px; }
+    .alert-box.red    { background: var(--red-bg);    border: 1px solid var(--red);    color: var(--red); }
+    .alert-box.orange { background: var(--orange-bg); border: 1px solid var(--orange); color: var(--orange); }
+    .alert-box strong { font-weight: 600; }
+    .alert-box ul { margin-top: 6px; padding-left: 18px; color: var(--text); }
+    .alert-box ul li { margin-bottom: 2px; }
+
+    /* ---- Sections ---- */
+    .section-title { font-size: 18px; font-weight: 700; margin: 28px 0 4px; display: flex; align-items: center; gap: 8px; }
+    .section-title i { color: var(--blue); }
+    .section-desc { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+
+    .category-label { font-size: 13px; font-weight: 600; color: var(--blue); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+
+    /* ---- Indicator cards ---- */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .ind-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; position: relative; overflow: hidden; }
+    .ind-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--border); }
+    .ind-card.green::before { background: var(--green); }
+    .ind-card.orange::before { background: var(--orange); }
+    .ind-card.red::before { background: var(--red); }
+    .ind-card.pending::before { background: var(--muted); }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .card-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
+    .status-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
+    .status-pill.green  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green); }
+    .status-pill.orange { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
+    .status-pill.red    { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red); }
+    .status-pill.pending{ background: #1c2128; color: var(--muted); border: 1px solid var(--border); }
+
+    .card-values { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+    .current-val { font-size: 22px; font-weight: 700; }
+    .current-val.green  { color: var(--green);  }
+    .current-val.orange { color: var(--orange); }
+    .current-val.red    { color: var(--red);    }
+    .current-val.pending{ color: var(--muted);  }
+    .avg-pill { font-size: 11px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+
+    .sparkline-wrap { margin-bottom: 8px; height: 36px; }
+    .sparkline-wrap svg { width: 100%; height: 36px; }
+
+    .card-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .card-manual { font-size: 11px; color: var(--muted); font-style: italic; }
+    .card-manual a { color: var(--blue); }
+
+    /* ---- Footer ---- */
+    footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 16px 0; color: var(--muted); font-size: 11px; text-align: center; }
+    footer a { color: var(--blue); }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <span style="color:var(--muted);font-size:13px;">Loading indicator data...</span>
+</div>
+
+<div class="container" id="app" style="display:none">
+
+  <header>
+    <h1><i class="ti ti-chart-line"></i> Economy Downturn Indicators</h1>
+    <div class="header-sub" id="last-updated">Last updated: --</div>
+  </header>
+
+  <!-- How to Read panel -->
+  <div class="panel">
+    <button class="panel-toggle" onclick="togglePanel(this)">
+      <i class="ti ti-info-circle"></i> How to Read This Dashboard
+      <i class="ti ti-chevron-down chevron" style="margin-left:auto"></i>
+    </button>
+    <div class="panel-body">
+      <div class="help-grid">
+        <div class="help-item">
+          <h4>Status Colors</h4>
+          <p><strong style="color:var(--green)">Green (Healthy)</strong> - indicator is within normal historical range. No action needed.<br>
+          <strong style="color:var(--orange)">Orange (Watch)</strong> - indicator is approaching stress levels. Monitor closely.<br>
+          <strong style="color:var(--red)">Red (Warning)</strong> - indicator has crossed a stress threshold. Elevated risk signal.</p>
+        </div>
+        <div class="help-item">
+          <h4>Healthy Avg</h4>
+          <p>The small gray pill next to each value shows the long-run historical average. Use it as a reference point for what "normal" looks like for that indicator.</p>
+        </div>
+        <div class="help-item">
+          <h4>Leading vs Lagging</h4>
+          <p><strong>Leading indicators</strong> change before the economy does. They give early warning. Watch these first.<br>
+          <strong>Lagging indicators</strong> confirm what already happened. Rising delinquencies confirm a downturn is underway.</p>
+        </div>
+        <div class="help-item">
+          <h4>Pending Data</h4>
+          <p>Indicators marked <strong style="color:var(--muted)">Pending</strong> require manual data entry or web scraping. Click the source link to check the latest value yourself.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Level Key panel -->
+  <div class="panel">
+    <button class="panel-toggle" onclick="togglePanel(this)">
+      <i class="ti ti-shield"></i> Overall Risk Level Key
+      <i class="ti ti-chevron-down chevron" style="margin-left:auto"></i>
+    </button>
+    <div class="panel-body">
+      <p style="font-size:12px;color:var(--muted);margin-top:12px;">Risk score: Watch indicators = 1 pt each, Warning indicators = 2 pts each.</p>
+      <div class="risk-grid">
+        <div class="risk-item normal">  <strong>Normal</strong>       Score 0-3. Economy looks healthy. No meaningful stress signals.</div>
+        <div class="risk-item mild">    <strong>Mild Concern</strong>  Score 4-7. A few indicators flashing. Worth watching but not alarming.</div>
+        <div class="risk-item elevated"><strong>Elevated</strong>      Score 8-13. Multiple signals active. Conditions are tightening.</div>
+        <div class="risk-item high">    <strong>High Risk</strong>     Score 14-19. Broad stress across categories. Downturn likely developing.</div>
+        <div class="risk-item critical"><strong>Critical</strong>       Score 20+. Widespread failure signals. Severe downturn underway or imminent.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary row -->
+  <div class="summary-row" id="summary-row"></div>
+
+  <!-- Alerts -->
+  <div class="alerts" id="alerts"></div>
+
+  <!-- Leading section -->
+  <div class="section-title"><i class="ti ti-trending-up"></i> LEADING INDICATORS</div>
+  <div class="section-desc">These change before the economy. Rising stress here is an early warning signal.</div>
+  <div id="leading-section"></div>
+
+  <!-- Lagging section -->
+  <div class="section-title"><i class="ti ti-trending-down"></i> LAGGING INDICATORS</div>
+  <div class="section-desc">These confirm a downturn already in progress. Rising stress here means the damage is real.</div>
+  <div id="lagging-section"></div>
+
+  <footer>
+    Data sources: <a href="https://fred.stlouisfed.org" target="_blank">FRED / Federal Reserve Bank of St. Louis</a>,
+    Federal Reserve, HUD, MBA, FHFA, FINRA, multpl.com, longtermtrends.net, macrotrends.net.
+    This dashboard is for informational purposes only and does not constitute financial advice.
+  </footer>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────────
+
+const DATA_FILES = [
+  'data/weekly/macro.json',
+  'data/monthly/macro.json',
+  'data/monthly/stock_market.json',
+  'data/monthly/residential.json',
+  'data/monthly/auto.json',
+  'data/monthly/credit_cards.json',
+  'data/quarterly/macro.json',
+  'data/quarterly/residential.json',
+  'data/quarterly/commercial.json',
+  'data/quarterly/auto.json',
+  'data/quarterly/credit_cards.json'
+];
+
+// direction: 'higher' = higher is worse (delinquency, spreads, CAPE)
+//            'lower'  = lower is worse (yield curve, hours, starts)
+//            'inverted' = negative is worse (yield curve specifically)
+const THRESHOLDS = {
+  yield_curve:              { warn: 0,     danger: -0.5,  direction: 'inverted', avg: '+1.0%' },
+  jobless_claims:           { warn: 250,   danger: 350,   direction: 'higher',   avg: '220K' },
+  credit_spreads:           { warn: 4,     danger: 6,     direction: 'higher',   avg: '4.0%' },
+  ism_pmi:                  { warn: 12500, danger: 12000, direction: 'lower',    avg: '~12,500' },
+  real_m2:                  { warn: 20000, danger: 19000, direction: 'lower',    avg: 'varies' },
+  weekly_hours:             { warn: 34.2,  danger: 33.5,  direction: 'lower',    avg: '34.5 hrs' },
+  durable_goods:            { warn: 250000,danger: 220000,direction: 'lower',    avg: 'varies' },
+  loan_officer_survey:      { warn: 20,    danger: 40,    direction: 'higher',   avg: '~0%' },
+  shiller_cape:             { warn: 25,    danger: 35,    direction: 'higher',   avg: '17' },
+  buffett_indicator:        { warn: 120,   danger: 150,   direction: 'higher',   avg: '100%' },
+  trailing_pe:              { warn: 22,    danger: 28,    direction: 'higher',   avg: '18' },
+  margin_debt:              { warn: null,  danger: null,  direction: 'higher',   avg: 'trend' },
+  sp500_dividend_yield:     { warn: 1.8,   danger: 1.4,   direction: 'lower',    avg: '2.0%' },
+  price_to_sales:           { warn: 2.2,   danger: 3.0,   direction: 'higher',   avg: '1.5' },
+  tobins_q:                 { warn: 1.2,   danger: 1.7,   direction: 'higher',   avg: '1.0' },
+  housing_starts:           { warn: 1200,  danger: 900,   direction: 'lower',    avg: '1,400K' },
+  fha_delinquency:          { warn: 9,     danger: 12,    direction: 'higher',   avg: '8%' },
+  mortgage_delinquency:     { warn: 3,     danger: 5,     direction: 'higher',   avg: '2.0%' },
+  foreclosure_rate:         { warn: 0.5,   danger: 1.0,   direction: 'higher',   avg: '0.3%' },
+  conventional_delinquency: { warn: 2,     danger: 4,     direction: 'higher',   avg: '1.5%' },
+  mba_delinquency:          { warn: 4,     danger: 6,     direction: 'higher',   avg: '3.5%' },
+  commercial_re_delinquency:{ warn: 1.5,   danger: 3,     direction: 'higher',   avg: '0.8%' },
+  ci_loan_delinquency:      { warn: 1,     danger: 2,     direction: 'higher',   avg: '0.8%' },
+  vehicle_sales:            { warn: 14,    danger: 12,    direction: 'lower',    avg: '16M' },
+  auto_delinquency:         { warn: 4,     danger: 6,     direction: 'higher',   avg: '2.5%' },
+  revolving_credit:         { warn: 1150,  danger: 1250,  direction: 'higher',   avg: '~$1T' },
+  cc_delinquency:           { warn: 3,     danger: 5,     direction: 'higher',   avg: '2.5%' },
+  cc_chargeoff:             { warn: 3.5,   danger: 6,     direction: 'higher',   avg: '3.5%' }
+};
+
+// Plain-English status messages per indicator
+const MESSAGES = {
+  yield_curve:              { green: 'Normal yield curve - banks lending profitably', orange: 'Yield curve slightly inverted - credit caution signal', red: 'Deep inversion - historically precedes recession by 6-18 months' },
+  jobless_claims:           { green: 'Low layoff activity - labor market healthy', orange: 'Claims ticking up - worth watching for sustained trend', red: 'Elevated layoffs - labor market deteriorating' },
+  credit_spreads:           { green: 'Tight spreads - investors comfortable with risk', orange: 'Spreads widening - credit stress building', red: 'Wide spreads - companies paying premium to borrow, stress is real' },
+  ism_pmi:                  { green: 'Manufacturing employment stable', orange: 'Manufacturing showing softness', red: 'Manufacturing employment falling - factory sector in contraction' },
+  real_m2:                  { green: 'Money supply supporting economic activity', orange: 'Money supply growth slowing', red: 'Real money supply shrinking - economic fuel running low' },
+  weekly_hours:             { green: 'Employers maintaining worker hours - stable demand', orange: 'Hours being trimmed - early labor stress signal', red: 'Hours cut significantly - layoffs likely next' },
+  durable_goods:            { green: 'Business investment in equipment holding up', orange: 'Durable goods orders softening', red: 'Business capex pulling back - companies losing confidence' },
+  loan_officer_survey:      { green: 'Banks lending freely - credit flowing normally', orange: 'Banks tightening standards - credit becoming selective', red: 'Significant tightening - credit crunch risk elevated' },
+  shiller_cape:             { green: 'Valuations in reasonable range historically', orange: 'Market moderately overvalued vs history', red: 'Extreme overvaluation - large drawdown risk if earnings disappoint' },
+  buffett_indicator:        { green: 'Market cap in line with economic output', orange: 'Market running ahead of the economy', red: 'Market significantly detached from economic reality' },
+  trailing_pe:              { green: 'Earnings supporting current prices reasonably', orange: 'Paying a premium - less margin of safety', red: 'Very high premium - vulnerable to any earnings miss' },
+  margin_debt:              { green: 'Margin debt at normal levels', orange: 'Elevated borrowing in markets', red: 'Extreme margin debt - forced selling risk if market dips' },
+  sp500_dividend_yield:     { green: 'Decent income floor under stock prices', orange: 'Minimal income buffer - market priced for perfection', red: 'Near-zero yield - stocks offer almost no income cushion' },
+  price_to_sales:           { green: 'Price reflects reasonable revenue multiples', orange: 'Revenue premium elevated', red: 'Extreme revenue multiple - hard to justify at these prices' },
+  tobins_q:                 { green: 'Market values assets near replacement cost', orange: 'Paying premium over asset replacement cost', red: 'Extreme premium - market prices well above asset values' },
+  housing_starts:           { green: 'Construction pipeline healthy - builders confident', orange: 'Housing starts slowing - affordability or demand concerns', red: 'Construction collapsed - housing market under severe stress' },
+  fha_delinquency:          { green: 'FHA borrowers keeping up with payments', orange: 'FHA delinquency rising - lower down payment borrowers stressed', red: 'High FHA delinquency - widespread distress in entry-level market' },
+  mortgage_delinquency:     { green: 'Most homeowners current on mortgages', orange: 'Rising mortgage delinquency - homeowner stress building', red: 'High delinquency - significant portion of homeowners struggling' },
+  foreclosure_rate:         { green: 'Very few homes entering foreclosure', orange: 'Foreclosure activity increasing', red: 'Elevated foreclosures - housing distress confirmed' },
+  conventional_delinquency: { green: 'Prime borrowers current on payments', orange: 'Prime market showing some stress', red: 'Even prime borrowers struggling - broad mortgage distress' },
+  mba_delinquency:          { green: 'Mortgage market broadly healthy', orange: 'Industry-wide delinquency creeping up', red: 'Broad mortgage delinquency elevated - systemic housing stress' },
+  commercial_re_delinquency:{ green: 'Commercial property loans performing', orange: 'Some CRE loan stress - office/retail weakness', red: 'Significant CRE defaults - commercial real estate under distress' },
+  ci_loan_delinquency:      { green: 'Businesses keeping up with loans', orange: 'Business loan stress increasing', red: 'Elevated business defaults - corporate health deteriorating' },
+  vehicle_sales:            { green: 'Auto demand healthy - consumers buying', orange: 'Car sales slowing - big-ticket hesitation', red: 'Steep sales drop - consumers pulling back on major purchases' },
+  auto_delinquency:         { green: 'Auto borrowers current on payments', orange: 'Auto delinquency rising - lower-income stress', red: 'High auto defaults - consumer financial stress confirmed' },
+  revolving_credit:         { green: 'Card balances at manageable levels', orange: 'Balances rising - consumers borrowing more to cover spending', red: 'Surging balances - consumers funding everyday expenses with debt' },
+  cc_delinquency:           { green: 'Cardholders keeping up with minimum payments', orange: 'More cardholders missing payments', red: 'Widespread payment missed - consumer financial distress confirmed' },
+  cc_chargeoff:             { green: 'Banks writing off minimal bad debt', orange: 'Charge-offs rising - defaults materializing', red: 'Banks absorbing heavy credit losses - deep consumer distress' }
+};
+
+// Section layout: type -> category order with display names
+const LAYOUT = {
+  leading: [
+    { key: 'macro',        label: 'Macro & Credit',  icon: 'ti-building-bank' },
+    { key: 'stock_market', label: 'Stock Market',     icon: 'ti-chart-candlestick' },
+    { key: 'residential',  label: 'Residential',      icon: 'ti-home' },
+    { key: 'auto',         label: 'Auto',             icon: 'ti-car' },
+    { key: 'credit_cards', label: 'Credit Cards',     icon: 'ti-credit-card' }
+  ],
+  lagging: [
+    { key: 'residential',  label: 'Residential',      icon: 'ti-home' },
+    { key: 'commercial',   label: 'Commercial',        icon: 'ti-building' },
+    { key: 'auto',         label: 'Auto',             icon: 'ti-car' },
+    { key: 'credit_cards', label: 'Credit Cards',     icon: 'ti-credit-card' }
+  ]
+};
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+
+function getStatus(id, value) {
+  const cfg = THRESHOLDS[id];
+  if (!cfg || value === null || value === undefined || isNaN(Number(value))) return 'pending';
+  const v = Number(value);
+  const { warn, danger, direction } = cfg;
+  if (warn === null) return 'green'; // trend-only, no threshold
+
+  if (direction === 'higher') {
+    if (v >= danger) return 'red';
+    if (v >= warn)   return 'orange';
+    return 'green';
+  }
+  if (direction === 'lower') {
+    if (v <= danger) return 'red';
+    if (v <= warn)   return 'orange';
+    return 'green';
+  }
+  if (direction === 'inverted') {
+    // yield curve: positive good, 0 to -0.5 watch, < -0.5 red
+    if (v <= danger) return 'red';
+    if (v <= warn)   return 'orange';
+    return 'green';
+  }
+  return 'green';
+}
+
+function formatValue(id, value, unit) {
+  if (value === null || value === undefined) return '--';
+  const v = Number(value);
+  if (isNaN(v)) return '--';
+
+  if (unit === '%') return v.toFixed(2) + '%';
+  if (unit === 'thousands') return (v / 1000).toFixed(0) + 'K';
+  if (unit === 'billions USD') return '$' + v.toFixed(0) + 'B';
+  if (unit === 'millions USD') return '$' + (v / 1000).toFixed(1) + 'B';
+  if (unit === 'millions of units') return v.toFixed(1) + 'M';
+  if (unit === 'thousands of units') return v.toFixed(0) + 'K';
+  if (unit === 'hours') return v.toFixed(1) + ' hrs';
+  if (unit === '% net tightening') return v.toFixed(1) + '%';
+  if (unit === 'ratio') return v.toFixed(2);
+  if (unit === 'index') return v.toFixed(1);
+  return v.toFixed(2);
+}
+
+function getRiskLevel(score) {
+  if (score >= 20) return { label: 'Critical',     cls: 'risk-critical' };
+  if (score >= 14) return { label: 'High Risk',    cls: 'risk-high' };
+  if (score >= 8)  return { label: 'Elevated',     cls: 'risk-elevated' };
+  if (score >= 4)  return { label: 'Mild Concern', cls: 'risk-mild' };
+  return              { label: 'Normal',        cls: 'risk-normal' };
+}
+
+function sparkline(history, status) {
+  if (!history || history.length < 2) return '<svg><text x="0" y="20" fill="#8b949e" font-size="10">No history</text></svg>';
+  const vals = history.map(h => Number(h.value)).filter(v => !isNaN(v));
+  if (vals.length < 2) return '';
+  const mn = Math.min(...vals), mx = Math.max(...vals);
+  const range = mx - mn || 1;
+  const W = 260, H = 36, pad = 2;
+  const pts = vals.map((v, i) => {
+    const x = pad + (i / (vals.length - 1)) * (W - 2 * pad);
+    const y = H - pad - ((v - mn) / range) * (H - 2 * pad);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const color = status === 'red' ? '#f85149' : status === 'orange' ? '#d29922' : '#3fb950';
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+  </svg>`;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+
+function renderCard(indicator, dataMap) {
+  const d = dataMap[indicator.id];
+  const hasPending = !d || d.manual_update_required || d.error || !d.latest;
+  const value = hasPending ? null : d.latest?.value;
+  const status = hasPending ? 'pending' : getStatus(indicator.id, value);
+  const cfg = THRESHOLDS[indicator.id] || {};
+  const msgSet = MESSAGES[indicator.id] || {};
+  const msg = hasPending ? null : msgSet[status];
+  const hist = d?.history || [];
+  const pillLabel = status === 'pending' ? 'Pending' : status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : 'Warning';
+
+  return `<div class="ind-card ${status}">
+    <div class="card-top">
+      <div class="card-name">${indicator.label}</div>
+      <div class="status-pill ${status}">${pillLabel}</div>
+    </div>
+    <div class="card-values">
+      <div class="current-val ${status}">${hasPending ? '--' : formatValue(indicator.id, value, indicator.unit)}</div>
+      ${cfg.avg ? `<div class="avg-pill">avg ${cfg.avg}</div>` : ''}
+    </div>
+    <div class="sparkline-wrap">${sparkline(hist, status)}</div>
+    <div class="${hasPending ? 'card-manual' : 'card-desc'}">
+      ${hasPending
+        ? `Manual update required - <a href="${indicator.url}" target="_blank">view source</a>`
+        : (msg || indicator.description)}
+    </div>
+  </div>`;
+}
+
+function renderCategory(catKey, catLabel, catIcon, allIndicators, dataMap, filterType) {
+  const inds = allIndicators.filter(i => i.category === catKey && i.type === filterType);
+  if (!inds.length) return '';
+  return `<div class="category-label"><i class="ti ${catIcon}"></i> ${catLabel}</div>
+    <div class="cards-grid">${inds.map(i => renderCard(i, dataMap)).join('')}</div>`;
+}
+
+function renderSection(containerId, type, allIndicators, dataMap) {
+  const cats = LAYOUT[type];
+  const el = document.getElementById(containerId);
+  el.innerHTML = cats.map(c => renderCategory(c.key, c.label, c.icon, allIndicators, dataMap, type)).join('');
+}
+
+function renderSummary(allIndicators, dataMap) {
+  let score = 0, warnings = [], watches = [], leadWarn = 0, leadWatch = 0, lagWarn = 0, lagWatch = 0;
+  let latestDate = null;
+
+  for (const ind of allIndicators) {
+    const d = dataMap[ind.id];
+    if (!d || d.manual_update_required || !d.latest) continue;
+    const v = d.latest.value;
+    if (d.latest.date && (!latestDate || d.latest.date > latestDate)) latestDate = d.latest.date;
+    const s = getStatus(ind.id, v);
+    if (s === 'red')    { score += 2; warnings.push(ind.label); ind.type === 'leading' ? leadWarn++ : lagWarn++; }
+    if (s === 'orange') { score += 1; watches.push(ind.label);  ind.type === 'leading' ? leadWatch++ : lagWatch++; }
+  }
+
+  const risk = getRiskLevel(score);
+
+  // Summary cards
+  document.getElementById('summary-row').innerHTML = `
+    <div class="summary-card ${risk.cls}">
+      <div class="label">Overall Risk Level</div>
+      <div class="value">${risk.label}</div>
+      <div class="sub">Risk score: ${score} pts</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Leading - Warnings</div>
+      <div class="value" style="color:var(--red)">${leadWarn}</div>
+      <div class="sub">${leadWatch} in watch zone</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Lagging - Warnings</div>
+      <div class="value" style="color:var(--red)">${lagWarn}</div>
+      <div class="sub">${lagWatch} in watch zone</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Total Score</div>
+      <div class="value" style="color:var(--blue)">${score}</div>
+      <div class="sub">Warning=2pts, Watch=1pt</div>
+    </div>`;
+
+  if (latestDate) {
+    document.getElementById('last-updated').textContent = `Last updated: ${latestDate}`;
+  }
+
+  // Alert boxes
+  const alertEl = document.getElementById('alerts');
+  let html = '';
+  if (warnings.length) {
+    html += `<div class="alert-box red"><strong><i class="ti ti-alert-triangle"></i> ${warnings.length} indicator${warnings.length > 1 ? 's' : ''} in warning zone (red)</strong><ul>${warnings.map(l => `<li>${l}</li>`).join('')}</ul></div>`;
+  }
+  if (watches.length) {
+    html += `<div class="alert-box orange"><strong><i class="ti ti-eye"></i> ${watches.length} indicator${watches.length > 1 ? 's' : ''} in watch zone (orange)</strong><ul>${watches.map(l => `<li>${l}</li>`).join('')}</ul></div>`;
+  }
+  if (!html) {
+    html = `<div class="alert-box" style="background:var(--green-bg);border:1px solid var(--green);color:var(--green)"><strong><i class="ti ti-circle-check"></i> All indicators in healthy range</strong></div>`;
+  }
+  alertEl.innerHTML = html;
+}
+
+// ─── LOAD DATA ───────────────────────────────────────────────────────────────
+
+// All indicators (mirrored from series-map for dashboard use)
+const ALL_INDICATORS = [
+  { id:'yield_curve',              label:'Yield Curve (2yr vs 10yr)',       type:'leading',  category:'macro',        unit:'%',               url:'https://fred.stlouisfed.org/series/T10Y2Y' },
+  { id:'jobless_claims',           label:'Initial Jobless Claims',          type:'leading',  category:'macro',        unit:'thousands',        url:'https://fred.stlouisfed.org/series/ICSA' },
+  { id:'credit_spreads',           label:'High-Yield Credit Spreads',       type:'leading',  category:'macro',        unit:'%',               url:'https://fred.stlouisfed.org/series/BAMLH0A0HYM2' },
+  { id:'ism_pmi',                  label:'ISM Manufacturing PMI',           type:'leading',  category:'macro',        unit:'index',            url:'https://fred.stlouisfed.org/series/MANEMP' },
+  { id:'real_m2',                  label:'Real M2 Money Supply',            type:'leading',  category:'macro',        unit:'billions USD',     url:'https://fred.stlouisfed.org/series/M2REAL' },
+  { id:'weekly_hours',             label:'Avg Weekly Hours Worked',         type:'leading',  category:'macro',        unit:'hours',            url:'https://fred.stlouisfed.org/series/AWHAETP' },
+  { id:'durable_goods',            label:'Durable Goods Orders',            type:'leading',  category:'macro',        unit:'millions USD',     url:'https://fred.stlouisfed.org/series/DGORDER' },
+  { id:'loan_officer_survey',      label:'Senior Loan Officer Survey',      type:'leading',  category:'macro',        unit:'% net tightening', url:'https://www.federalreserve.gov/releases/sloos/' },
+  { id:'shiller_cape',             label:'Shiller CAPE Ratio',              type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/shiller-pe' },
+  { id:'buffett_indicator',        label:'Buffett Indicator',               type:'leading',  category:'stock_market', unit:'%',               url:'https://www.longtermtrends.net/market-cap-to-gdp-the-buffett-indicator/' },
+  { id:'trailing_pe',              label:'Trailing P/E (S&P 500)',          type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart' },
+  { id:'margin_debt',              label:'Margin Debt',                     type:'leading',  category:'stock_market', unit:'millions USD',     url:'https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics' },
+  { id:'sp500_dividend_yield',     label:'S&P 500 Dividend Yield',          type:'leading',  category:'stock_market', unit:'%',               url:'https://www.multpl.com/s-p-500-dividend-yield' },
+  { id:'price_to_sales',           label:'Price-to-Sales (S&P 500)',        type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/s-p-500-price-to-sales' },
+  { id:'tobins_q',                 label:"Tobin's Q Ratio",                 type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.longtermtrends.net/tobins-q/' },
+  { id:'housing_starts',           label:'Housing Starts & Permits',        type:'leading',  category:'residential',  unit:'thousands of units',url:'https://fred.stlouisfed.org/series/HOUST' },
+  { id:'vehicle_sales',            label:'Total Vehicle Sales (SAAR)',      type:'leading',  category:'auto',         unit:'millions of units', url:'https://fred.stlouisfed.org/series/TOTALSA' },
+  { id:'revolving_credit',         label:'Revolving Credit Outstanding',    type:'leading',  category:'credit_cards', unit:'billions USD',     url:'https://fred.stlouisfed.org/series/REVOLSL' },
+  { id:'fha_delinquency',          label:'FHA Delinquency Rate',            type:'lagging',  category:'residential',  unit:'%',               url:'https://www.hud.gov/program_offices/housing/rmra/oe/rpts/sfnotes/index' },
+  { id:'mortgage_delinquency',     label:'Mortgage Delinquency Rate',       type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/DRSFRMACBS' },
+  { id:'foreclosure_rate',         label:'Foreclosure Rate',                type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/QUSRHTSA' },
+  { id:'conventional_delinquency', label:'Conventional Delinquency Rate',   type:'lagging',  category:'residential',  unit:'%',               url:'https://www.fhfa.gov/data' },
+  { id:'mba_delinquency',          label:'MBA National Delinquency Survey', type:'lagging',  category:'residential',  unit:'%',               url:'https://www.mba.org' },
+  { id:'commercial_re_delinquency',label:'Commercial RE Loan Delinquency',  type:'lagging',  category:'commercial',   unit:'%',               url:'https://fred.stlouisfed.org/series/DRCRELEXFACBS' },
+  { id:'ci_loan_delinquency',      label:'C&I Loan Delinquency',            type:'lagging',  category:'commercial',   unit:'%',               url:'https://fred.stlouisfed.org/series/DRBLACBS' },
+  { id:'auto_delinquency',         label:'Auto Loan Delinquency Rate',      type:'lagging',  category:'auto',         unit:'%',               url:'https://fred.stlouisfed.org/series/DRCCLACBS' },
+  { id:'cc_delinquency',           label:'Credit Card Delinquency Rate',    type:'lagging',  category:'credit_cards', unit:'%',               url:'https://fred.stlouisfed.org/series/DRCCLACBS' },
+  { id:'cc_chargeoff',             label:'Credit Card Charge-Off Rate',     type:'lagging',  category:'credit_cards', unit:'%',               url:'https://fred.stlouisfed.org/series/CORCCACBS' }
+];
+
+async function loadAllData() {
+  const dataMap = {};
+  const results = await Promise.allSettled(DATA_FILES.map(f => fetch(f).then(r => r.ok ? r.json() : null)));
+  results.forEach(r => {
+    if (r.status === 'fulfilled' && r.value?.indicators) {
+      r.value.indicators.forEach(ind => { if (ind.id) dataMap[ind.id] = ind; });
+    }
+  });
+  return dataMap;
+}
+
+async function init() {
+  try {
+    const dataMap = await loadAllData();
+    renderSummary(ALL_INDICATORS, dataMap);
+    renderSection('leading-section', 'leading', ALL_INDICATORS, dataMap);
+    renderSection('lagging-section', 'lagging', ALL_INDICATORS, dataMap);
+  } catch (e) {
+    console.error('Dashboard error:', e);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  }
+}
+
+function togglePanel(btn) {
+  btn.classList.toggle('open');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+init();
+</script>
+</body>
+</html>
