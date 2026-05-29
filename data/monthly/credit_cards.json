@@ -1,11 +1,11 @@
 {
-  "last_updated": "2026-05-29T07:28:50.370Z",
+  "last_updated": "2026-05-29T19:55:19.189Z",
   "indicators": [
     {
       "id": "revolving_credit",
       "label": "Revolving Credit Outstanding",
       "description": "Total card balances; rapid rise signals consumers funding expenses with debt",
-      "unit": "billions USD",
+      "unit": "millions USD",
       "source": "FRED",
       "url": "https://fred.stlouisfed.org/series/REVOLSL",
       "type": "leading",

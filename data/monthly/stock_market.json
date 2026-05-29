@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-29T18:54:45.292Z",
+  "last_updated": "2026-05-29T19:55:19.189Z",
   "indicators": [
     {
       "id": "shiller_cape",
@@ -206,7 +206,7 @@
           "value": 1304281
         }
       ],
-      "manual_update_required": false,
+      "manual_update_required": true,
       "note": "Parsed from margin-statistics.xlsx on 2026-05-29T18:54:45.291Z"
     },
     {
