@@ -23,7 +23,7 @@
       --blue:     #58a6ff;
     }
 
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.5; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.6; }
 
     /* ---- Tabs ---- */
     .tab-bar { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
@@ -36,12 +36,12 @@
     /* ---- Manual guide tab ---- */
     .guide-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-top: 16px; }
     .guide-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-    .guide-card-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-    .guide-card-meta { font-size: 11px; color: var(--muted); margin-bottom: 12px; display: flex; gap: 8px; }
+    .guide-card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .guide-card-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; display: flex; gap: 8px; }
     .guide-steps { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 8px; }
-    .guide-steps li { counter-increment: steps; display: flex; gap: 10px; font-size: 12px; color: var(--muted); line-height: 1.5; }
-    .guide-steps li::before { content: counter(steps); background: var(--border); color: var(--text); border-radius: 50%; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
-    .guide-source { display: inline-block; margin-top: 10px; font-size: 11px; color: var(--blue); }
+    .guide-steps li { counter-increment: steps; display: flex; gap: 10px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .guide-steps li::before { content: counter(steps); background: var(--border); color: var(--text); border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .guide-source { display: inline-block; margin-top: 10px; font-size: 13px; color: var(--blue); }
 
     /* ---- Loading ---- */
     #loading { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; gap: 16px; }
@@ -101,7 +101,7 @@
     /* ---- Sections ---- */
     .section-title { font-size: 18px; font-weight: 700; margin: 28px 0 4px; display: flex; align-items: center; gap: 8px; }
     .section-title i { color: var(--blue); }
-    .section-desc { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+    .section-desc { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
 
     .category-label { font-size: 13px; font-weight: 600; color: var(--blue); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 
@@ -115,8 +115,8 @@
     .ind-card.pending::before { background: var(--muted); }
 
     .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-    .card-name { font-size: 13px; font-weight: 600; line-height: 1.3; }
-    .status-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
+    .card-name { font-size: 15px; font-weight: 600; line-height: 1.3; }
+    .status-pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0; }
     .status-pill.green  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green); }
     .status-pill.orange { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
     .status-pill.red    { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red); }
@@ -128,22 +128,22 @@
     .current-val.orange { color: var(--orange); }
     .current-val.red    { color: var(--red);    }
     .current-val.pending{ color: var(--muted);  }
-    .avg-pill { font-size: 11px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; }
+    .avg-pill { font-size: 12px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; }
 
     .sparkline-wrap { margin-bottom: 8px; height: 36px; }
     .sparkline-wrap svg { width: 100%; height: 36px; }
 
-    .card-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
-    .card-manual { font-size: 11px; color: var(--muted); font-style: italic; }
+    .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .card-manual { font-size: 13px; color: var(--muted); font-style: italic; }
     .card-manual a { color: var(--blue); }
 
     .badge-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
-    .badge { font-size: 10px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+    .badge { font-size: 12px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; white-space: nowrap; }
     .badge-info { cursor: help; }
-    .badge-trend-good { color: var(--green); border-color: var(--green); background: var(--green-bg); font-size: 12px; font-weight: 700; }
-    .badge-trend-bad  { color: var(--red);   border-color: var(--red);   background: var(--red-bg);   font-size: 12px; font-weight: 700; }
-    .badge-trend-flat { font-size: 12px; font-weight: 700; }
-    #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 12px; line-height: 1.6; padding: 10px 12px; border-radius: 8px; width: 260px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
+    .badge-trend-good { color: var(--green); border-color: var(--green); background: var(--green-bg); font-size: 13px; font-weight: 700; }
+    .badge-trend-bad  { color: var(--red);   border-color: var(--red);   background: var(--red-bg);   font-size: 13px; font-weight: 700; }
+    .badge-trend-flat { font-size: 13px; font-weight: 700; }
+    #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 8px; width: 280px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
 
     /* ---- Footer ---- */
     footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 16px 0; color: var(--muted); font-size: 11px; text-align: center; }
@@ -430,9 +430,9 @@ const MANUAL_STEPS = {
   margin_debt: {
     label: 'Margin Debt',
     steps: [
-      'Go to finra.org/investors/learn-to-invest/advanced-investing/margin-statistics and download the Excel file under "Monthly Margin Statistics". Save it as margin-statistics.xlsx in the data/manual/ folder of the project.',
-      'From the project root, run: npm run fetch:margin-debt',
-      'The script reads the Excel file, extracts the last 36 months of debit balance data, and automatically updates data/monthly/stock_market.json. No manual JSON editing needed.'
+      'Download the Excel file from <a href="https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics" target="_blank">finra.org - Margin Statistics</a> (look for "Monthly Margin Statistics" - filename may vary). Drop it into the <a href="https://github.com/egrendonDev/economy-indicators/tree/main/data/manual-file-dropzone" target="_blank">data/manual-file-dropzone/</a> folder in the project.',
+      'From the project root run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:margin-debt</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/fetch-margin-debt.js" target="_blank">fetch-margin-debt.js script</a> for details.',
+      'The script auto-detects the xlsx file, extracts the last 36 months of debit balance data, updates data/monthly/stock_market.json, and renames the file to mark it as processed. No manual JSON editing needed.'
     ]
   },
   sp500_dividend_yield: {
@@ -844,14 +844,25 @@ function switchTab(tabId, btn, scrollToId) {
   }
 }
 
+function copyGuideCard(id, btn) {
+  const cfg = MANUAL_STEPS[id];
+  if (!cfg) return;
+  const text = `${cfg.label}\n\n${cfg.steps.map((s, i) => `${i + 1}. ${s.replace(/<[^>]+>/g, '')}`).join('\n')}`;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
 function renderManualTab() {
   const grid = document.getElementById('manual-guide-grid');
   if (!grid) return;
   grid.innerHTML = Object.entries(MANUAL_STEPS).map(([id, item]) => {
     const meta = INDICATOR_META[id] || {};
     const indicator = ALL_INDICATORS.find(i => i.id === id) || {};
-    return `<div class="guide-card" id="guide-${id}">
-      <div class="guide-card-title">${item.label}</div>
+    return `<div class="guide-card" id="guide-${id}" style="position:relative;">
+      <button onclick="copyGuideCard('${id}', this)" style="position:absolute;top:12px;right:12px;background:#1c2128;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 10px;font-size:12px;cursor:pointer;transition:color 0.15s;">Copy</button>
+      <div class="guide-card-title" style="padding-right:60px;">${item.label}</div>
       <div class="guide-card-meta">
         <span class="badge">${meta.frequency || ''}</span>
         <span class="badge">Updated-Manually</span>

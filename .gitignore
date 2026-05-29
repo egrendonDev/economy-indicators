@@ -8,3 +8,8 @@ node_modules/
 
 # VS Code
 .vscode/
+
+# Manual data files (large binaries - download locally, don't commit)
+data/manual-file-dropzone/*.xlsx
+data/manual-file-dropzone/*.xls
+data/manual-file-dropzone/*.csv

@@ -58,18 +58,54 @@ economy-indicators/
 
 | Script | What it does |
 |--------|-------------|
-| `npm start` | Fetch all data fresh (force), then start local server at port 3000 |
 | `npm run serve` | Start local server only (no fetch) at http://localhost:3000 |
 | `npm run fetch:all` | Run all three fetch scripts in sequence (respects freshness check) |
 | `npm run fetch:weekly` | Fetch weekly indicators - yield curve, jobless claims, credit spreads |
 | `npm run fetch:monthly` | Fetch monthly indicators - macro, stock market, residential, auto, credit cards |
 | `npm run fetch:quarterly` | Fetch quarterly indicators - macro, residential, commercial, auto, credit cards |
+| `npm run manually:load-data:margin-debt` | Install deps and parse FINRA xlsx into stock_market.json (see below) |
+| `npm run pulldata:then:serve:local` | Force fetch all data then start local server at port 3000 |
 
 Add `-- --force` to any fetch script to bypass the freshness check and always pull new data:
 ```bash
 npm run fetch:all -- --force
 npm run fetch:weekly -- --force
 ```
+
+---
+
+## Manual Data Scripts
+
+Some indicators require a manual file download before a script can process them. These are indicators where the source does not offer a free API.
+
+### Margin Debt (FINRA)
+
+Margin debt measures how much investors have borrowed to buy stocks. The data comes from FINRA and requires a one-time manual download each time you want to update.
+
+**Steps:**
+
+1. Go to [finra.org/investors/learn-to-invest/advanced-investing/margin-statistics](https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics)
+2. Download the Excel file listed under **Monthly Margin Statistics** (the filename may vary - that is fine)
+3. Drop the downloaded file into the `data/manual-file-dropzone/` folder in this project (do not rename it)
+4. From the project root, run:
+
+```bash
+npm run manually:load-data:margin-debt
+```
+
+**What the script does:**
+
+- Scans `data/manual-file-dropzone/` for any `.xlsx` file that has not already been processed
+- If multiple unprocessed files exist, it uses the most recently modified one
+- Extracts the last 36 months of debit balance data from the "Customer Margin Balances" sheet
+- Writes the data into `data/monthly/stock_market.json` under the `margin_debt` indicator
+- Renames the source file to `{originalName}-[PROCESSED]-{timestamp}.xlsx` so you can tell at a glance which files have already been run
+
+**Notes:**
+
+- The `data/manual-file-dropzone/` folder is tracked in git via `.gitkeep`, but all `.xlsx` files inside it are gitignored - they will not be committed to the repo
+- You only need to re-run this script when FINRA publishes a new monthly report (approximately the 3rd week of each month)
+- You do not need to delete the processed file before adding a new one - the script skips any file with `[PROCESSED]` in the name
 
 ---
 

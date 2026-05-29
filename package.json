@@ -8,13 +8,16 @@
     "fetch:monthly": "node scripts/fetch-monthly.js",
     "fetch:quarterly": "node scripts/fetch-quarterly.js",
     "fetch:all": "node scripts/fetch-weekly.js && node scripts/fetch-monthly.js && node scripts/fetch-quarterly.js",
+    "fetch:margin-debt": "node scripts/fetch-margin-debt.js",
     "serve": "npx serve . --listen 3000",
-    "pulldata:then:serve:local": "npm run fetch:all -- --force && npx serve . --listen 3000"
+    "autoAPI:load-data:serve:local": "npm run fetch:all -- --force && npx serve . --listen 3000",
+    "manually:load-data:margin-debt": "npm install && npm run fetch:margin-debt"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
     "node-fetch": "^3.3.2",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "xlsx": "^0.18.5"
   },
   "engines": {
     "node": ">=18.0.0"
