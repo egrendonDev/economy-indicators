@@ -58,7 +58,7 @@ economy-indicators/
 │   ├── api-pull-weekly.js      # FRED API - yield curve, jobless claims, credit spreads
 │   ├── api-pull-monthly.js     # FRED API - macro, residential, auto, credit cards
 │   ├── api-pull-quarterly.js   # FRED API - macro, residential, commercial, auto, CC
-│   ├── html-scrape-multpl-shared.js  # HTML scrape - CAPE, dividend yield, P/S ratio
+│   ├── html-scrape-multpl-shared.js  # HTML scrape - CAPE, dividend yield, P/S, trailing P/E
 │   ├── file-drop-margin-debt.js # File drop - FINRA margin debt xlsx
 │   └── utils/
 │       ├── fred-client.js      # FRED API wrapper
@@ -81,10 +81,10 @@ economy-indicators/
 | `npm run api-pull:weekly` | Fetch weekly indicators - yield curve, jobless claims, credit spreads |
 | `npm run api-pull:monthly` | Fetch monthly indicators - macro, residential, auto, credit cards |
 | `npm run api-pull:quarterly` | Fetch quarterly indicators - macro, residential, commercial, auto, CC |
-| `npm run html-scrape:multpl` | HTML scrape multpl.com for CAPE, dividend yield, P/S ratio |
+| `npm run html-scrape:multpl` | HTML scrape multpl.com for CAPE, dividend yield, P/S, trailing P/E |
 | `npm run file-drop:margin-debt` | Parse FINRA xlsx from data/manual-file-dropzone/ into stock_market.json |
-| `npm run manually:load-data:margin-debt` | Install deps then run file-drop:margin-debt |
-| `npm run manually:load-data:multpl` | Install deps then run html-scrape:multpl |
+| `npm run manually:file-drop:margin-debt` | Run file-drop:margin-debt then start local server |
+| `npm run manually:html-scrape:multpl` | Run html-scrape:multpl then start local server |
 | `npm run autoAPI:load-data:serve:local` | Force fetch all API data then start local server at port 3000 |
 
 Add `-- --force` to any api-pull script to bypass the freshness check:
@@ -109,7 +109,7 @@ Margin debt measures how much investors have borrowed to buy stocks. The data co
 4. From the project root, run:
 
 ```bash
-npm run manually:load-data:margin-debt
+npm run manually:file-drop:margin-debt
 ```
 
 **What the script does:**
@@ -126,12 +126,12 @@ npm run manually:load-data:margin-debt
 - The `data/manual-file-dropzone/` folder is tracked in git via `.gitkeep`, but all `.xlsx` files inside it are gitignored
 - You only need to re-run this script when FINRA publishes a new monthly report (approximately the 3rd week of each month)
 
-### CAPE, Dividend Yield, Price/Sales - html-scrape
+### CAPE, Dividend Yield, Price/Sales, Trailing P/E - html-scrape
 
 These stock market valuation indicators are scraped from multpl.com.
 
 ```bash
-npm run manually:load-data:multpl
+npm run manually:html-scrape:multpl
 ```
 
 - Scrapes current value and 36-month history for each indicator
@@ -277,7 +277,7 @@ Every time GitHub Actions commits new JSON data, GitHub Pages automatically rebu
 |------|--------|--------|
 | Yield Curve, Jobless Claims, Credit Spreads | FRED API | Automatic (api-pull-weekly) |
 | Macro monthly (M2, Hours, Durable Goods) | FRED API | Automatic (api-pull-monthly) |
-| CAPE, Dividend Yield, Price/Sales | multpl.com | html-scrape-multpl-shared |
+| CAPE, Dividend Yield, Price/Sales, Trailing P/E | multpl.com | html-scrape-multpl-shared |
 | Margin Debt | FINRA xlsx | file-drop-margin-debt |
 | Housing Starts | FRED API | Automatic |
 | Mortgage / Commercial / Auto / CC Delinquency | FRED API | Automatic |

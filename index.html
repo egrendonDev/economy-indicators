@@ -366,9 +366,9 @@ const INDICATOR_META = {
   real_m2:                  { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   weekly_hours:             { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   durable_goods:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
-  loan_officer_survey:      { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
+  loan_officer_survey:      { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
   shiller_cape:             { frequency: 'Monthly',   access: 'html_scrape', importance: 'High' },
-  trailing_pe:              { frequency: 'Monthly',   access: 'scrape',      importance: 'High' },
+  trailing_pe:              { frequency: 'Monthly',   access: 'html_scrape', importance: 'High' },
   margin_debt:              { frequency: 'Monthly',   access: 'file_drop',   importance: 'Medium' },
   sp500_dividend_yield:     { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
   price_to_sales:           { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
@@ -392,28 +392,12 @@ const INDICATOR_META = {
 // 3-step instructions for each manually updated indicator
 
 const MANUAL_STEPS = {
-  loan_officer_survey: {
-    label: 'Senior Loan Officer Survey',
-    steps: [
-      'Go to federalreserve.gov/releases/sloos and open the latest quarterly survey report.',
-      'Find the "Changes in Credit Standards" table - note the net % of banks tightening C&I loan standards.',
-      'Open data/quarterly/macro.json, find loan_officer_survey, update latest.date (YYYY-MM-DD) and latest.value.'
-    ]
-  },
   shiller_cape: {
     label: 'Shiller CAPE Ratio',
     steps: [
       'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
       'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
       'The script scrapes <a href="https://www.multpl.com/shiller-pe/table/by-month" target="_blank">multpl.com/shiller-pe</a>, validates the data, and updates shiller_cape in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
-    ]
-  },
-  trailing_pe: {
-    label: 'Trailing P/E (S&P 500)',
-    steps: [
-      'Go to macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart.',
-      'The current P/E ratio appears in the chart header or latest row of the data table.',
-      'Open data/monthly/stock_market.json, find trailing_pe, update latest.date and latest.value.'
     ]
   },
   margin_debt: {
@@ -756,9 +740,9 @@ const ALL_INDICATORS = [
   { id:'real_m2',                  label:'Real M2 Money Supply',            type:'leading',  category:'macro',        unit:'billions USD',     url:'https://fred.stlouisfed.org/series/M2REAL' },
   { id:'weekly_hours',             label:'Avg Weekly Hours Worked',         type:'leading',  category:'macro',        unit:'hours',            url:'https://fred.stlouisfed.org/series/AWHAETP' },
   { id:'durable_goods',            label:'Durable Goods Orders',            type:'leading',  category:'macro',        unit:'millions USD',     url:'https://fred.stlouisfed.org/series/DGORDER' },
-  { id:'loan_officer_survey',      label:'Senior Loan Officer Survey',      type:'leading',  category:'macro',        unit:'% net tightening', url:'https://www.federalreserve.gov/releases/sloos/' },
+  { id:'loan_officer_survey',      label:'Senior Loan Officer Survey',      type:'leading',  category:'macro',        unit:'% net tightening', url:'https://fred.stlouisfed.org/series/DRTSCILM' },
   { id:'shiller_cape',             label:'Shiller CAPE Ratio',              type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/shiller-pe' },
-  { id:'trailing_pe',              label:'Trailing P/E (S&P 500)',          type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart' },
+  { id:'trailing_pe',              label:'Trailing P/E (S&P 500)',          type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/s-p-500-pe-ratio' },
   { id:'margin_debt',              label:'Margin Debt',                     type:'leading',  category:'stock_market', unit:'millions USD',     url:'https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics' },
   { id:'sp500_dividend_yield',     label:'S&P 500 Dividend Yield',          type:'leading',  category:'stock_market', unit:'%',               url:'https://www.multpl.com/s-p-500-dividend-yield' },
   { id:'price_to_sales',           label:'Price-to-Sales (S&P 500)',        type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/s-p-500-price-to-sales' },

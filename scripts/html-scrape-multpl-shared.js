@@ -8,6 +8,7 @@
  *   shiller_cape         - https://www.multpl.com/shiller-pe/table/by-month
  *   sp500_dividend_yield - https://www.multpl.com/s-p-500-dividend-yield/table/by-month
  *   price_to_sales       - https://www.multpl.com/s-p-500-price-to-sales/table/by-month
+ *   trailing_pe          - https://www.multpl.com/s-p-500-pe-ratio/table/by-month
  *
  * Usage:
  *   npm run html-scrape:multpl
@@ -86,6 +87,14 @@ const INDICATORS = [
     unit:  'ratio',
     min:   0.1,
     max:   20,
+  },
+  {
+    id:    'trailing_pe',
+    label: 'Trailing P/E (S&P 500)',
+    url:   'https://www.multpl.com/s-p-500-pe-ratio/table/by-month',
+    unit:  'ratio',
+    min:   5,
+    max:   200,
   },
 ];
 

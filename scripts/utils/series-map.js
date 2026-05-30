@@ -130,15 +130,15 @@ export const indicators = [
     id: 'loan_officer_survey',
     label: 'Senior Loan Officer Survey',
     description: 'Banks tightening lending standards; less credit flowing to economy',
-    source: 'Federal Reserve',
-    access: 'scrape',
+    source: 'FRED',
+    access: 'fred_api',
     type: 'leading',
     importance: 'medium',
     category: 'macro',
     frequency: 'quarterly',
-    fredSeries: null,
+    fredSeries: 'DRTSCILM',
     unit: '% net tightening',
-    url: 'https://www.federalreserve.gov/releases/sloos/'
+    url: 'https://fred.stlouisfed.org/series/DRTSCILM'
   },
 
   // ─── MONTHLY / STOCK MARKET ────────────────────────────────────────────────
@@ -160,15 +160,15 @@ export const indicators = [
     id: 'trailing_pe',
     label: 'Trailing P/E (S&P 500)',
     description: 'Current price vs earnings; elevated readings mean little margin of safety',
-    source: 'macrotrends.net',
-    access: 'scrape',
+    source: 'multpl.com',
+    access: 'html_scrape',
     type: 'leading',
     importance: 'high',
     category: 'stock_market',
     frequency: 'monthly',
     fredSeries: null,
     unit: 'ratio',
-    url: 'https://www.macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart'
+    url: 'https://www.multpl.com/s-p-500-pe-ratio'
   },
   {
     id: 'margin_debt',
