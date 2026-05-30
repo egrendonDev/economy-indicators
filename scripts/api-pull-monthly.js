@@ -97,8 +97,8 @@ async function fetchStockMarket(indicators) {
   section('Monthly / Stock Market');
   const results = [];
   for (const ind of indicators.filter(i => i.category === 'stock_market')) {
-    // All stock market monthly indicators are scrape-based
-    results.push(manualPlaceholder(ind, 'data/monthly/stock_market.json'));
+    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
+    else results.push(manualPlaceholder(ind, 'data/monthly/stock_market.json'));
   }
   return results;
 }

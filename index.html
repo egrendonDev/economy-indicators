@@ -252,7 +252,7 @@
 
   <footer>
     Data sources: <a href="https://fred.stlouisfed.org" target="_blank">FRED / Federal Reserve Bank of St. Louis</a>,
-    Federal Reserve, HUD, MBA, FHFA, FINRA, multpl.com, longtermtrends.net, macrotrends.net.
+    Federal Reserve, HUD, MBA, FHFA, FINRA, multpl.com, macrotrends.net.
     This dashboard is for informational purposes only and does not constitute financial advice.
   </footer>
 </div>
@@ -287,7 +287,6 @@ const THRESHOLDS = {
   durable_goods:            { warn: 250000,danger: 220000,direction: 'lower',    avg: 'varies' },
   loan_officer_survey:      { warn: 20,    danger: 40,    direction: 'higher',   avg: '~0%' },
   shiller_cape:             { warn: 25,    danger: 35,    direction: 'higher',   avg: '17' },
-  buffett_indicator:        { warn: 120,   danger: 150,   direction: 'higher',   avg: '100%' },
   trailing_pe:              { warn: 22,    danger: 28,    direction: 'higher',   avg: '18' },
   margin_debt:              { warn: null,  danger: null,  direction: 'higher',   avg: 'trend' },
   sp500_dividend_yield:     { warn: 1.8,   danger: 1.4,   direction: 'lower',    avg: '2.0%' },
@@ -319,7 +318,6 @@ const MESSAGES = {
   durable_goods:            { green: 'Business investment in equipment holding up', orange: 'Durable goods orders softening', red: 'Business capex pulling back - companies losing confidence' },
   loan_officer_survey:      { green: 'Banks lending freely - credit flowing normally', orange: 'Banks tightening standards - credit becoming selective', red: 'Significant tightening - credit crunch risk elevated' },
   shiller_cape:             { green: 'Valuations in reasonable range historically', orange: 'Market moderately overvalued vs history', red: 'Extreme overvaluation - large drawdown risk if earnings disappoint' },
-  buffett_indicator:        { green: 'Market cap in line with economic output', orange: 'Market running ahead of the economy', red: 'Market significantly detached from economic reality' },
   trailing_pe:              { green: 'Earnings supporting current prices reasonably', orange: 'Paying a premium - less margin of safety', red: 'Very high premium - vulnerable to any earnings miss' },
   margin_debt:              { green: 'Margin debt at normal levels', orange: 'Elevated borrowing in markets', red: 'Extreme margin debt - forced selling risk if market dips' },
   sp500_dividend_yield:     { green: 'Decent income floor under stock prices', orange: 'Minimal income buffer - market priced for perfection', red: 'Near-zero yield - stocks offer almost no income cushion' },
@@ -370,7 +368,6 @@ const INDICATOR_META = {
   durable_goods:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   loan_officer_survey:      { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
   shiller_cape:             { frequency: 'Monthly',   access: 'html_scrape', importance: 'High' },
-  buffett_indicator:        { frequency: 'Monthly',   access: 'scrape',      importance: 'High' },
   trailing_pe:              { frequency: 'Monthly',   access: 'scrape',      importance: 'High' },
   margin_debt:              { frequency: 'Monthly',   access: 'file_drop',   importance: 'Medium' },
   sp500_dividend_yield:     { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
@@ -409,14 +406,6 @@ const MANUAL_STEPS = {
       'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
       'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
       'The script scrapes <a href="https://www.multpl.com/shiller-pe/table/by-month" target="_blank">multpl.com/shiller-pe</a>, validates the data, and updates shiller_cape in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
-    ]
-  },
-  buffett_indicator: {
-    label: 'Buffett Indicator',
-    steps: [
-      'Go to longtermtrends.net/market-cap-to-gdp-the-buffett-indicator.',
-      'Find the current ratio value shown in the chart or data table.',
-      'Open data/monthly/stock_market.json, find buffett_indicator, update latest.date and latest.value.'
     ]
   },
   trailing_pe: {
@@ -515,7 +504,6 @@ const TOOLTIPS = {
   durable_goods:            'Measures new orders for long-lasting manufactured goods like machinery and equipment. When businesses stop investing in equipment, they are signaling lower demand expectations ahead - a leading indicator of economic slowdown 3-6 months out.',
   loan_officer_survey:      'Federal Reserve survey asking bank officers if they are tightening lending standards. When banks tighten, fewer businesses and consumers can access credit. Tightening typically slows economic activity 2-4 quarters later as credit becomes harder to obtain.',
   shiller_cape:             'Price-to-earnings ratio using 10 years of inflation-adjusted earnings to smooth economic cycles. High values mean investors are paying a large premium relative to long-run earnings capacity. Historically, CAPE above 30 has preceded significant multi-year market corrections.',
-  buffett_indicator:        'Total U.S. stock market capitalization divided by GDP. When market cap far exceeds economic output, stocks are priced well beyond what the economy can support. Warren Buffett described this as the single best measure of where valuations stand at any given moment.',
   trailing_pe:              'Current S&P 500 price divided by the past 12 months of actual reported earnings. A high P/E means investors pay a large premium per dollar of real earnings, leaving little margin of safety when earnings disappoint or economic conditions soften.',
   margin_debt:              'Total money borrowed from brokers to buy stocks on leverage. Rising margin debt amplifies gains on the way up but creates forced selling on the way down - when prices drop, margin calls trigger cascading sell-offs that can accelerate market declines rapidly.',
   sp500_dividend_yield:     'Annual dividend income as a percentage of the S&P 500 index price. Very low yields mean stocks provide almost no income cushion. Historically, yields below 1.5% have coincided with overvalued markets that are highly vulnerable to sharp price corrections.',
@@ -770,7 +758,6 @@ const ALL_INDICATORS = [
   { id:'durable_goods',            label:'Durable Goods Orders',            type:'leading',  category:'macro',        unit:'millions USD',     url:'https://fred.stlouisfed.org/series/DGORDER' },
   { id:'loan_officer_survey',      label:'Senior Loan Officer Survey',      type:'leading',  category:'macro',        unit:'% net tightening', url:'https://www.federalreserve.gov/releases/sloos/' },
   { id:'shiller_cape',             label:'Shiller CAPE Ratio',              type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/shiller-pe' },
-  { id:'buffett_indicator',        label:'Buffett Indicator',               type:'leading',  category:'stock_market', unit:'%',               url:'https://www.longtermtrends.net/market-cap-to-gdp-the-buffett-indicator/' },
   { id:'trailing_pe',              label:'Trailing P/E (S&P 500)',          type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.macrotrends.net/2577/sp-500-pe-ratio-price-to-earnings-chart' },
   { id:'margin_debt',              label:'Margin Debt',                     type:'leading',  category:'stock_market', unit:'millions USD',     url:'https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics' },
   { id:'sp500_dividend_yield',     label:'S&P 500 Dividend Yield',          type:'leading',  category:'stock_market', unit:'%',               url:'https://www.multpl.com/s-p-500-dividend-yield' },

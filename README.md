@@ -44,7 +44,7 @@ economy-indicators/
 │   │   └── macro.json          # Yield curve, jobless claims, credit spreads
 │   ├── monthly/
 │   │   ├── macro.json          # ISM PMI, M2, weekly hours, durable goods
-│   │   ├── stock_market.json   # CAPE, Buffett indicator, P/E, P/S, Q ratio
+│   │   ├── stock_market.json   # CAPE, P/E, P/S, margin debt, Tobin Q
 │   │   ├── residential.json    # Housing starts, FHA delinquency
 │   │   ├── auto.json           # Vehicle sales
 │   │   └── credit_cards.json   # Revolving credit
@@ -63,7 +63,8 @@ economy-indicators/
 │   └── utils/
 │       ├── fred-client.js      # FRED API wrapper
 │       ├── series-map.js       # Master indicator definitions
-│       └── should-refresh.js   # Timestamp-based refresh logic
+│       ├── should-refresh.js   # Timestamp-based refresh logic
+│       └── html-scrape-utils.js # Shared helpers for html-scrape scripts
 └── .github/
     └── workflows/
         └── refresh.yml         # Daily data refresh workflow

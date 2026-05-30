@@ -17,21 +17,6 @@
       "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.multpl.com/shiller-pe"
     },
     {
-      "id": "buffett_indicator",
-      "label": "Buffett Indicator",
-      "description": "Market cap vs GDP; extreme readings signal market detached from economy",
-      "unit": "%",
-      "source": "longtermtrends.net",
-      "url": "https://www.longtermtrends.net/market-cap-to-gdp-the-buffett-indicator/",
-      "type": "leading",
-      "importance": "high",
-      "category": "stock_market",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.longtermtrends.net/market-cap-to-gdp-the-buffett-indicator/"
-    },
-    {
       "id": "trailing_pe",
       "label": "Trailing P/E (S&P 500)",
       "description": "Current price vs earnings; elevated readings mean little margin of safety",

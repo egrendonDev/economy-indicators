@@ -157,20 +157,6 @@ export const indicators = [
     url: 'https://www.multpl.com/shiller-pe'
   },
   {
-    id: 'buffett_indicator',
-    label: 'Buffett Indicator',
-    description: 'Market cap vs GDP; extreme readings signal market detached from economy',
-    source: 'longtermtrends.net',
-    access: 'scrape',
-    type: 'leading',
-    importance: 'high',
-    category: 'stock_market',
-    frequency: 'monthly',
-    fredSeries: null,
-    unit: '%',
-    url: 'https://www.longtermtrends.net/market-cap-to-gdp-the-buffett-indicator/'
-  },
-  {
     id: 'trailing_pe',
     label: 'Trailing P/E (S&P 500)',
     description: 'Current price vs earnings; elevated readings mean little margin of safety',
