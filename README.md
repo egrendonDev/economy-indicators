@@ -6,12 +6,26 @@ A self-hosted dashboard that tracks leading and lagging economic indicators usin
 
 ## How It Works
 
-1. **GitHub Actions** runs a daily cron job (7am UTC) that calls Node.js fetch scripts
-2. Fetch scripts pull data from the FRED API and write JSON files to the `data/` folder
+1. **GitHub Actions** runs a daily cron job (7am UTC) that calls Node.js data scripts
+2. Scripts pull data from the FRED API and write JSON files to the `data/` folder
 3. GitHub Actions commits and pushes updated JSON to the repo
 4. **GitHub Pages** serves `index.html`, which reads the JSON files at load time and renders the dashboard
 
 No backend, no database, no server costs. Everything runs on free-tier GitHub infrastructure.
+
+---
+
+## Script Naming Conventions
+
+Scripts are prefixed to clearly identify how they source their data:
+
+| Prefix | Meaning | Example |
+|--------|---------|---------|
+| `api-pull-` | Fetches data from a remote API (FRED) | `api-pull-weekly.js` |
+| `html-scrape-` | Parses data from a public HTML page | `html-scrape-multpl-shared.js` |
+| `file-drop-` | Processes a file manually placed in `data/manual-file-dropzone/` | `file-drop-margin-debt.js` |
+
+All scripts are idempotent - re-running back to back is safe and non-destructive. Each script has a duplicate/stale date guard that skips writing if data has not changed.
 
 ---
 
@@ -25,6 +39,7 @@ economy-indicators/
 ├── .gitignore
 ├── INDICATORS.md               # Full indicator reference list
 ├── data/
+│   ├── manual-file-dropzone/   # Drop source files here for file-drop scripts
 │   ├── weekly/
 │   │   └── macro.json          # Yield curve, jobless claims, credit spreads
 │   ├── monthly/
@@ -40,9 +55,11 @@ economy-indicators/
 │       ├── auto.json           # Auto loan delinquency
 │       └── credit_cards.json   # Credit card delinquency, charge-offs
 ├── scripts/
-│   ├── fetch-weekly.js
-│   ├── fetch-monthly.js
-│   ├── fetch-quarterly.js
+│   ├── api-pull-weekly.js      # FRED API - yield curve, jobless claims, credit spreads
+│   ├── api-pull-monthly.js     # FRED API - macro, residential, auto, credit cards
+│   ├── api-pull-quarterly.js   # FRED API - macro, residential, commercial, auto, CC
+│   ├── html-scrape-multpl-shared.js  # HTML scrape - CAPE, dividend yield, P/S ratio
+│   ├── file-drop-margin-debt.js # File drop - FINRA margin debt xlsx
 │   └── utils/
 │       ├── fred-client.js      # FRED API wrapper
 │       ├── series-map.js       # Master indicator definitions
@@ -59,26 +76,27 @@ economy-indicators/
 | Script | What it does |
 |--------|-------------|
 | `npm run serve` | Start local server only (no fetch) at http://localhost:3000 |
-| `npm run fetch:all` | Run all three fetch scripts in sequence (respects freshness check) |
-| `npm run fetch:weekly` | Fetch weekly indicators - yield curve, jobless claims, credit spreads |
-| `npm run fetch:monthly` | Fetch monthly indicators - macro, stock market, residential, auto, credit cards |
-| `npm run fetch:quarterly` | Fetch quarterly indicators - macro, residential, commercial, auto, credit cards |
-| `npm run manually:load-data:margin-debt` | Install deps and parse FINRA xlsx into stock_market.json (see below) |
-| `npm run pulldata:then:serve:local` | Force fetch all data then start local server at port 3000 |
+| `npm run api-pull:all` | Run all three FRED API scripts in sequence (respects freshness check) |
+| `npm run api-pull:weekly` | Fetch weekly indicators - yield curve, jobless claims, credit spreads |
+| `npm run api-pull:monthly` | Fetch monthly indicators - macro, residential, auto, credit cards |
+| `npm run api-pull:quarterly` | Fetch quarterly indicators - macro, residential, commercial, auto, CC |
+| `npm run html-scrape:multpl` | HTML scrape multpl.com for CAPE, dividend yield, P/S ratio |
+| `npm run file-drop:margin-debt` | Parse FINRA xlsx from data/manual-file-dropzone/ into stock_market.json |
+| `npm run manually:load-data:margin-debt` | Install deps then run file-drop:margin-debt |
+| `npm run manually:load-data:multpl` | Install deps then run html-scrape:multpl |
+| `npm run autoAPI:load-data:serve:local` | Force fetch all API data then start local server at port 3000 |
 
-Add `-- --force` to any fetch script to bypass the freshness check and always pull new data:
+Add `-- --force` to any api-pull script to bypass the freshness check:
 ```bash
-npm run fetch:all -- --force
-npm run fetch:weekly -- --force
+npm run api-pull:all -- --force
+npm run api-pull:weekly -- --force
 ```
 
 ---
 
 ## Manual Data Scripts
 
-Some indicators require a manual file download before a script can process them. These are indicators where the source does not offer a free API.
-
-### Margin Debt (FINRA)
+### Margin Debt (FINRA) - file-drop
 
 Margin debt measures how much investors have borrowed to buy stocks. The data comes from FINRA and requires a one-time manual download each time you want to update.
 
@@ -99,13 +117,25 @@ npm run manually:load-data:margin-debt
 - If multiple unprocessed files exist, it uses the most recently modified one
 - Extracts the last 36 months of debit balance data from the "Customer Margin Balances" sheet
 - Writes the data into `data/monthly/stock_market.json` under the `margin_debt` indicator
-- Renames the source file to `{originalName}-[PROCESSED]-{timestamp}.xlsx` so you can tell at a glance which files have already been run
+- Renames the source file to `{originalName}-[PROCESSED]-{timestamp}.xlsx`
+- Safe to re-run: duplicate/stale date guard prevents overwriting good data
 
 **Notes:**
 
-- The `data/manual-file-dropzone/` folder is tracked in git via `.gitkeep`, but all `.xlsx` files inside it are gitignored - they will not be committed to the repo
+- The `data/manual-file-dropzone/` folder is tracked in git via `.gitkeep`, but all `.xlsx` files inside it are gitignored
 - You only need to re-run this script when FINRA publishes a new monthly report (approximately the 3rd week of each month)
-- You do not need to delete the processed file before adding a new one - the script skips any file with `[PROCESSED]` in the name
+
+### CAPE, Dividend Yield, Price/Sales - html-scrape
+
+These stock market valuation indicators are scraped from multpl.com.
+
+```bash
+npm run manually:load-data:multpl
+```
+
+- Scrapes current value and 36-month history for each indicator
+- Validates data types and expected value ranges before writing
+- Safe to re-run: duplicate/stale date guard prevents redundant writes
 
 ---
 
@@ -145,26 +175,26 @@ FRED_API_KEY=your_actual_key_here
 
 ### 5. Run the fetch scripts
 
-Run all three:
+Run all FRED API scripts:
 
 ```bash
-npm run fetch:all
+npm run api-pull:all
 ```
 
 Or run individually:
 
 ```bash
-npm run fetch:weekly
-npm run fetch:monthly
-npm run fetch:quarterly
+npm run api-pull:weekly
+npm run api-pull:monthly
+npm run api-pull:quarterly
 ```
 
 Force a refresh even if data is still fresh:
 
 ```bash
-npm run fetch:weekly -- --force
-npm run fetch:monthly -- --force
-npm run fetch:quarterly -- --force
+npm run api-pull:weekly -- --force
+npm run api-pull:monthly -- --force
+npm run api-pull:quarterly -- --force
 ```
 
 ### 6. Open the dashboard locally
@@ -244,20 +274,19 @@ Every time GitHub Actions commits new JSON data, GitHub Pages automatically rebu
 
 | Type | Source | Access |
 |------|--------|--------|
-| Yield Curve, Jobless Claims, Credit Spreads | FRED API | Automatic |
-| Macro monthly (M2, Hours, Durable Goods) | FRED API | Automatic |
-| Stock market ratios (CAPE, Buffett, P/E, etc.) | Web scrape | Manual update required |
+| Yield Curve, Jobless Claims, Credit Spreads | FRED API | Automatic (api-pull-weekly) |
+| Macro monthly (M2, Hours, Durable Goods) | FRED API | Automatic (api-pull-monthly) |
+| CAPE, Dividend Yield, Price/Sales | multpl.com | html-scrape-multpl-shared |
+| Margin Debt | FINRA xlsx | file-drop-margin-debt |
 | Housing Starts | FRED API | Automatic |
 | Mortgage / Commercial / Auto / CC Delinquency | FRED API | Automatic |
 | FHA Delinquency, Loan Officer Survey | HUD / Federal Reserve | Manual update required |
-
-Indicators marked **manual update required** display a "Pending" status with a source link until data is entered. See `INDICATORS.md` for the full list.
 
 ---
 
 ## Smart Refresh Logic
 
-Fetch scripts check the `last_updated` timestamp in existing JSON before hitting the API. If data is still fresh, the script exits early - preventing unnecessary API calls on daily cron runs:
+API scripts check the `last_updated` timestamp in existing JSON before hitting the API. If data is still fresh, the script exits early:
 
 - Weekly data - refreshes if older than 7 days
 - Monthly data - refreshes if older than 28 days
@@ -275,23 +304,6 @@ Use `--force` to override.
 - **Sparklines** - Inline chart of recent history per indicator
 - **Healthy average** - Historical normal shown next to each current value
 - **Plain-English explanations** - What each status means in plain language
-
----
-
-## Screenshots
-
-> Add screenshots to the `docs/screenshots/` folder and they will appear here.
-
-**To capture the Actions tab for documentation:**
-1. Go to `https://github.com/egrendonDev/economy-indicators/actions`
-2. Click **Data Refresh** in the left sidebar
-3. Screenshot the full page showing the workflow run list and **Run workflow** button
-4. Save as `docs/screenshots/actions-tab.png`
-
-```markdown
-![Actions Tab](docs/screenshots/actions-tab.png)
-![Dashboard](docs/screenshots/dashboard.png)
-```
 
 ---
 

@@ -369,12 +369,12 @@ const INDICATOR_META = {
   weekly_hours:             { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   durable_goods:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   loan_officer_survey:      { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
-  shiller_cape:             { frequency: 'Monthly',   access: 'scrape',   importance: 'High' },
-  buffett_indicator:        { frequency: 'Monthly',   access: 'scrape',   importance: 'High' },
-  trailing_pe:              { frequency: 'Monthly',   access: 'scrape',   importance: 'High' },
-  margin_debt:              { frequency: 'Monthly',   access: 'scrape',   importance: 'Medium' },
-  sp500_dividend_yield:     { frequency: 'Monthly',   access: 'scrape',   importance: 'Medium' },
-  price_to_sales:           { frequency: 'Monthly',   access: 'scrape',   importance: 'Medium' },
+  shiller_cape:             { frequency: 'Monthly',   access: 'html_scrape', importance: 'High' },
+  buffett_indicator:        { frequency: 'Monthly',   access: 'scrape',      importance: 'High' },
+  trailing_pe:              { frequency: 'Monthly',   access: 'scrape',      importance: 'High' },
+  margin_debt:              { frequency: 'Monthly',   access: 'file_drop',   importance: 'Medium' },
+  sp500_dividend_yield:     { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
+  price_to_sales:           { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
   tobins_q:                 { frequency: 'Monthly',   access: 'scrape',   importance: 'Low' },
   housing_starts:           { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   vehicle_sales:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
@@ -406,9 +406,9 @@ const MANUAL_STEPS = {
   shiller_cape: {
     label: 'Shiller CAPE Ratio',
     steps: [
-      'Go to multpl.com/shiller-pe.',
-      'The current CAPE ratio is displayed prominently at the top of the page.',
-      'Open data/monthly/stock_market.json, find shiller_cape, update latest.date and latest.value.'
+      'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
+      'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
+      'The script scrapes <a href="https://www.multpl.com/shiller-pe/table/by-month" target="_blank">multpl.com/shiller-pe</a>, validates the data, and updates shiller_cape in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
     ]
   },
   buffett_indicator: {
@@ -431,24 +431,24 @@ const MANUAL_STEPS = {
     label: 'Margin Debt',
     steps: [
       'Download the Excel file from <a href="https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics" target="_blank">finra.org - Margin Statistics</a> (look for "Monthly Margin Statistics" - filename may vary). Drop it into the <a href="https://github.com/egrendonDev/economy-indicators/tree/main/data/manual-file-dropzone" target="_blank">data/manual-file-dropzone/</a> folder in the project.',
-      'From the project root run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:margin-debt</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/fetch-margin-debt.js" target="_blank">fetch-margin-debt.js script</a> for details.',
-      'The script auto-detects the xlsx file, extracts the last 36 months of debit balance data, updates data/monthly/stock_market.json, and renames the file to mark it as processed. No manual JSON editing needed.'
+      'From the project root run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:margin-debt</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/file-drop-margin-debt.js" target="_blank">file-drop-margin-debt.js script</a> for details.',
+      'The script auto-detects the xlsx file, extracts the last 36 months of debit balance data, updates data/monthly/stock_market.json, and renames the file to mark it as processed. Safe to re-run - duplicate data is ignored.'
     ]
   },
   sp500_dividend_yield: {
     label: 'S&P 500 Dividend Yield',
     steps: [
-      'Go to multpl.com/s-p-500-dividend-yield.',
-      'The current dividend yield % is shown prominently at the top of the page.',
-      'Open data/monthly/stock_market.json, find sp500_dividend_yield, update latest.date and latest.value.'
+      'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
+      'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
+      'The script scrapes <a href="https://www.multpl.com/s-p-500-dividend-yield/table/by-month" target="_blank">multpl.com/s-p-500-dividend-yield</a>, validates the data, and updates sp500_dividend_yield in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
     ]
   },
   price_to_sales: {
     label: 'Price-to-Sales (S&P 500)',
     steps: [
-      'Go to multpl.com/s-p-500-price-to-sales.',
-      'The current P/S ratio is shown at the top of the page.',
-      'Open data/monthly/stock_market.json, find price_to_sales, update latest.date and latest.value.'
+      'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
+      'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
+      'The script scrapes <a href="https://www.multpl.com/s-p-500-price-to-sales/table/by-month" target="_blank">multpl.com/s-p-500-price-to-sales</a>, validates the data, and updates price_to_sales in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
     ]
   },
   tobins_q: {

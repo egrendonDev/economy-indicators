@@ -3,7 +3,8 @@ name: Data Refresh
 on:
   schedule:
     # Runs daily at 7am UTC
-    # Each fetch script internally checks if enough time has passed before running
+    # Each script internally checks if enough time has passed before running
+    # html-scrape scripts also enforce a 1-hour cooldown to avoid hammering sites
     - cron: '0 7 * * *'
   workflow_dispatch:
     inputs:
@@ -36,40 +37,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run weekly fetch (if due)
+      - name: Run api-pull-weekly (if due)
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
-            npm run fetch:weekly -- --force
+            npm run api-pull:weekly -- --force
           else
-            npm run fetch:weekly
+            npm run api-pull:weekly
           fi
 
-      - name: Run monthly fetch (if due)
+      - name: Run api-pull-monthly (if due)
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
-            npm run fetch:monthly -- --force
+            npm run api-pull:monthly -- --force
           else
-            npm run fetch:monthly
+            npm run api-pull:monthly
           fi
 
-      - name: Run quarterly fetch (if due)
+      - name: Run api-pull-quarterly (if due)
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
-            npm run fetch:quarterly -- --force
+            npm run api-pull:quarterly -- --force
           else
-            npm run fetch:quarterly
+            npm run api-pull:quarterly
           fi
 
-      - name: Commit and push updated data
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          git diff --staged --quiet || git commit -m "chore: data refresh [$(date -u '+%Y-%m-%d')]"
-          git push
+      - name: Run html-scrape-multpl-shared (1h cooldown enforced in script)
+        # No FRED_API_KEY needed - scrapes public HTML pages only.
+        # The script enforces a 1-hour cooldown internally and exits cleanly
+        # if the cooldown has not been met (

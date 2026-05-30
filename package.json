@@ -4,14 +4,16 @@
   "description": "Economic downturn indicator dashboard - fetches data from FRED API and other sources",
   "type": "module",
   "scripts": {
-    "fetch:weekly": "node scripts/fetch-weekly.js",
-    "fetch:monthly": "node scripts/fetch-monthly.js",
-    "fetch:quarterly": "node scripts/fetch-quarterly.js",
-    "fetch:all": "node scripts/fetch-weekly.js && node scripts/fetch-monthly.js && node scripts/fetch-quarterly.js",
-    "fetch:margin-debt": "node scripts/fetch-margin-debt.js",
+    "api-pull:weekly": "node scripts/api-pull-weekly.js",
+    "api-pull:monthly": "node scripts/api-pull-monthly.js",
+    "api-pull:quarterly": "node scripts/api-pull-quarterly.js",
+    "api-pull:all": "node scripts/api-pull-weekly.js && node scripts/api-pull-monthly.js && node scripts/api-pull-quarterly.js",
+    "file-drop:margin-debt": "node scripts/file-drop-margin-debt.js",
+    "html-scrape:multpl": "node scripts/html-scrape-multpl-shared.js",
     "serve": "npx serve . --listen 3000",
-    "autoAPI:load-data:serve:local": "npm run fetch:all -- --force && npx serve . --listen 3000",
-    "manually:load-data:margin-debt": "npm install && npm run fetch:margin-debt"
+    "autoAPI:load-data:serve:local": "npm run api-pull:all -- --force && npx serve . --listen 3000",
+    "manually:load-data:margin-debt": "npm install && npm run file-drop:margin-debt",
+    "manually:load-data:multpl": "npm install && npm run html-scrape:multpl"
   },
   "dependencies": {
     "cheerio": "^1.0.0",

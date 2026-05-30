@@ -6,7 +6,12 @@
  *   label       - human-readable name
  *   description - what the data signals
  *   source      - data source name
- *   access      - 'fred_api' | 'scrape' | 'pdf'
+ *   access      - 'fred_api' | 'html_scrape' | 'file_drop' | 'scrape' | 'pdf'
+ *                 fred_api    = pulled by api-pull-*.js scripts via FRED API
+ *                 html_scrape = pulled by html-scrape-*.js scripts from public HTML pages
+ *                 file_drop   = processed by file-drop-*.js scripts from manually dropped files
+ *                 scrape      = legacy label, requires fully manual update
+ *                 pdf         = requires manual PDF download and data entry
  *   type        - 'leading' | 'lagging'
  *   importance  - 'critical' | 'high' | 'medium' | 'low'
  *   category    - 'macro' | 'stock_market' | 'residential' | 'commercial' | 'auto' | 'credit_cards'
@@ -142,7 +147,7 @@ export const indicators = [
     label: 'Shiller CAPE Ratio',
     description: '10-year inflation-adjusted P/E; high values signal large downside risk',
     source: 'multpl.com',
-    access: 'scrape',
+    access: 'html_scrape',
     type: 'leading',
     importance: 'high',
     category: 'stock_market',
@@ -184,7 +189,7 @@ export const indicators = [
     label: 'Margin Debt',
     description: 'Borrowed money in market; sharp drop after peak signals forced selling',
     source: 'FINRA',
-    access: 'scrape',
+    access: 'file_drop',
     type: 'leading',
     importance: 'medium',
     category: 'stock_market',
@@ -198,7 +203,7 @@ export const indicators = [
     label: 'S&P 500 Dividend Yield',
     description: 'Very low yield means premium prices paid with minimal income cushion',
     source: 'multpl.com',
-    access: 'scrape',
+    access: 'html_scrape',
     type: 'leading',
     importance: 'medium',
     category: 'stock_market',
@@ -212,7 +217,7 @@ export const indicators = [
     label: 'Price-to-Sales (S&P 500)',
     description: 'Price vs revenue; harder to manipulate than earnings-based metrics',
     source: 'multpl.com',
-    access: 'scrape',
+    access: 'html_scrape',
     type: 'leading',
     importance: 'medium',
     category: 'stock_market',
