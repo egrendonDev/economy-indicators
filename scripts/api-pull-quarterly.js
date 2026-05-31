@@ -17,6 +17,15 @@ const banner  = (msg, color) => { const l = '─'.repeat(52); console.log(`\n${c
 const API_KEY = process.env.FRED_API_KEY;
 if (!API_KEY) {
   fail('FRED_API_KEY environment variable is not set.');
+  console.error('');
+  console.error('  To fix this:');
+  console.error('  1. Get a free API key at: https://fred.stlouisfed.org/docs/api/api_key.html');
+  console.error('     (click "Request API Key" - takes ~30 seconds, free account required)');
+  console.error('  2. Copy .env.example to .env in the project root:');
+  console.error('       cp .env.example .env');
+  console.error('  3. Open .env and replace "your_fred_api_key_here" with your actual key');
+  console.error('  4. Re-run this script');
+  console.error('');
   process.exit(1);
 }
 
