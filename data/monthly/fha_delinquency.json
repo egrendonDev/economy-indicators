@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-31T06:17:42.230Z",
+  "last_updated": "2026-05-31T17:09:50.151Z",
   "indicators": [
     {
       "id": "fha_delinquency",
@@ -69,7 +69,8 @@
           "value": 6.63
         }
       ],
-      "note": "Parsed from FHALPT_Mar2026.pdf on 2026-05-31T06:17:42.230Z. Metric: Non-SA Serious Delinquency Rate (Table 1)."
+      "note": "Parsed from FHALPT_Mar2026.pdf on 2026-05-31T06:17:42.230Z. Metric: Non-SA Serious Delinquency Rate (Table 1).",
+      "manual_update_required": true
     }
   ]
 }

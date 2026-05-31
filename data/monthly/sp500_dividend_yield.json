@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-31T11:10:21.064Z",
+  "last_updated": "2026-05-31T17:09:50.151Z",
   "indicators": [
     {
       "id": "sp500_dividend_yield",
@@ -161,7 +161,7 @@
           "value": 1.15
         }
       ],
-      "manual_update_required": false,
+      "manual_update_required": true,
       "note": "Scraped from multpl.com on 2026-05-31T11:10:21.064Z"
     }
   ]

@@ -337,19 +337,33 @@ export const indicators = [
   {
     id: 'auto_delinquency',
     label: 'Auto Loan Delinquency Rate',
-    description: 'Share of auto loans past due; consumer financial stress signal',
+    description: 'Share of other consumer loans (primarily auto) past due; consumer financial stress signal',
     source: 'FRED',
     access: 'fred_api',
     type: 'lagging',
     importance: 'medium',
     category: 'auto',
     frequency: 'quarterly',
-    fredSeries: 'DRCCLACBS',
+    fredSeries: 'DROCLACBS',
     unit: '%',
-    url: 'https://fred.stlouisfed.org/series/DRCCLACBS'
+    url: 'https://fred.stlouisfed.org/series/DROCLACBS'
   },
 
   // ─── MONTHLY / CREDIT CARDS ────────────────────────────────────────────────
+  {
+    id: 'cc_apr',
+    label: 'Credit Card Average APR',
+    description: 'Average interest rate on all credit card accounts; elevated rates squeeze consumer budgets',
+    source: 'FRED',
+    access: 'fred_api',
+    type: 'leading',
+    importance: 'medium',
+    category: 'credit_cards',
+    frequency: 'monthly',
+    fredSeries: 'TERMCBCCALLNS',
+    unit: '%',
+    url: 'https://fred.stlouisfed.org/series/TERMCBCCALLNS'
+  },
   {
     id: 'revolving_credit',
     label: 'Revolving Credit Outstanding',

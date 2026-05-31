@@ -80,7 +80,8 @@
     .risk-item.critical{ background: var(--red-bg);    border: 1px solid var(--red);    color: var(--red); }
 
     /* ---- Summary row ---- */
-    .summary-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+    .summary-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .summary-row-clusters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
     .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
     .summary-card .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
     .summary-card .value { font-size: 20px; font-weight: 700; }
@@ -148,12 +149,17 @@
     #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 8px; width: 280px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
 
     /* ---- View Details badge ---- */
-    .badge-view-details { cursor: pointer; color: var(--blue); border-color: var(--blue); background: #0d1f38; }
-    .badge-view-details:hover { background: #1a3050; }
+    .badge-view-details { cursor: pointer; color: var(--blue); border-color: var(--blue); background: #0d1f38; font-weight: 600; transition: background 0.15s, box-shadow 0.15s; }
+    .badge-view-details:hover { background: #1a3050; box-shadow: 0 0 0 2px rgba(88,166,255,0.4); }
 
     /* ---- Guide card flash animation ---- */
-    @keyframes guide-flash { 0%,100%{background:var(--surface)} 30%{background:#1a2f4a} }
-    .guide-flash { animation: guide-flash 0.9s ease; }
+    @keyframes guide-flash {
+      0%   { background: var(--surface); border-color: var(--border);  box-shadow: none; }
+      10%  { background: #0d2444;        border-color: var(--blue);    box-shadow: 0 0 0 3px rgba(88,166,255,0.35), 0 0 24px rgba(88,166,255,0.2); }
+      60%  { background: #0d2444;        border-color: var(--blue);    box-shadow: 0 0 0 3px rgba(88,166,255,0.35), 0 0 24px rgba(88,166,255,0.2); }
+      100% { background: var(--surface); border-color: var(--border);  box-shadow: none; }
+    }
+    .guide-flash { animation: guide-flash 2.4s ease; }
 
     /* ---- Footer ---- */
     footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 16px 0; color: var(--muted); font-size: 11px; text-align: center; }
@@ -225,19 +231,21 @@
       <i class="ti ti-chevron-down chevron" style="margin-left:auto"></i>
     </button>
     <div class="panel-body">
-      <p style="font-size:12px;color:var(--muted);margin-top:12px;">Risk score: Watch indicators = 1 pt each, Warning indicators = 2 pts each.</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px;">Cluster-weighted risk score: each of 5 economic clusters (Monetary & Credit 30%, Labor 25%, Valuations 20%, Real Economy 15%, Debt Stress 10%) is scored 0-100% by its own indicators, then combined. This prevents correlated lagging indicators from dominating the score.</p>
       <div class="risk-grid">
-        <div class="risk-item normal">  <strong>Normal</strong>       Score 0-3. Economy looks healthy. No meaningful stress signals.</div>
-        <div class="risk-item mild">    <strong>Mild Concern</strong>  Score 4-7. A few indicators flashing. Worth watching but not alarming.</div>
-        <div class="risk-item elevated"><strong>Elevated</strong>      Score 8-13. Multiple signals active. Conditions are tightening.</div>
-        <div class="risk-item high">    <strong>High Risk</strong>     Score 14-19. Broad stress across categories. Downturn likely developing.</div>
-        <div class="risk-item critical"><strong>Critical</strong>       Score 20+. Widespread failure signals. Severe downturn underway or imminent.</div>
+        <div class="risk-item normal">  <strong>Normal</strong>       Score 0-13%. Economy looks healthy. No meaningful stress signals.</div>
+        <div class="risk-item mild">    <strong>Mild Concern</strong>  Score 14-28%. A few clusters showing pressure. Worth monitoring.</div>
+        <div class="risk-item elevated"><strong>Elevated</strong>      Score 29-49%. Multiple clusters active. Conditions are tightening.</div>
+        <div class="risk-item high">    <strong>High Risk</strong>     Score 50-70%. Broad cluster stress. Downturn likely developing.</div>
+        <div class="risk-item critical"><strong>Critical</strong>       Score 71%+. Widespread cluster failure. Severe downturn underway or imminent.</div>
       </div>
     </div>
   </div>
 
   <!-- Summary row -->
   <div class="summary-row" id="summary-row"></div>
+  <!-- Cluster row -->
+  <div class="summary-row-clusters" id="cluster-row"></div>
 
   <!-- Alerts -->
   <div class="alerts" id="alerts"></div>
@@ -310,6 +318,7 @@ const DATA_FILES = [
   'data/monthly/fha_delinquency.json',
   'data/monthly/vehicle_sales.json',
   'data/monthly/revolving_credit.json',
+  'data/monthly/cc_apr.json',
   // Quarterly - macro
   'data/quarterly/loan_officer_survey.json',
   // Quarterly - residential
@@ -352,7 +361,8 @@ const THRESHOLDS = {
   auto_delinquency:         { warn: 4,     danger: 6,     direction: 'higher',   avg: '2.5%' },
   revolving_credit:         { warn: 1100000, danger: 1250000, direction: 'higher', avg: '~$1.1T' },
   cc_delinquency:           { warn: 3,     danger: 5,     direction: 'higher',   avg: '2.5%' },
-  cc_chargeoff:             { warn: 3.5,   danger: 6,     direction: 'higher',   avg: '3.5%' }
+  cc_chargeoff:             { warn: 3.5,   danger: 6,     direction: 'higher',   avg: '3.5%' },
+  cc_apr:                   { warn: 20,    danger: 24,    direction: 'higher',   avg: '~15%' }
 };
 
 // Plain-English status messages per indicator
@@ -381,7 +391,8 @@ const MESSAGES = {
   auto_delinquency:         { green: 'Auto borrowers current on payments', orange: 'Auto delinquency rising - lower-income stress', red: 'High auto defaults - consumer financial stress confirmed' },
   revolving_credit:         { green: 'Card balances at manageable levels', orange: 'Balances rising - consumers borrowing more to cover spending', red: 'Surging balances - consumers funding everyday expenses with debt' },
   cc_delinquency:           { green: 'Cardholders keeping up with minimum payments', orange: 'More cardholders missing payments', red: 'Widespread payment missed - consumer financial distress confirmed' },
-  cc_chargeoff:             { green: 'Banks writing off minimal bad debt', orange: 'Charge-offs rising - defaults materializing', red: 'Banks absorbing heavy credit losses - deep consumer distress' }
+  cc_chargeoff:             { green: 'Banks writing off minimal bad debt', orange: 'Charge-offs rising - defaults materializing', red: 'Banks absorbing heavy credit losses - deep consumer distress' },
+  cc_apr:                   { green: 'Card rates within historical range - borrowing costs manageable', orange: 'Elevated APR squeezing household budgets - watch delinquency next', red: 'Record-high card rates - minimum payments consuming large share of income' }
 };
 
 // Section layout: type -> category order with display names
@@ -429,7 +440,8 @@ const INDICATOR_META = {
   ci_loan_delinquency:      { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
   auto_delinquency:         { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
   cc_delinquency:           { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
-  cc_chargeoff:             { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' }
+  cc_chargeoff:             { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
+  cc_apr:                   { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' }
 };
 
 // ─── MANUAL STEPS (file_drop indicators only) ─────────────────────────────────
@@ -556,7 +568,8 @@ const TOOLTIPS = {
   auto_delinquency:         'Percentage of auto loans 30+ days past due. Auto loans often show delinquency early in a downturn since they are smaller than mortgages and consumers prioritize housing payments. Rising rates signal spreading consumer financial stress.',
   revolving_credit:         'Total revolving credit (primarily credit card balances) outstanding. Rapid growth signals consumers are funding everyday expenses with debt rather than income - a warning that household finances are stretched and spending is not supported by real earnings.',
   cc_delinquency:           'Percentage of credit card balances 30+ days past due. Credit card delinquency is often the first consumer stress indicator since cards are unsecured - consumers prioritize mortgage and auto payments first, making card delinquency an early warning signal.',
-  cc_chargeoff:             'Percentage of credit card debt written off by banks as uncollectible losses. Charge-offs are a lagging confirmation that delinquencies have materialized into actual bank losses, measuring the true depth of consumer financial distress in the economy.'
+  cc_chargeoff:             'Percentage of credit card debt written off by banks as uncollectible losses. Charge-offs are a lagging confirmation that delinquencies have materialized into actual bank losses, measuring the true depth of consumer financial distress in the economy.',
+  cc_apr:                   'Average annual percentage rate charged on all credit card accounts at commercial banks. At 20%+, the minimum payment on a $5,000 balance consumes over $80/month in interest alone. Rising APR directly compresses consumer spending power and accelerates delinquency when unemployment rises.'
 };
 
 // ─── FRED API STEPS ───────────────────────────────────────────────────────────
@@ -761,14 +774,14 @@ const FRED_API_STEPS = {
   auto_delinquency: {
     label: 'Auto Loan Delinquency Rate',
     frequency: 'Quarterly',
-    fredSeries: 'DRCCLACBS',
+    fredSeries: 'DROCLACBS',
     npmCmd: 'npm run api-pull:quarterly',
     dataFile: 'data/quarterly/auto_delinquency.json',
-    sourceUrl: 'https://fred.stlouisfed.org/series/DRCCLACBS',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DROCLACBS',
     steps: [
       'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
       'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
-      'FRED Series: <code>DRCCLACBS</code> - Percentage of auto loans 30+ days past due. Auto loans often show delinquency early in a downturn since they are smaller than mortgages and consumers prioritize housing payments first. Rising rates signal spreading consumer financial stress.'
+      'FRED Series: <code>DROCLACBS</code> (Other Consumer Loans Delinquency - primarily auto and personal installment loans) - Percentage of other consumer loans 30+ days past due. Best available FRED proxy for auto delinquency. Rising rates signal spreading consumer financial stress beyond credit cards.'
     ]
   },
   cc_delinquency: {
@@ -796,6 +809,53 @@ const FRED_API_STEPS = {
       'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
       'FRED Series: <code>CORCCACBS</code> - Percentage of credit card debt written off by banks as uncollectible losses. Charge-offs are a lagging confirmation that delinquencies have materialized into actual bank losses, measuring the true depth of consumer financial distress in the economy.'
     ]
+  },
+  cc_apr: {
+    label: 'Credit Card Average APR',
+    frequency: 'Monthly',
+    fredSeries: 'TERMCBCCALLNS',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/cc_apr.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/TERMCBCCALLNS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>TERMCBCCALLNS</code> (Commercial Bank Interest Rate on Credit Card Plans, All Accounts) - Average APR on all credit card accounts. Note: FRED reports bimonthly (Feb, May, Aug, Nov readings); months without data use the last reported value. Currently ~21%. Above 20% warn, above 24% danger.'
+    ]
+  }
+};
+
+// ─── CORRELATION CLUSTERS ─────────────────────────────────────────────────────
+// Each cluster groups indicators by their underlying economic driver.
+// Weights reflect leading/lagging importance: leading clusters carry more weight.
+// Scoring: per-cluster % = (orange*1 + red*2) / (clusterSize*2) * 100
+// Final weighted score = sum(cluster_pct * weight) mapped to 0-56 display range.
+
+const CLUSTERS = {
+  monetary_credit: {
+    label: 'Monetary & Credit',
+    weight: 0.30,
+    indicators: ['yield_curve', 'credit_spreads', 'real_m2', 'loan_officer_survey', 'revolving_credit']
+  },
+  labor_market: {
+    label: 'Labor Market',
+    weight: 0.25,
+    indicators: ['jobless_claims', 'weekly_hours', 'ism_pmi', 'durable_goods']
+  },
+  asset_valuations: {
+    label: 'Asset Valuations',
+    weight: 0.20,
+    indicators: ['shiller_cape', 'trailing_pe', 'sp500_dividend_yield', 'price_to_sales', 'tobins_q', 'margin_debt']
+  },
+  real_economy: {
+    label: 'Real Economy',
+    weight: 0.15,
+    indicators: ['housing_starts', 'vehicle_sales']
+  },
+  debt_stress: {
+    label: 'Debt Stress',
+    weight: 0.10,
+    indicators: ['fha_delinquency', 'mortgage_delinquency', 'conventional_delinquency', 'commercial_re_delinquency', 'ci_loan_delinquency', 'auto_delinquency', 'cc_delinquency', 'cc_chargeoff', 'cc_apr']
   }
 };
 
@@ -852,6 +912,13 @@ function formatDate(dateStr) {
   return `${m}/${d}/${y}`;
 }
 
+function getClusterLabel(id) {
+  for (const [, cluster] of Object.entries(CLUSTERS)) {
+    if (cluster.indicators.includes(id)) return cluster.label;
+  }
+  return null;
+}
+
 function getTrend(history, currentValue) {
   if (!history || history.length < 2 || currentValue === null) return null;
   const prev = Number(history[history.length - 2].value);
@@ -874,26 +941,48 @@ function getTrendClass(id, trend) {
 }
 
 function getRiskLevel(score) {
-  if (score >= 20) return { label: 'Critical',     cls: 'risk-critical' };
-  if (score >= 14) return { label: 'High Risk',    cls: 'risk-high' };
-  if (score >= 8)  return { label: 'Elevated',     cls: 'risk-elevated' };
-  if (score >= 4)  return { label: 'Mild Concern', cls: 'risk-mild' };
-  return              { label: 'Normal',        cls: 'risk-normal' };
+  // score is 0-100 weighted cluster score
+  if (score >= 71) return { label: 'Critical',     cls: 'risk-critical' };
+  if (score >= 50) return { label: 'High Risk',    cls: 'risk-high' };
+  if (score >= 29) return { label: 'Elevated',     cls: 'risk-elevated' };
+  if (score >= 14) return { label: 'Mild Concern', cls: 'risk-mild' };
+  return                  { label: 'Normal',        cls: 'risk-normal' };
+}
+
+function computeClusterScores(allIndicators, dataMap) {
+  const scores = {};
+  for (const [key, cluster] of Object.entries(CLUSTERS)) {
+    let pts = 0, maxPts = 0;
+    const firing = [];
+    for (const id of cluster.indicators) {
+      const ind = allIndicators.find(i => i.id === id);
+      if (!ind) continue;
+      const d = dataMap[id];
+      if (!d || d.manual_update_required || !d.latest) continue;
+      maxPts += 2;
+      const s = getStatus(id, d.latest.value);
+      if (s === 'red')    { pts += 2; firing.push({ label: ind.label, status: 'red' }); }
+      if (s === 'orange') { pts += 1; firing.push({ label: ind.label, status: 'orange' }); }
+    }
+    const pct = maxPts > 0 ? (pts / maxPts) * 100 : 0;
+    scores[key] = { pct, pts, maxPts, firing, label: cluster.label, weight: cluster.weight };
+  }
+  return scores;
 }
 
 function buildRiskDial(score) {
-  const MAX = 28;
+  const MAX = 100;
   const capped = Math.min(score, MAX);
   const cx = 60, cy = 68, R = 54, ir = 34;
 
   // Zone end fractions mapping score ranges to arc positions
-  // Normal: 0-3, Mild: 4-7, Elevated: 8-13, High: 14-19, Critical: 20-28
+  // Normal: 0-13, Mild: 14-28, Elevated: 29-49, High: 50-70, Critical: 71-100
   const zones = [
-    { end: 3  / MAX, fill: '#3fb950' },
-    { end: 7  / MAX, fill: '#7ee787' },
-    { end: 13 / MAX, fill: '#d29922' },
-    { end: 19 / MAX, fill: '#f0883e' },
-    { end: 1,        fill: '#f85149' },
+    { end: 14  / MAX, fill: '#3fb950' },
+    { end: 29  / MAX, fill: '#7ee787' },
+    { end: 50  / MAX, fill: '#d29922' },
+    { end: 71  / MAX, fill: '#f0883e' },
+    { end: 1,         fill: '#f85149' },
   ];
 
   // frac=0 → left (9-o'clock), frac=1 → right (3-o'clock), arc goes through top
@@ -910,13 +999,13 @@ function buildRiskDial(score) {
   }
 
   // Score range labels inside each arc band at mid-radius
-  // Zones: Normal(0-3), Mild(4-7), Elevated(8-13), High(14-19), Critical(20+)
+  // Zones: Normal(0-13%), Mild(14-28%), Elevated(29-49%), High(50-70%), Critical(71%+)
   const zoneLabels = [
-    { f_start: 0,       f_end: 3/MAX,  label: '0-3'   },
-    { f_start: 3/MAX,   f_end: 7/MAX,  label: '4-7'   },
-    { f_start: 7/MAX,   f_end: 13/MAX, label: '8-13'  },
-    { f_start: 13/MAX,  f_end: 19/MAX, label: '14-19' },
-    { f_start: 19/MAX,  f_end: 1,      label: '20+'   },
+    { f_start: 0,        f_end: 14/MAX, label: 'OK'  },
+    { f_start: 14/MAX,   f_end: 29/MAX, label: 'Mild' },
+    { f_start: 29/MAX,   f_end: 50/MAX, label: 'Elev' },
+    { f_start: 50/MAX,   f_end: 71/MAX, label: 'High' },
+    { f_start: 71/MAX,   f_end: 1,      label: 'Crit' },
   ];
   const rMid = (R + ir) / 2; // mid-radius = 44
   let labels = '';
@@ -975,9 +1064,11 @@ function renderCard(indicator, dataMap) {
 
   const tooltipText = (TOOLTIPS[indicator.id] || indicator.description).replace(/"/g, '&quot;');
   const tabTarget = meta.access === 'fred_api' ? 'fred-api' : meta.access === 'html_scrape' ? 'html-scrape' : 'manual';
+  const clusterLabel = getClusterLabel(indicator.id);
   const badges = [
     meta.frequency  ? `<span class="badge">${meta.frequency}</span>` : '',
     meta.importance ? `<span class="badge">${meta.importance}</span>` : '',
+    clusterLabel    ? `<span class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38">${clusterLabel}</span>` : '',
     meta.access     ? `<span class="badge">${sourceLabel}</span>` : '',
     trend           ? `<span class="badge ${getTrendClass(indicator.id, trend)}">${trend} Trend</span>` : '',
     dateLabel       ? `<span class="badge ${stale ? 'badge-trend-bad' : ''}">Updated ${dateLabel}${stale ? ' - Stale' : ''}</span>` : '',
@@ -1016,7 +1107,7 @@ function renderSection(containerId, type, allIndicators, dataMap) {
 }
 
 function renderSummary(allIndicators, dataMap) {
-  let score = 0, warnings = [], watches = [], leadWarn = 0, leadWatch = 0, lagWarn = 0, lagWatch = 0;
+  let warnings = [], watches = [], leadWarn = 0, leadWatch = 0, lagWarn = 0, lagWatch = 0;
   let latestDate = null;
 
   for (const ind of allIndicators) {
@@ -1025,11 +1116,28 @@ function renderSummary(allIndicators, dataMap) {
     const v = d.latest.value;
     if (d.latest.date && (!latestDate || d.latest.date > latestDate)) latestDate = d.latest.date;
     const s = getStatus(ind.id, v);
-    if (s === 'red')    { score += 2; warnings.push(ind.label); ind.type === 'leading' ? leadWarn++ : lagWarn++; }
-    if (s === 'orange') { score += 1; watches.push(ind.label);  ind.type === 'leading' ? leadWatch++ : lagWatch++; }
+    if (s === 'red')    { warnings.push(ind.label); ind.type === 'leading' ? leadWarn++ : lagWarn++; }
+    if (s === 'orange') { watches.push(ind.label);  ind.type === 'leading' ? leadWatch++ : lagWatch++; }
   }
 
-  const risk = getRiskLevel(score);
+  // Cluster-weighted score (0-100)
+  const clusterScores = computeClusterScores(allIndicators, dataMap);
+  const weightedScore = Math.round(
+    Object.values(clusterScores).reduce((sum, c) => sum + c.pct * c.weight, 0)
+  );
+
+  const risk = getRiskLevel(weightedScore);
+
+  // Cluster mini-card HTML
+  const clusterStatusColor = pct => pct >= 71 ? 'var(--red)' : pct >= 50 ? '#e07b22' : pct >= 29 ? 'var(--orange)' : pct >= 14 ? '#7ee787' : 'var(--green)';
+  const clusterMiniCards = Object.entries(clusterScores).map(([key, c]) => {
+    const color = clusterStatusColor(c.pct);
+    return `<div class="summary-card" style="border-left:4px solid ${color};min-width:0">
+      <div class="label">${c.label}</div>
+      <div class="value" style="font-size:16px;color:${color}">${Math.round(c.pct)}%</div>
+      <div class="sub">${(c.weight * 100).toFixed(0)}% weight</div>
+    </div>`;
+  }).join('');
 
   // Summary cards
   document.getElementById('summary-row').innerHTML = `
@@ -1037,9 +1145,9 @@ function renderSummary(allIndicators, dataMap) {
       <div>
         <div class="label">Overall Risk Level</div>
         <div class="value">${risk.label}</div>
-        <div class="sub">Risk score: ${score} pts</div>
+        <div class="sub">Cluster score: ${weightedScore}%</div>
       </div>
-      ${buildRiskDial(score)}
+      ${buildRiskDial(weightedScore)}
     </div>
     <div class="summary-card">
       <div class="label">Leading - Warnings</div>
@@ -1052,10 +1160,13 @@ function renderSummary(allIndicators, dataMap) {
       <div class="sub">${lagWatch} in watch zone</div>
     </div>
     <div class="summary-card">
-      <div class="label">Total Score</div>
-      <div class="value" style="color:var(--blue)">${score}</div>
-      <div class="sub">Warning=2pts, Watch=1pt</div>
+      <div class="label">Weighted Score</div>
+      <div class="value" style="color:var(--blue)">${weightedScore}%</div>
+      <div class="sub">Cluster-weighted risk</div>
     </div>`;
+
+  // Cluster row
+  document.getElementById('cluster-row').innerHTML = clusterMiniCards;
 
   if (latestDate) {
     document.getElementById('last-updated').textContent = `Last updated: ${latestDate}`;
@@ -1097,12 +1208,13 @@ const ALL_INDICATORS = [
   { id:'housing_starts',           label:'Housing Starts & Permits',        type:'leading',  category:'residential',  unit:'thousands of units',url:'https://fred.stlouisfed.org/series/HOUST' },
   { id:'vehicle_sales',            label:'Total Vehicle Sales (SAAR)',      type:'leading',  category:'auto',         unit:'millions of units', url:'https://fred.stlouisfed.org/series/TOTALSA' },
   { id:'revolving_credit',         label:'Revolving Credit Outstanding',    type:'leading',  category:'credit_cards', unit:'trillions USD',    url:'https://fred.stlouisfed.org/series/REVOLSL' },
+  { id:'cc_apr',                   label:'Credit Card Average APR',         type:'leading',  category:'credit_cards', unit:'%',               url:'https://fred.stlouisfed.org/series/TERMCBCCALLNS' },
   { id:'fha_delinquency',          label:'FHA Delinquency Rate',            type:'lagging',  category:'residential',  unit:'%',               url:'https://www.hud.gov/hud-partners/single-family-loan-performance' },
   { id:'mortgage_delinquency',     label:'Mortgage Delinquency Rate',       type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/DRSFRMACBS' },
   { id:'conventional_delinquency', label:'Conventional Delinquency Rate',   type:'lagging',  category:'residential',  unit:'%',               url:'https://www.fhfa.gov/data/nmdb' },
   { id:'commercial_re_delinquency',label:'Commercial RE Loan Delinquency',  type:'lagging',  category:'commercial',   unit:'%',               url:'https://fred.stlouisfed.org/series/DRCRELEXFACBS' },
   { id:'ci_loan_delinquency',      label:'C&I Loan Delinquency',            type:'lagging',  category:'commercial',   unit:'%',               url:'https://fred.stlouisfed.org/series/DRBLACBS' },
-  { id:'auto_delinquency',         label:'Auto Loan Delinquency Rate',      type:'lagging',  category:'auto',         unit:'%',               url:'https://fred.stlouisfed.org/series/DRCCLACBS' },
+  { id:'auto_delinquency',         label:'Auto Loan Delinquency Rate',      type:'lagging',  category:'auto',         unit:'%',               url:'https://fred.stlouisfed.org/series/DROCLACBS' },
   { id:'cc_delinquency',           label:'Credit Card Delinquency Rate',    type:'lagging',  category:'credit_cards', unit:'%',               url:'https://fred.stlouisfed.org/series/DRCCLACBS' },
   { id:'cc_chargeoff',             label:'Credit Card Charge-Off Rate',     type:'lagging',  category:'credit_cards', unit:'%',               url:'https://fred.stlouisfed.org/series/CORCCACBS' }
 ];
