@@ -16,6 +16,7 @@
     "run:file-drop:margin-debt:serve": "npm run file-drop:margin-debt && npx serve . --listen 3000",
     "run:file-drop:fha-delinquency:serve": "npm run file-drop:fha-delinquency && npx serve . --listen 3000",
     "run:file-drop:conventional-delinquency:serve": "npm run file-drop:conventional-delinquency && npx serve . --listen 3000",
+
     "file-drop:margin-debt": "node scripts/file-drop-margin-debt.js",
     "file-drop:fha-delinquency": "node scripts/file-drop-fha-delinquency.js",
     "file-drop:conventional-delinquency": "node scripts/file-drop-conventional-delinquency.js"

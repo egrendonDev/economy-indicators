@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-31T06:04:36.012Z",
+  "last_updated": "2026-05-31T11:10:21.064Z",
   "indicators": [
     {
       "id": "sp500_dividend_yield",
@@ -11,10 +11,158 @@
       "type": "leading",
       "importance": "medium",
       "category": "stock_market",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.multpl.com/s-p-500-dividend-yield"
+      "latest": {
+        "date": "2025-12-01",
+        "value": 1.15
+      },
+      "history": [
+        {
+          "date": "2023-01-01",
+          "value": 1.7
+        },
+        {
+          "date": "2023-02-01",
+          "value": 1.66
+        },
+        {
+          "date": "2023-03-01",
+          "value": 1.72
+        },
+        {
+          "date": "2023-04-01",
+          "value": 1.66
+        },
+        {
+          "date": "2023-05-01",
+          "value": 1.65
+        },
+        {
+          "date": "2023-06-01",
+          "value": 1.58
+        },
+        {
+          "date": "2023-07-01",
+          "value": 1.53
+        },
+        {
+          "date": "2023-08-01",
+          "value": 1.56
+        },
+        {
+          "date": "2023-09-01",
+          "value": 1.57
+        },
+        {
+          "date": "2023-10-01",
+          "value": 1.64
+        },
+        {
+          "date": "2023-11-01",
+          "value": 1.57
+        },
+        {
+          "date": "2023-12-01",
+          "value": 1.5
+        },
+        {
+          "date": "2024-01-01",
+          "value": 1.47
+        },
+        {
+          "date": "2024-02-01",
+          "value": 1.41
+        },
+        {
+          "date": "2024-03-01",
+          "value": 1.37
+        },
+        {
+          "date": "2024-04-01",
+          "value": 1.4
+        },
+        {
+          "date": "2024-05-01",
+          "value": 1.37
+        },
+        {
+          "date": "2024-06-01",
+          "value": 1.33
+        },
+        {
+          "date": "2024-07-01",
+          "value": 1.31
+        },
+        {
+          "date": "2024-08-01",
+          "value": 1.33
+        },
+        {
+          "date": "2024-09-01",
+          "value": 1.3
+        },
+        {
+          "date": "2024-10-01",
+          "value": 1.28
+        },
+        {
+          "date": "2024-11-01",
+          "value": 1.25
+        },
+        {
+          "date": "2024-12-01",
+          "value": 1.24
+        },
+        {
+          "date": "2025-01-01",
+          "value": 1.26
+        },
+        {
+          "date": "2025-02-01",
+          "value": 1.25
+        },
+        {
+          "date": "2025-03-01",
+          "value": 1.34
+        },
+        {
+          "date": "2025-04-01",
+          "value": 1.43
+        },
+        {
+          "date": "2025-05-01",
+          "value": 1.32
+        },
+        {
+          "date": "2025-06-01",
+          "value": 1.28
+        },
+        {
+          "date": "2025-07-01",
+          "value": 1.23
+        },
+        {
+          "date": "2025-08-01",
+          "value": 1.22
+        },
+        {
+          "date": "2025-09-01",
+          "value": 1.19
+        },
+        {
+          "date": "2025-10-01",
+          "value": 1.17
+        },
+        {
+          "date": "2025-11-01",
+          "value": 1.17
+        },
+        {
+          "date": "2025-12-01",
+          "value": 1.15
+        }
+      ],
+      "manual_update_required": false,
+      "note": "Scraped from multpl.com on 2026-05-31T11:10:21.064Z"
     }
   ]
 }

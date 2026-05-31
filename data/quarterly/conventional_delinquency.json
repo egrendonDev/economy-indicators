@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-31T06:04:41.903Z",
+  "last_updated": "2026-05-31T06:17:55.704Z",
   "indicators": [
     {
       "id": "conventional_delinquency",
@@ -11,10 +11,93 @@
       "type": "lagging",
       "importance": "medium",
       "category": "residential",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.fhfa.gov/data/nmdb"
+      "latest": {
+        "date": "2025-10-01",
+        "value": 0.3
+      },
+      "history": [
+        {
+          "date": "2021-01-01",
+          "value": 0.2
+        },
+        {
+          "date": "2021-04-01",
+          "value": 0.2
+        },
+        {
+          "date": "2021-07-01",
+          "value": 0.2
+        },
+        {
+          "date": "2021-10-01",
+          "value": 0.2
+        },
+        {
+          "date": "2022-01-01",
+          "value": 0.2
+        },
+        {
+          "date": "2022-04-01",
+          "value": 0.2
+        },
+        {
+          "date": "2022-07-01",
+          "value": 0.2
+        },
+        {
+          "date": "2022-10-01",
+          "value": 0.2
+        },
+        {
+          "date": "2023-01-01",
+          "value": 0.2
+        },
+        {
+          "date": "2023-04-01",
+          "value": 0.2
+        },
+        {
+          "date": "2023-07-01",
+          "value": 0.2
+        },
+        {
+          "date": "2023-10-01",
+          "value": 0.3
+        },
+        {
+          "date": "2024-01-01",
+          "value": 0.3
+        },
+        {
+          "date": "2024-04-01",
+          "value": 0.3
+        },
+        {
+          "date": "2024-07-01",
+          "value": 0.3
+        },
+        {
+          "date": "2024-10-01",
+          "value": 0.3
+        },
+        {
+          "date": "2025-01-01",
+          "value": 0.3
+        },
+        {
+          "date": "2025-04-01",
+          "value": 0.3
+        },
+        {
+          "date": "2025-07-01",
+          "value": 0.3
+        },
+        {
+          "date": "2025-10-01",
+          "value": 0.3
+        }
+      ],
+      "note": "Parsed from nmdb-mortgage-performance-statistics-national-census-areas-quarterly.csv on 2026-05-31T06:17:55.704Z. Metric: P90DL (90+ days past due), Enterprise Acquisitions, United States. Source: FHFA NMDB Residential Mortgage Performance Statistics."
     }
   ]
 }

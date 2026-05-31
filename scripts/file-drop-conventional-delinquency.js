@@ -12,8 +12,8 @@
  *   .csv - pre-extracted CSV; script processes and renames to [PROCESSED]
  *
  * After processing:
- *   CSV  -> renamed to {name}-[PROCESSED]-{YYYYMMDDHHMMSS}.csv
- *   ZIP  -> deleted after the CSV inside is processed and renamed
+ *   CSV  -> deleted (extracted from ZIP, no longer needed)
+ *   ZIP  -> renamed to [PROCESSED]-{YYYYMMDDHHMMSS}-{name}.zip
  *
  * Usage:
  *   npm run file-drop:conventional-delinquency
@@ -350,23 +350,26 @@ ok(`Latest: ${latest.date} = ${latest.value}% serious delinquency (Fannie/Freddi
 // ─── Rename CSV and clean up ZIP ───────────────────────────────────────────────
 
 function cleanupFiles() {
-  if (!CSV_PATH || !existsSync(CSV_PATH)) return;
-  const stamp       = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-  const csvBasename = CSV_PATH.split(/[\\/]/).pop().replace(/\.csv$/i, '');
-  const newCsvName  = `${csvBasename}-[PROCESSED]-${stamp}.csv`;
-  try {
-    renameSync(CSV_PATH, join(MANUAL_DIR, newCsvName));
-    ok(`CSV renamed to: ${newCsvName}`);
-  } catch (e) {
-    warn(`Could not rename CSV: ${e.message}`);
+  // Delete the extracted CSV - it came from the ZIP so no need to keep it
+  if (CSV_PATH && existsSync(CSV_PATH)) {
+    try {
+      unlinkSync(CSV_PATH);
+      ok(`CSV deleted:    ${CSV_PATH.split(/[\\/]/).pop()}`);
+    } catch (e) {
+      warn(`Could not delete CSV: ${e.message}`);
+    }
   }
 
-  if (ZIP_PATH) {
+  // Rename the ZIP to [PROCESSED]-{stamp}-{originalName}.zip
+  if (ZIP_PATH && existsSync(ZIP_PATH)) {
+    const stamp      = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+    const zipBase    = ZIP_PATH.split(/[\\/]/).pop().replace(/\.zip$/i, '');
+    const newZipName = `[PROCESSED]-${stamp}-${zipBase}.zip`;
     try {
-      unlinkSync(ZIP_PATH);
-      ok(`ZIP deleted:    ${ZIP_PATH.split(/[\\/]/).pop()}`);
-    } catch {
-      warn(`Could not delete ZIP (EPERM on Windows mount) - please delete manually: ${ZIP_PATH.split(/[\\/]/).pop()}`);
+      renameSync(ZIP_PATH, join(MANUAL_DIR, newZipName));
+      ok(`ZIP renamed to: ${newZipName}`);
+    } catch (e) {
+      warn(`Could not rename ZIP (EPERM on Windows mount) - please rename manually: ${ZIP_PATH.split(/[\\/]/).pop()}`);
     }
   }
 }

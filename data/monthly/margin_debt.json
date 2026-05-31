@@ -1,20 +1,167 @@
 {
-  "last_updated": "2026-05-31T06:04:36.012Z",
+  "last_updated": "2026-05-31T06:17:16.799Z",
   "indicators": [
     {
       "id": "margin_debt",
       "label": "Margin Debt",
-      "description": "Borrowed money in market; sharp drop after peak signals forced selling",
+      "description": "Total debit balances in margin accounts at FINRA member firms; elevated margin debt amplifies drawdowns when liquidations cascade",
       "unit": "millions USD",
       "source": "FINRA",
       "url": "https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics",
       "type": "leading",
       "importance": "medium",
       "category": "stock_market",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics"
+      "latest": {
+        "date": "2026-04-01",
+        "value": 1304281
+      },
+      "history": [
+        {
+          "date": "2023-05-01",
+          "value": 644170
+        },
+        {
+          "date": "2023-06-01",
+          "value": 681228
+        },
+        {
+          "date": "2023-07-01",
+          "value": 709834
+        },
+        {
+          "date": "2023-08-01",
+          "value": 689185
+        },
+        {
+          "date": "2023-09-01",
+          "value": 680846
+        },
+        {
+          "date": "2023-10-01",
+          "value": 635276
+        },
+        {
+          "date": "2023-11-01",
+          "value": 660887
+        },
+        {
+          "date": "2023-12-01",
+          "value": 700774
+        },
+        {
+          "date": "2024-01-01",
+          "value": 701975
+        },
+        {
+          "date": "2024-02-01",
+          "value": 742963
+        },
+        {
+          "date": "2024-03-01",
+          "value": 784136
+        },
+        {
+          "date": "2024-04-01",
+          "value": 775464
+        },
+        {
+          "date": "2024-05-01",
+          "value": 809431
+        },
+        {
+          "date": "2024-06-01",
+          "value": 809322
+        },
+        {
+          "date": "2024-07-01",
+          "value": 810835
+        },
+        {
+          "date": "2024-08-01",
+          "value": 797162
+        },
+        {
+          "date": "2024-09-01",
+          "value": 813211
+        },
+        {
+          "date": "2024-10-01",
+          "value": 815369
+        },
+        {
+          "date": "2024-11-01",
+          "value": 890852
+        },
+        {
+          "date": "2024-12-01",
+          "value": 899168
+        },
+        {
+          "date": "2025-01-01",
+          "value": 937253
+        },
+        {
+          "date": "2025-02-01",
+          "value": 918144
+        },
+        {
+          "date": "2025-03-01",
+          "value": 880316
+        },
+        {
+          "date": "2025-04-01",
+          "value": 850558
+        },
+        {
+          "date": "2025-05-01",
+          "value": 920960
+        },
+        {
+          "date": "2025-06-01",
+          "value": 1007961
+        },
+        {
+          "date": "2025-07-01",
+          "value": 1022548
+        },
+        {
+          "date": "2025-08-01",
+          "value": 1059723
+        },
+        {
+          "date": "2025-09-01",
+          "value": 1126494
+        },
+        {
+          "date": "2025-10-01",
+          "value": 1183654
+        },
+        {
+          "date": "2025-11-01",
+          "value": 1214321
+        },
+        {
+          "date": "2025-12-01",
+          "value": 1225597
+        },
+        {
+          "date": "2026-01-01",
+          "value": 1279042
+        },
+        {
+          "date": "2026-02-01",
+          "value": 1253192
+        },
+        {
+          "date": "2026-03-01",
+          "value": 1220922
+        },
+        {
+          "date": "2026-04-01",
+          "value": 1304281
+        }
+      ],
+      "note": "Parsed from margin-statistics.xlsx on 2026-05-31T06:17:16.799Z. Values in millions USD."
     }
   ]
 }

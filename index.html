@@ -39,7 +39,9 @@
     .guide-card-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
     .guide-card-meta { font-size: 13px; color: var(--muted); margin-bottom: 12px; display: flex; gap: 8px; }
     .guide-steps { list-style: none; counter-reset: steps; display: flex; flex-direction: column; gap: 8px; }
-    .guide-steps li { counter-increment: steps; display: flex; gap: 10px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .guide-steps li { counter-increment: steps; display: flex; gap: 10px; font-size: 13px; color: var(--muted); line-height: 1.6; align-items: flex-start; }
+    .guide-steps li span { flex: 1; min-width: 0; }
+    .guide-steps li code { background: #1c2128; padding: 1px 5px; border-radius: 3px; font-size: 11px; white-space: nowrap; }
     .guide-steps li::before { content: counter(steps); background: var(--border); color: var(--text); border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
     .guide-source { display: inline-block; margin-top: 10px; font-size: 13px; color: var(--blue); }
 
@@ -410,50 +412,72 @@ const INDICATOR_META = {
 const MANUAL_STEPS = {
   shiller_cape: {
     label: 'Shiller CAPE Ratio',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/shiller-pe',
     steps: [
-      'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
-      'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
-      'The script scrapes <a href="https://www.multpl.com/shiller-pe/table/by-month" target="_blank">multpl.com/shiller-pe</a>, validates the data, and updates shiller_cape in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
+      'This indicator is scraped automatically - no manual download needed.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code>',
+      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/shiller_cape.json</code>. Safe to re-run.'
+    ]
+  },
+  trailing_pe: {
+    label: 'Trailing P/E (S&P 500)',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/s-p-500-pe-ratio',
+    steps: [
+      'This indicator is scraped automatically - no manual download needed.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code>',
+      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/trailing_pe.json</code>. Safe to re-run.'
+    ]
+  },
+  sp500_dividend_yield: {
+    label: 'S&amp;P 500 Dividend Yield',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/s-p-500-dividend-yield',
+    steps: [
+      'This indicator is scraped automatically - no manual download needed.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code>',
+      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/sp500_dividend_yield.json</code>. Safe to re-run.'
+    ]
+  },
+  price_to_sales: {
+    label: 'Price-to-Sales (S&amp;P 500)',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/s-p-500-price-to-sales',
+    steps: [
+      'This indicator is scraped automatically - no manual download needed.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code>',
+      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/price_to_sales.json</code>. Safe to re-run.'
     ]
   },
   margin_debt: {
     label: 'Margin Debt',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics',
     steps: [
-      'Download the Excel file from <a href="https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics" target="_blank">finra.org - Margin Statistics</a> (look for "Monthly Margin Statistics" - filename may vary). Drop it into the <a href="https://github.com/egrendonDev/economy-indicators/tree/main/data/manual-file-dropzone" target="_blank">data/manual-file-dropzone/</a> folder in the project.',
-      'From the project root run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:margin-debt</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/file-drop-margin-debt.js" target="_blank">file-drop-margin-debt.js script</a> for details.',
-      'The script auto-detects the xlsx file, extracts the last 36 months of debit balance data, updates data/monthly/stock_market.json, and renames the file to mark it as processed. Safe to re-run - duplicate data is ignored.'
-    ]
-  },
-  sp500_dividend_yield: {
-    label: 'S&P 500 Dividend Yield',
-    steps: [
-      'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
-      'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
-      'The script scrapes <a href="https://www.multpl.com/s-p-500-dividend-yield/table/by-month" target="_blank">multpl.com/s-p-500-dividend-yield</a>, validates the data, and updates sp500_dividend_yield in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
-    ]
-  },
-  price_to_sales: {
-    label: 'Price-to-Sales (S&P 500)',
-    steps: [
-      'This indicator is updated automatically by the html-scrape-multpl script. No manual download needed.',
-      'From the project root, run: <code style="background:#1c2128;padding:1px 6px;border-radius:3px;">npm run manually:load-data:multpl</code> - see the <a href="https://github.com/egrendonDev/economy-indicators/blob/main/scripts/html-scrape-multpl.js" target="_blank">html-scrape-multpl.js script</a> for details.',
-      'The script scrapes <a href="https://www.multpl.com/s-p-500-price-to-sales/table/by-month" target="_blank">multpl.com/s-p-500-price-to-sales</a>, validates the data, and updates price_to_sales in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
+      'Go to the source link above and download the Excel file under "Monthly Margin Statistics". Drop it into <code>data/manual-file-dropzone/</code> (do not rename it).',
+      'From the project root, run: <code>npm run file-drop:margin-debt</code>',
+      'The script auto-detects the xlsx, extracts 36 months of debit balance data, writes to <code>data/monthly/margin_debt.json</code>, and renames the file to mark it processed. Safe to re-run.'
     ]
   },
   fha_delinquency: {
     label: 'FHA Delinquency Rate',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.hud.gov/hud-partners/single-family-loan-performance',
     steps: [
-      'Go to hud.gov/hud-partners/single-family-loan-performance and download the latest FHA Loan Performance Trends PDF.',
-      'Drop the downloaded PDF into the data/manual-file-dropzone/ folder in this project (do not rename it).',
-      'From the project root, run: npm run manually:file-drop:fha-delinquency — the script extracts the Non-Seasonally Adjusted Serious Delinquency Rate from Table 1 and updates residential.json automatically.'
+      'Go to the source link above and download the latest FHA Loan Performance Trends PDF.',
+      'Drop the PDF into <code>data/manual-file-dropzone/</code> (do not rename it).',
+      'From the project root, run: <code>npm run file-drop:fha-delinquency</code> - extracts the Non-SA Serious Delinquency Rate from Table 1 and writes to <code>data/monthly/fha_delinquency.json</code>. Safe to re-run.'
     ]
   },
   conventional_delinquency: {
     label: 'Conventional Delinquency Rate',
+    frequency: 'Quarterly',
+    sourceUrl: 'https://www.fhfa.gov/data/nmdb',
     steps: [
-      'Go to fhfa.gov/data/nmdb and under "Residential Mortgage Performance Statistics" download the National, Census Regions, and Census Divisions [CSV] (quarterly ZIP file).',
-      'Drop the .zip directly into economy-indicators/data/manual-file-dropzone/ (do not rename it - the script handles unzipping automatically).',
-      'Run: npm run run:file-drop-manually:conventional-delinquency'
+      'Go to the source link above, under "Residential Mortgage Performance Statistics" download the National, Census Regions, and Census Divisions [CSV] (quarterly ZIP file).',
+      'Drop the .zip into <code>data/manual-file-dropzone/</code> (do not rename it - the script handles unzipping).',
+      'From the project root, run: <code>npm run file-drop:conventional-delinquency</code> - extracts P90DL data for Enterprise Acquisitions and writes to <code>data/quarterly/conventional_delinquency.json</code>. Safe to re-run.'
     ]
   }
 };
@@ -821,7 +845,6 @@ async function loadAllData() {
   });
   return dataMap;
 }
-
 async function init() {
   try {
     const dataMap = await loadAllData();
@@ -845,80 +868,55 @@ function togglePanel(btn) {
 
 // ─── TABS ────────────────────────────────────────────────────────────────────
 
-function switchTab(tabId, btn, scrollToId) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+function switchTab(tab, btn, scrollTo) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tabId).classList.add('active');
-  if (btn) btn.classList.add('active');
-  else document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.textContent.toLowerCase().includes(tabId === 'dashboard' ? 'dashboard' : 'manual')) b.classList.add('active');
-  });
-  if (scrollToId) {
+  document.getElementById('tab-' + tab).style.display = 'block';
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      if ((b.getAttribute('onclick') || '').includes("'" + tab + "'")) b.classList.add('active');
+    });
+  }
+  if (scrollTo) {
     setTimeout(() => {
-      const el = document.getElementById('guide-' + scrollToId);
+      const el = document.getElementById('guide-' + scrollTo);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
   }
 }
 
-function copyGuideCard(id, btn) {
-  const cfg = MANUAL_STEPS[id];
-  if (!cfg) return;
-  const text = `${cfg.label}\n\n${cfg.steps.map((s, i) => `${i + 1}. ${s.replace(/<[^>]+>/g, '')}`).join('\n')}`;
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = 'Copied!';
-    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
-  });
+// ─── MANUAL GUIDE TAB ────────────────────────────────────────────────────────
+
+function copyGuideText(id) {
+  const card = document.getElementById('guide-' + id);
+  if (!card) return;
+  const steps = [...card.querySelectorAll('.guide-steps li span')].map((s, i) => (i + 1) + '. ' + s.innerText).join('\n');
+  navigator.clipboard.writeText(steps).catch(() => {});
+  const btn = card.querySelector('.copy-btn');
+  if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); }
 }
 
 function renderManualTab() {
   const grid = document.getElementById('manual-guide-grid');
   if (!grid) return;
-  grid.innerHTML = Object.entries(MANUAL_STEPS).map(([id, item]) => {
-    const meta = INDICATOR_META[id] || {};
-    const indicator = ALL_INDICATORS.find(i => i.id === id) || {};
-    return `<div class="guide-card" id="guide-${id}" style="position:relative;">
-      <button onclick="copyGuideCard('${id}', this)" style="position:absolute;top:12px;right:12px;background:#1c2128;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 10px;font-size:12px;cursor:pointer;transition:color 0.15s;">Copy</button>
-      <div class="guide-card-title" style="padding-right:60px;">${item.label}</div>
-      <div class="guide-card-meta">
-        <span class="badge">${meta.frequency || ''}</span>
-        <span class="badge">Updated-Manually</span>
-        ${indicator.url ? `<a href="${indicator.url}" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38">View Source</a>` : ''}
-      </div>
-      <ol class="guide-steps">
-        ${item.steps.map(s => `<li>${s}</li>`).join('')}
-      </ol>
-    </div>`;
+  grid.innerHTML = Object.entries(MANUAL_STEPS).map(([id, cfg]) => {
+    const stepsHtml = cfg.steps.map(s => '<li><span>' + s + '</span></li>').join('');
+    return '<div class="guide-card" id="guide-' + id + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+        '<div class="guide-card-title">' + cfg.label + '</div>' +
+        '<button class="copy-btn" onclick="copyGuideText(\'' + id + '\')" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:8px">Copy</button>' +
+      '</div>' +
+      '<div class="guide-card-meta">' +
+        '<span class="badge">' + cfg.frequency + '</span>' +
+        '<span class="badge">Manually Updated</span>' +
+        '<a href="' + cfg.sourceUrl + '" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38;text-decoration:none">View Source</a>' +
+      '</div>' +
+      '<ol class="guide-steps">' + stepsHtml + '</ol>' +
+    '</div>';
   }).join('');
 }
-
-// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
-const tooltipEl = document.getElementById('tooltip');
-
-document.addEventListener('mouseover', e => {
-  const badge = e.target.closest('.badge-info');
-  if (badge && badge.dataset.tooltip) {
-    tooltipEl.textContent = badge.dataset.tooltip;
-    tooltipEl.style.display = 'block';
-  }
-});
-
-document.addEventListener('mouseout', e => {
-  if (e.target.closest('.badge-info')) {
-    tooltipEl.style.display = 'none';
-  }
-});
-
-document.addEventListener('mousemove', e => {
-  if (tooltipEl.style.display === 'block') {
-    let x = e.clientX + 14;
-    let y = e.clientY - 10;
-    if (x + 270 > window.innerWidth)  x = e.clientX - 274;
-    if (y + tooltipEl.offsetHeight > window.innerHeight) y = e.clientY - tooltipEl.offsetHeight - 4;
-    tooltipEl.style.left = x + 'px';
-    tooltipEl.style.top  = y + 'px';
-  }
-});
 
 init();
 </script>

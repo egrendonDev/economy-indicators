@@ -1,20 +1,75 @@
 {
-  "last_updated": "2026-05-31T06:04:36.012Z",
+  "last_updated": "2026-05-31T06:17:42.230Z",
   "indicators": [
     {
       "id": "fha_delinquency",
       "label": "FHA Delinquency Rate",
-      "description": "Serious delinquency (90+ days + foreclosure + bankruptcy) for FHA loans; low-down-payment borrower stress shows up here first",
+      "description": "Serious delinquency rate (90+ days + foreclosure + bankruptcy) for FHA loans; low-down-payment borrower stress emerges here before prime market",
       "unit": "%",
       "source": "HUD",
       "url": "https://www.hud.gov/hud-partners/single-family-loan-performance",
       "type": "lagging",
       "importance": "medium",
       "category": "residential",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.hud.gov/hud-partners/single-family-loan-performance"
+      "latest": {
+        "date": "2026-03-01",
+        "value": 6.63
+      },
+      "history": [
+        {
+          "date": "2025-03-01",
+          "value": 4.47
+        },
+        {
+          "date": "2025-04-01",
+          "value": 4.29
+        },
+        {
+          "date": "2025-05-01",
+          "value": 4.27
+        },
+        {
+          "date": "2025-06-01",
+          "value": 4.3
+        },
+        {
+          "date": "2025-07-01",
+          "value": 4.36
+        },
+        {
+          "date": "2025-08-01",
+          "value": 4.44
+        },
+        {
+          "date": "2025-09-01",
+          "value": 4.53
+        },
+        {
+          "date": "2025-10-01",
+          "value": 4.56
+        },
+        {
+          "date": "2025-11-01",
+          "value": 5.21
+        },
+        {
+          "date": "2025-12-01",
+          "value": 5.81
+        },
+        {
+          "date": "2026-01-01",
+          "value": 6.24
+        },
+        {
+          "date": "2026-02-01",
+          "value": 6.74
+        },
+        {
+          "date": "2026-03-01",
+          "value": 6.63
+        }
+      ],
+      "note": "Parsed from FHALPT_Mar2026.pdf on 2026-05-31T06:17:42.230Z. Metric: Non-SA Serious Delinquency Rate (Table 1)."
     }
   ]
 }

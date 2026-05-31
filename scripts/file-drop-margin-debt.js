@@ -6,11 +6,11 @@
  * the margin_debt entry in data/monthly/margin_debt.json.
  *
  * After processing, renames the source file to:
- *   {originalName}-[PROCESSED]-{YYYYMMDDHHMMSS}.xlsx
+ *   [PROCESSED]-{YYYYMMDDHHMMSS}-{originalName}.xlsx
  *
  * Usage:
  *   npm run file-drop:margin-debt
- *   npm run manually:load-data:margin-debt   (also runs npm install first)
+ *   npm run run:file-drop-manually:margin-debt   (also runs npm install first)
  *
  * Input: any .xlsx file in data/manual-file-dropzone/ that does not contain "[PROCESSED]"
  *   Sheet: "Customer Margin Balances"
@@ -24,7 +24,7 @@
 
 import { readFileSync, writeFileSync, readdirSync, renameSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { dirname, join, basename, extname } from 'path';
+import { dirname, join, extname } from 'path';
 import { createRequire } from 'module';
 
 // xlsx uses CommonJS exports - must load via require in an ES module project
@@ -57,13 +57,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '..');
 
-const MANUAL_DIR = join(ROOT, 'data', 'manual-file-dropzone');
-const JSON_PATH  = join(ROOT, 'data', 'monthly', 'margin_debt.json');
+const MANUAL_DIR    = join(ROOT, 'data', 'manual-file-dropzone');
+const JSON_PATH     = join(ROOT, 'data', 'monthly', 'margin_debt.json');
+const INDICATOR_ID  = 'margin_debt';
 const HISTORY_MONTHS = 36;
 
 banner('Margin Debt - FINRA xlsx Import', c.cyan);
 
-// ─── Find unprocessed xlsx file ────────────────────────────────────────────
+// ─── Find unprocessed xlsx file ────────────────────────────────────────────────
 
 if (!existsSync(MANUAL_DIR)) {
   fail('data/manual-file-dropzone/ folder not found.', false);
@@ -84,7 +85,7 @@ if (candidates.length === 0) {
   console.log(`     (filename may vary - that is fine)\n`);
   console.log(`  ${c.cyan}3.${c.reset} Drop the file into this folder ${c.bold}(do not rename it)${c.reset}:`);
   console.log(`     economy-indicators/data/manual-file-dropzone/\n`);
-  console.log(`  ${c.cyan}4.${c.reset} Re-run: ${c.bold}npm run run:file-drop-manually:margin-debt${c.reset}\n`);
+  console.log(`  ${c.cyan}4.${c.reset} Re-run: ${c.bold}npm run file-drop:margin-debt${c.reset}\n`);
   process.exit(1);
 }
 
@@ -96,7 +97,7 @@ if (candidates.length > 1) {
 const XLSX_PATH = join(MANUAL_DIR, candidates[0].name);
 info(`File found:    ${candidates[0].name}`);
 
-// ─── Parse xlsx ────────────────────────────────────────────────────────────
+// ─── Parse xlsx ────────────────────────────────────────────────────────────────
 
 const workbook = XLSX.readFile(XLSX_PATH);
 
@@ -118,4 +119,97 @@ const dataRows = rows.filter(row => {
 });
 
 if (dataRows.length === 0) {
-  fail('No data rows matching YYY
+  fail('No data rows matching YYYY-MM format found in column A.', false);
+  fail('Check that the sheet is "Customer Margin Balances" and column A has dates.', true);
+}
+
+// ─── Build history ─────────────────────────────────────────────────────────────
+
+// FINRA data is newest-first; reverse to get chronological order
+const allPoints = dataRows
+  .map(row => {
+    const rawDate  = String(row[0]).trim();        // "2025-03"
+    const rawValue = row[1];
+    const value    = parseFloat(rawValue);
+    if (!isFinite(value) || value < 0) return null;
+    return { date: `${rawDate}-01`, value };
+  })
+  .filter(Boolean)
+  .reverse();
+
+if (allPoints.length === 0) {
+  fail('No valid numeric values found in column B.', true);
+}
+
+const history = allPoints.slice(-HISTORY_MONTHS);
+const latest  = history[history.length - 1];
+
+info(`Parsed ${allPoints.length} months. Latest: ${latest.date} = ${latest.value} (millions USD)`);
+
+// ─── Stale date guard ──────────────────────────────────────────────────────────
+
+if (existsSync(JSON_PATH)) {
+  try {
+    const existing = JSON.parse(readFileSync(JSON_PATH, 'utf8'));
+    const existing_ind = existing.indicators?.find(i => i.id === INDICATOR_ID);
+    if (existing_ind?.latest?.date && existing_ind.latest.date >= latest.date) {
+      warn(`Existing data (${existing_ind.latest.date}) is same or newer than parsed data (${latest.date}).`);
+      warn('Skipping write - data is not newer. Drop a newer file to update.');
+      process.exit(0);
+    }
+  } catch { /* ignore parse errors, proceed with write */ }
+}
+
+// ─── Load and update margin_debt.json ─────────────────────────────────────────
+
+let json = { indicators: [] };
+if (existsSync(JSON_PATH)) {
+  try {
+    json = JSON.parse(readFileSync(JSON_PATH, 'utf8'));
+  } catch {
+    warn('Could not parse existing margin_debt.json - will overwrite indicator entry.');
+    json = { indicators: [] };
+  }
+}
+
+const timestamp = new Date().toISOString();
+const updatedIndicator = {
+  id:          INDICATOR_ID,
+  label:       'Margin Debt',
+  description: 'Total debit balances in margin accounts at FINRA member firms; elevated margin debt amplifies drawdowns when liquidations cascade',
+  unit:        'millions USD',
+  source:      'FINRA',
+  url:         'https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics',
+  type:        'leading',
+  importance:  'medium',
+  category:    'stock_market',
+  latest,
+  history,
+  note: `Parsed from ${candidates[0].name} on ${timestamp}. Values in millions USD.`
+};
+
+const idx = json.indicators.findIndex(i => i.id === INDICATOR_ID);
+if (idx >= 0) {
+  json.indicators[idx] = updatedIndicator;
+} else {
+  json.indicators.push(updatedIndicator);
+}
+
+json.last_updated = timestamp;
+writeFileSync(JSON_PATH, JSON.stringify(json, null, 2));
+ok(`Saved ${history.length} months to ${JSON_PATH}`);
+ok(`Latest: ${latest.date} = ${latest.value} million USD margin debt`);
+
+// ─── Rename processed xlsx ─────────────────────────────────────────────────────
+
+const stamp   = timestamp.replace(/[-:T]/g, '').slice(0, 14);
+const origName = candidates[0].name.replace(/\.xlsx$/i, '');
+const newName  = `[PROCESSED]-${stamp}-${origName}.xlsx`;
+try {
+  renameSync(XLSX_PATH, join(MANUAL_DIR, newName));
+  ok(`Renamed to: ${newName}`);
+} catch (e) {
+  warn(`Could not rename file: ${e.message}`);
+}
+
+banner('SUCCESS - Margin Debt data updated', c.green);

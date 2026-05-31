@@ -7,7 +7,7 @@
  * data/monthly/fha_delinquency.json.
  *
  * After processing, renames the source file to:
- *   {originalName}-[PROCESSED]-{YYYYMMDDHHMMSS}.pdf
+ *   [PROCESSED]-{YYYYMMDDHHMMSS}-{originalName}.pdf
  *
  * Usage:
  *   npm run file-drop:fha-delinquency
@@ -298,7 +298,7 @@ async function main() {
 
   const stamp = timestamp.replace(/[-:T]/g, '').slice(0, 14);
   const base  = candidates[0].name.replace(/\.pdf$/i, '');
-  const newName = `${base}-[PROCESSED]-${stamp}.pdf`;
+  const newName = `[PROCESSED]-${stamp}-${base}.pdf`;
   renameSync(PDF_PATH, join(MANUAL_DIR, newName));
   ok(`Renamed to: ${newName}`);
 
