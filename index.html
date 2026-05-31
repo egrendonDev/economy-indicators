@@ -147,6 +147,14 @@
     .badge-trend-flat { font-size: 13px; font-weight: 700; }
     #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 8px; width: 280px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
 
+    /* ---- View Details badge ---- */
+    .badge-view-details { cursor: pointer; color: var(--blue); border-color: var(--blue); background: #0d1f38; }
+    .badge-view-details:hover { background: #1a3050; }
+
+    /* ---- Guide card flash animation ---- */
+    @keyframes guide-flash { 0%,100%{background:var(--surface)} 30%{background:#1a2f4a} }
+    .guide-flash { animation: guide-flash 0.9s ease; }
+
     /* ---- Footer ---- */
     footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 16px 0; color: var(--muted); font-size: 11px; text-align: center; }
     footer a { color: var(--blue); }
@@ -172,6 +180,8 @@
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('dashboard', this)">Dashboard</button>
     <button class="tab-btn" onclick="switchTab('manual', this)">Manual Updates</button>
+    <button class="tab-btn" onclick="switchTab('fred-api', this)">FRED-API Updates</button>
+    <button class="tab-btn" onclick="switchTab('html-scrape', this)">HTML-Scraper Updates</button>
   </div>
 
   <!-- Dashboard tab -->
@@ -247,9 +257,25 @@
   <!-- Manual Updates tab -->
   <div id="tab-manual" class="tab-panel">
     <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><i class="ti ti-clipboard-list" style="color:var(--blue)"></i> Manual Update Guide</h2>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">These indicators cannot be fetched automatically. Follow the steps below to update each one. All edits go directly into the JSON data files in your repo.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">These indicators require a file to be manually downloaded and dropped into the dropzone folder. Follow the steps below to update each one.</p>
     <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">After updating any JSON file locally, run <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px">git add data/ && git commit -m "chore: manual data update" && git push</code> to publish to the dashboard.</p>
     <div class="guide-grid" id="manual-guide-grid"></div>
+  </div>
+
+  <!-- FRED-API Updates tab -->
+  <div id="tab-fred-api" class="tab-panel">
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><i class="ti ti-cloud-download" style="color:var(--blue)"></i> FRED-API Updates</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">These 18 indicators are fetched automatically by GitHub Actions every day at 7am UTC. No manual action needed under normal operation.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">To force a local refresh, run <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px">npm run api-pull:all</code> (or append <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px">-- --force</code> to bypass the freshness check).</p>
+    <div class="guide-grid" id="fred-api-guide-grid"></div>
+  </div>
+
+  <!-- HTML-Scraper Updates tab -->
+  <div id="tab-html-scrape" class="tab-panel">
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><i class="ti ti-world-www" style="color:var(--blue)"></i> HTML-Scraper Updates</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">These 4 indicators are scraped from multpl.com by running a script manually or via GitHub Actions. The scraper has a 1-hour cooldown guard to avoid hammering the site.</p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Run <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px">npm run html-scrape:multpl</code> to refresh all 4 indicators at once.</p>
+    <div class="guide-grid" id="html-scrape-guide-grid"></div>
   </div>
 
   <footer>
@@ -406,50 +432,11 @@ const INDICATOR_META = {
   cc_chargeoff:             { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' }
 };
 
-// ─── MANUAL STEPS ─────────────────────────────────────────────────────────────
-// 3-step instructions for each manually updated indicator
+// ─── MANUAL STEPS (file_drop indicators only) ─────────────────────────────────
+// Step-by-step instructions for indicators that require a file to be manually
+// downloaded and dropped into data/manual-file-dropzone/
 
 const MANUAL_STEPS = {
-  shiller_cape: {
-    label: 'Shiller CAPE Ratio',
-    frequency: 'Monthly',
-    sourceUrl: 'https://www.multpl.com/shiller-pe',
-    steps: [
-      'This indicator is scraped automatically - no manual download needed.',
-      'From the project root, run: <code>npm run html-scrape:multpl</code>',
-      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/shiller_cape.json</code>. Safe to re-run.'
-    ]
-  },
-  trailing_pe: {
-    label: 'Trailing P/E (S&P 500)',
-    frequency: 'Monthly',
-    sourceUrl: 'https://www.multpl.com/s-p-500-pe-ratio',
-    steps: [
-      'This indicator is scraped automatically - no manual download needed.',
-      'From the project root, run: <code>npm run html-scrape:multpl</code>',
-      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/trailing_pe.json</code>. Safe to re-run.'
-    ]
-  },
-  sp500_dividend_yield: {
-    label: 'S&amp;P 500 Dividend Yield',
-    frequency: 'Monthly',
-    sourceUrl: 'https://www.multpl.com/s-p-500-dividend-yield',
-    steps: [
-      'This indicator is scraped automatically - no manual download needed.',
-      'From the project root, run: <code>npm run html-scrape:multpl</code>',
-      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/sp500_dividend_yield.json</code>. Safe to re-run.'
-    ]
-  },
-  price_to_sales: {
-    label: 'Price-to-Sales (S&amp;P 500)',
-    frequency: 'Monthly',
-    sourceUrl: 'https://www.multpl.com/s-p-500-price-to-sales',
-    steps: [
-      'This indicator is scraped automatically - no manual download needed.',
-      'From the project root, run: <code>npm run html-scrape:multpl</code>',
-      'The script scrapes multpl.com, validates the data, and writes to <code>data/monthly/price_to_sales.json</code>. Safe to re-run.'
-    ]
-  },
   margin_debt: {
     label: 'Margin Debt',
     frequency: 'Monthly',
@@ -478,6 +465,56 @@ const MANUAL_STEPS = {
       'Go to the source link above, under "Residential Mortgage Performance Statistics" download the National, Census Regions, and Census Divisions [CSV] (quarterly ZIP file).',
       'Drop the .zip into <code>data/manual-file-dropzone/</code> (do not rename it - the script handles unzipping).',
       'From the project root, run: <code>npm run file-drop:conventional-delinquency</code> - extracts P90DL data for Enterprise Acquisitions and writes to <code>data/quarterly/conventional_delinquency.json</code>. Safe to re-run.'
+    ]
+  }
+};
+
+// ─── HTML SCRAPE STEPS ────────────────────────────────────────────────────────
+// Step-by-step for indicators scraped from multpl.com via html-scrape-multpl-shared.js
+
+const HTML_SCRAPE_STEPS = {
+  shiller_cape: {
+    label: 'Shiller CAPE Ratio',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/shiller-pe',
+    dataFile: 'data/monthly/shiller_cape.json',
+    steps: [
+      'No file download needed. Data is scraped automatically from <a href="https://www.multpl.com/shiller-pe" target="_blank" style="color:var(--blue)">multpl.com/shiller-pe</a>.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code> - this refreshes all 4 multpl.com indicators at once.',
+      'The script validates the scraped data and writes to <code>data/monthly/shiller_cape.json</code>. A 1-hour cooldown guard prevents hammering the site.'
+    ]
+  },
+  trailing_pe: {
+    label: 'Trailing P/E (S&amp;P 500)',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/s-p-500-pe-ratio',
+    dataFile: 'data/monthly/trailing_pe.json',
+    steps: [
+      'No file download needed. Data is scraped automatically from <a href="https://www.multpl.com/s-p-500-pe-ratio" target="_blank" style="color:var(--blue)">multpl.com/s-p-500-pe-ratio</a>.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code> - this refreshes all 4 multpl.com indicators at once.',
+      'The script validates the scraped data and writes to <code>data/monthly/trailing_pe.json</code>. A 1-hour cooldown guard prevents hammering the site.'
+    ]
+  },
+  sp500_dividend_yield: {
+    label: 'S&amp;P 500 Dividend Yield',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/s-p-500-dividend-yield',
+    dataFile: 'data/monthly/sp500_dividend_yield.json',
+    steps: [
+      'No file download needed. Data is scraped automatically from <a href="https://www.multpl.com/s-p-500-dividend-yield" target="_blank" style="color:var(--blue)">multpl.com/s-p-500-dividend-yield</a>.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code> - this refreshes all 4 multpl.com indicators at once.',
+      'The script validates the scraped data and writes to <code>data/monthly/sp500_dividend_yield.json</code>. A 1-hour cooldown guard prevents hammering the site.'
+    ]
+  },
+  price_to_sales: {
+    label: 'Price-to-Sales (S&amp;P 500)',
+    frequency: 'Monthly',
+    sourceUrl: 'https://www.multpl.com/s-p-500-price-to-sales',
+    dataFile: 'data/monthly/price_to_sales.json',
+    steps: [
+      'No file download needed. Data is scraped automatically from <a href="https://www.multpl.com/s-p-500-price-to-sales" target="_blank" style="color:var(--blue)">multpl.com/s-p-500-price-to-sales</a>.',
+      'From the project root, run: <code>npm run html-scrape:multpl</code> - this refreshes all 4 multpl.com indicators at once.',
+      'The script validates the scraped data and writes to <code>data/monthly/price_to_sales.json</code>. A 1-hour cooldown guard prevents hammering the site.'
     ]
   }
 };
@@ -520,6 +557,246 @@ const TOOLTIPS = {
   revolving_credit:         'Total revolving credit (primarily credit card balances) outstanding. Rapid growth signals consumers are funding everyday expenses with debt rather than income - a warning that household finances are stretched and spending is not supported by real earnings.',
   cc_delinquency:           'Percentage of credit card balances 30+ days past due. Credit card delinquency is often the first consumer stress indicator since cards are unsecured - consumers prioritize mortgage and auto payments first, making card delinquency an early warning signal.',
   cc_chargeoff:             'Percentage of credit card debt written off by banks as uncollectible losses. Charge-offs are a lagging confirmation that delinquencies have materialized into actual bank losses, measuring the true depth of consumer financial distress in the economy.'
+};
+
+// ─── FRED API STEPS ───────────────────────────────────────────────────────────
+// Reference cards for all 18 FRED-API indicators - auto-fetched by GitHub Actions
+
+const FRED_API_STEPS = {
+  yield_curve: {
+    label: 'Yield Curve (2yr vs 10yr)',
+    frequency: 'Weekly',
+    fredSeries: 'T10Y2Y',
+    npmCmd: 'npm run api-pull:weekly',
+    dataFile: 'data/weekly/yield_curve.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/T10Y2Y',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:weekly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>T10Y2Y</code> - Measures the gap between 10-year and 2-year Treasury yields. When short-term rates exceed long-term rates (inversion), banks cannot profit from lending and tighten credit. Every U.S. recession since 1950 was preceded by an inverted yield curve.'
+    ]
+  },
+  jobless_claims: {
+    label: 'Initial Jobless Claims',
+    frequency: 'Weekly',
+    fredSeries: 'ICSA',
+    npmCmd: 'npm run api-pull:weekly',
+    dataFile: 'data/weekly/jobless_claims.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/ICSA',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:weekly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>ICSA</code> - Tracks how many people filed for unemployment benefits in the past week. A sustained rise above 300K signals layoffs are accelerating. Reported weekly, making it one of the fastest-moving labor market signals available.'
+    ]
+  },
+  credit_spreads: {
+    label: 'High-Yield Credit Spreads',
+    frequency: 'Weekly',
+    fredSeries: 'BAMLH0A0HYM2',
+    npmCmd: 'npm run api-pull:weekly',
+    dataFile: 'data/weekly/credit_spreads.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/BAMLH0A0HYM2',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:weekly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>BAMLH0A0HYM2</code> - Measures the extra interest rate high-risk companies must pay vs. safe U.S. Treasuries. When spreads widen sharply, investors are demanding higher compensation for risk - a sign credit markets are stressed and lending conditions are tightening.'
+    ]
+  },
+  ism_pmi: {
+    label: 'ISM Manufacturing PMI',
+    frequency: 'Monthly',
+    fredSeries: 'MANEMP',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/ism_pmi.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/MANEMP',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>MANEMP</code> (Manufacturing Employment) - Tracks employment levels in U.S. manufacturing. Declining manufacturing employment signals factories are cutting workers due to falling orders - often an early sign of broader economic contraction.'
+    ]
+  },
+  real_m2: {
+    label: 'Real M2 Money Supply',
+    frequency: 'Monthly',
+    fredSeries: 'M2REAL',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/real_m2.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/M2REAL',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>M2REAL</code> - Measures total money in circulation adjusted for inflation. When real M2 shrinks, there is less economic fuel available - consumer spending and business investment typically slow 6-12 months later as households have less purchasing power.'
+    ]
+  },
+  weekly_hours: {
+    label: 'Avg Weekly Hours Worked',
+    frequency: 'Monthly',
+    fredSeries: 'AWHAETP',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/weekly_hours.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/AWHAETP',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>AWHAETP</code> - Tracks average hours worked per week across all private industries. Employers typically cut hours before cutting headcount, making this an early warning of layoffs. A drop of 0.5 hours or more sustained over several months is historically significant.'
+    ]
+  },
+  durable_goods: {
+    label: 'Durable Goods Orders',
+    frequency: 'Monthly',
+    fredSeries: 'DGORDER',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/durable_goods.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DGORDER',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DGORDER</code> - Measures new orders for long-lasting manufactured goods like machinery and equipment. When businesses stop investing in equipment, they are signaling lower demand expectations ahead - a leading indicator of economic slowdown 3-6 months out.'
+    ]
+  },
+  tobins_q: {
+    label: "Tobin's Q Ratio",
+    frequency: 'Monthly',
+    fredSeries: 'NCBCEPNW',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/tobins_q.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/NCBCEPNW',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>NCBCEPNW</code> (Corporate Equities as % of Net Worth, Z.1 Flow of Funds) - Values above 150% indicate equities are priced at a significant premium over book value. Above 200% is historically extreme, seen near the dot-com and 2021 peaks.'
+    ]
+  },
+  housing_starts: {
+    label: 'Housing Starts & Permits',
+    frequency: 'Monthly',
+    fredSeries: 'HOUST',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/housing_starts.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/HOUST',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>HOUST</code> - Number of new residential construction projects begun each month. Declining starts signal builders and buyers are losing confidence. Housing drives significant economic activity through materials, labor, and furnishings - weakness here spreads broadly.'
+    ]
+  },
+  vehicle_sales: {
+    label: 'Total Vehicle Sales (SAAR)',
+    frequency: 'Monthly',
+    fredSeries: 'TOTALSA',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/vehicle_sales.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/TOTALSA',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>TOTALSA</code> - Seasonally adjusted annualized rate of total vehicle sales. Cars are major purchases that consumers delay when uncertain about the future. A sharp sustained drop signals deteriorating consumer confidence and tightening credit conditions in auto lending.'
+    ]
+  },
+  revolving_credit: {
+    label: 'Revolving Credit Outstanding',
+    frequency: 'Monthly',
+    fredSeries: 'REVOLSL',
+    npmCmd: 'npm run api-pull:monthly',
+    dataFile: 'data/monthly/revolving_credit.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/REVOLSL',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:monthly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>REVOLSL</code> (values in millions on FRED, displayed as trillions) - Total revolving credit (primarily credit card balances) outstanding. Rapid growth signals consumers are funding everyday expenses with debt rather than income - a warning that household finances are stretched.'
+    ]
+  },
+  loan_officer_survey: {
+    label: 'Senior Loan Officer Survey',
+    frequency: 'Quarterly',
+    fredSeries: 'DRTSCILM',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/loan_officer_survey.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DRTSCILM',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DRTSCILM</code> (Net % of banks tightening C&I lending standards) - Federal Reserve survey asking bank officers if they are tightening lending standards. When banks tighten, fewer businesses and consumers can access credit. Tightening typically slows economic activity 2-4 quarters later.'
+    ]
+  },
+  mortgage_delinquency: {
+    label: 'Mortgage Delinquency Rate',
+    frequency: 'Quarterly',
+    fredSeries: 'DRSFRMACBS',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/mortgage_delinquency.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DRSFRMACBS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DRSFRMACBS</code> - Percentage of single-family mortgages 30+ days past due. Rising delinquency means homeowners are struggling with payments, which leads to foreclosures, bank losses, and tighter lending standards - a lagging confirmation that a downturn is underway.'
+    ]
+  },
+  commercial_re_delinquency: {
+    label: 'Commercial RE Loan Delinquency',
+    frequency: 'Quarterly',
+    fredSeries: 'DRCRELEXFACBS',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/commercial_re_delinquency.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DRCRELEXFACBS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DRCRELEXFACBS</code> - Percentage of commercial real estate loans past due at banks. Stress in office, retail, and industrial loans signals businesses are unable to service debt, which flows back to falling property values, bank losses, and tighter credit conditions.'
+    ]
+  },
+  ci_loan_delinquency: {
+    label: 'C&I Loan Delinquency',
+    frequency: 'Quarterly',
+    fredSeries: 'DRBLACBS',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/ci_loan_delinquency.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DRBLACBS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DRBLACBS</code> - Percentage of commercial and industrial business loans past due. When businesses miss loan payments it confirms corporate financial distress is deepening - typically a lagging signal that an economic downturn has spread across multiple sectors.'
+    ]
+  },
+  auto_delinquency: {
+    label: 'Auto Loan Delinquency Rate',
+    frequency: 'Quarterly',
+    fredSeries: 'DRCCLACBS',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/auto_delinquency.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DRCCLACBS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DRCCLACBS</code> - Percentage of auto loans 30+ days past due. Auto loans often show delinquency early in a downturn since they are smaller than mortgages and consumers prioritize housing payments first. Rising rates signal spreading consumer financial stress.'
+    ]
+  },
+  cc_delinquency: {
+    label: 'Credit Card Delinquency Rate',
+    frequency: 'Quarterly',
+    fredSeries: 'DRCCLACBS',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/cc_delinquency.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/DRCCLACBS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>DRCCLACBS</code> - Percentage of credit card balances 30+ days past due. Credit card delinquency is often the first consumer stress indicator since cards are unsecured - consumers prioritize mortgage and auto payments first, making card delinquency an early warning signal.'
+    ]
+  },
+  cc_chargeoff: {
+    label: 'Credit Card Charge-Off Rate',
+    frequency: 'Quarterly',
+    fredSeries: 'CORCCACBS',
+    npmCmd: 'npm run api-pull:quarterly',
+    dataFile: 'data/quarterly/cc_chargeoff.json',
+    sourceUrl: 'https://fred.stlouisfed.org/series/CORCCACBS',
+    steps: [
+      'Fetched automatically every day at 7am UTC by GitHub Actions. No manual action needed.',
+      'To refresh locally, run: <code>npm run api-pull:quarterly</code> (add <code>-- --force</code> to bypass the freshness check).',
+      'FRED Series: <code>CORCCACBS</code> - Percentage of credit card debt written off by banks as uncollectible losses. Charge-offs are a lagging confirmation that delinquencies have materialized into actual bank losses, measuring the true depth of consumer financial distress in the economy.'
+    ]
+  }
 };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -610,12 +887,7 @@ function buildRiskDial(score) {
   const cx = 60, cy = 68, R = 54, ir = 34;
 
   // Zone end fractions mapping score ranges to arc positions
-  // Normal: 0-3, Mild: 4-7, Elevated: 8-13, High: 14-19, Critical: 20-28
-  const zones = [
-    { end: 3  / MAX, fill: '#3fb950' },
-    { end: 7  / MAX, fill: '#7ee787' },
-    { end: 13 / MAX, fill: '#d29922' },
-    { end: 19 / MAX, fill: '#f0883e' },
+  // Normal: 0-3, Mild: 4-7, Elevated: 8-13, High: 14-19, Critical: 20-28    { end: 19 / MAX, fill: '#f0883e' },
     { end: 1,        fill: '#f85149' },
   ];
 
@@ -697,15 +969,15 @@ function renderCard(indicator, dataMap) {
   const stale = isStale(d?.file_updated, meta.frequency);
 
   const tooltipText = (TOOLTIPS[indicator.id] || indicator.description).replace(/"/g, '&quot;');
+  const tabTarget = meta.access === 'fred_api' ? 'fred-api' : meta.access === 'html_scrape' ? 'html-scrape' : 'manual';
   const badges = [
     meta.frequency  ? `<span class="badge">${meta.frequency}</span>` : '',
     meta.importance ? `<span class="badge">${meta.importance}</span>` : '',
     meta.access     ? `<span class="badge">${sourceLabel}</span>` : '',
     trend           ? `<span class="badge ${getTrendClass(indicator.id, trend)}">${trend} Trend</span>` : '',
     dateLabel       ? `<span class="badge ${stale ? 'badge-trend-bad' : ''}">Updated ${dateLabel}${stale ? ' - Stale' : ''}</span>` : '',
-    hasPending && MANUAL_STEPS[indicator.id]
-      ? `<span class="badge" style="cursor:pointer;color:var(--blue);border-color:var(--blue);background:#0d1f38" onclick="switchTab('manual',null,'${indicator.id}')">📋 Update Guide</span>`
-      : `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`
+    `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`,
+    `<span class="badge badge-view-details" onclick="viewDetails('${tabTarget}','${indicator.id}')">View Details</span>`
   ].filter(Boolean).join('');
 
   return `<div class="ind-card ${status}">
@@ -718,10 +990,8 @@ function renderCard(indicator, dataMap) {
       ${cfg.avg ? `<div class="avg-pill">avg ${cfg.avg}</div>` : ''}
     </div>
     <div class="sparkline-wrap">${sparkline(hist, status)}</div>
-    <div class="${hasPending ? 'card-manual' : 'card-desc'}">
-      ${hasPending
-        ? `Manual update required - <a href="${indicator.url}" target="_blank">view source</a>`
-        : (msg || indicator.description)}
+    <div class="card-desc">
+      ${msg || TOOLTIPS[indicator.id] || indicator.description}
     </div>
     ${badges ? `<div class="badge-row">${badges}</div>` : ''}
   </div>`;
@@ -845,6 +1115,7 @@ async function loadAllData() {
   });
   return dataMap;
 }
+
 async function init() {
   try {
     const dataMap = await loadAllData();
@@ -852,6 +1123,8 @@ async function init() {
     renderSection('leading-section', 'leading', ALL_INDICATORS, dataMap);
     renderSection('lagging-section', 'lagging', ALL_INDICATORS, dataMap);
     renderManualTab();
+    renderFredApiTab();
+    renderHtmlScrapeTab();
   } catch (e) {
     console.error('Dashboard error:', e);
   } finally {
@@ -887,7 +1160,7 @@ function switchTab(tab, btn, scrollTo) {
   }
 }
 
-// ─── MANUAL GUIDE TAB ────────────────────────────────────────────────────────
+// ─── GUIDE TABS ──────────────────────────────────────────────────────────────
 
 function copyGuideText(id) {
   const card = document.getElementById('guide-' + id);
@@ -898,10 +1171,10 @@ function copyGuideText(id) {
   if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 2000); }
 }
 
-function renderManualTab() {
-  const grid = document.getElementById('manual-guide-grid');
+function renderGuideCards(gridId, stepsObj, accessLabel) {
+  const grid = document.getElementById(gridId);
   if (!grid) return;
-  grid.innerHTML = Object.entries(MANUAL_STEPS).map(([id, cfg]) => {
+  grid.innerHTML = Object.entries(stepsObj).map(([id, cfg]) => {
     const stepsHtml = cfg.steps.map(s => '<li><span>' + s + '</span></li>').join('');
     return '<div class="guide-card" id="guide-' + id + '">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
@@ -910,12 +1183,60 @@ function renderManualTab() {
       '</div>' +
       '<div class="guide-card-meta">' +
         '<span class="badge">' + cfg.frequency + '</span>' +
-        '<span class="badge">Manually Updated</span>' +
+        '<span class="badge">' + accessLabel + '</span>' +
         '<a href="' + cfg.sourceUrl + '" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38;text-decoration:none">View Source</a>' +
       '</div>' +
       '<ol class="guide-steps">' + stepsHtml + '</ol>' +
     '</div>';
   }).join('');
+}
+
+function renderManualTab() {
+  renderGuideCards('manual-guide-grid', MANUAL_STEPS, 'File Drop');
+}
+
+function renderFredApiTab() {
+  renderGuideCards('fred-api-guide-grid', FRED_API_STEPS, 'Auto - FRED API');
+}
+
+function renderHtmlScrapeTab() {
+  renderGuideCards('html-scrape-guide-grid', HTML_SCRAPE_STEPS, 'Auto - HTML Scraper');
+}
+
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+
+(function() {
+  const tip = document.getElementById('tooltip');
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-tooltip]');
+    if (!el) { tip.style.display = 'none'; return; }
+    tip.textContent = el.dataset.tooltip;
+    tip.style.display = 'block';
+  });
+  document.addEventListener('mousemove', e => {
+    if (tip.style.display === 'none') return;
+    const x = e.clientX + 14, y = e.clientY + 14;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    tip.style.left = (x + tw > window.innerWidth ? x - tw - 28 : x) + 'px';
+    tip.style.top  = (y + th > window.innerHeight ? y - th - 28 : y) + 'px';
+  });
+  document.addEventListener('mouseout', e => {
+    if (!e.target.closest('[data-tooltip]')) return;
+    if (!e.relatedTarget || !e.relatedTarget.closest('[data-tooltip]')) tip.style.display = 'none';
+  });
+})();
+
+// ─── VIEW DETAILS ─────────────────────────────────────────────────────────────
+
+function viewDetails(tab, id) {
+  switchTab(tab, null, id);
+  setTimeout(() => {
+    const el = document.getElementById('guide-' + id);
+    if (el) {
+      el.classList.add('guide-flash');
+      setTimeout(() => el.classList.remove('guide-flash'), 1000);
+    }
+  }, 100);
 }
 
 init();

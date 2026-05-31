@@ -4,7 +4,7 @@
   "description": "Economic downturn indicator dashboard - fetches data from FRED API and other sources",
   "type": "module",
   "scripts": {
-    "serve": "npx serve . --listen 3000",
+    "start:server": "npx serve . --listen 3000",
     "api-pull:weekly": "node scripts/api-pull-weekly.js",
     "api-pull:monthly": "node scripts/api-pull-monthly.js",
     "api-pull:quarterly": "node scripts/api-pull-quarterly.js",

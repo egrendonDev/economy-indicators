@@ -77,7 +77,7 @@ economy-indicators/
 
 | Script | What it does |
 |--------|-------------|
-| `npm run serve` | Start local server only (no fetch) at http://localhost:3000 |
+| `npm run start:server` | Start local server only (no fetch) at http://localhost:3000 |
 | `npm run api-pull:all` | Run all three FRED API scripts in sequence (respects freshness check) |
 | `npm run api-pull:weekly` | Fetch weekly indicators - yield curve, jobless claims, credit spreads |
 | `npm run api-pull:monthly` | Fetch monthly indicators - macro, residential, auto, credit cards |
@@ -237,7 +237,7 @@ npm run api-pull:quarterly -- --force
 Because `index.html` fetches local JSON files via `fetch()`, you need a local server (not just opening the file directly):
 
 ```bash
-npm run serve
+npm run start:server
 ```
 
 Then visit `http://localhost:3000`.
