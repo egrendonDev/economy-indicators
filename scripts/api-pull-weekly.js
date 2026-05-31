@@ -75,16 +75,22 @@ async function main() {
   banner('Weekly Macro Fetch - FRED API', c.cyan);
 
   const force = process.argv.includes('--force');
-  const check = shouldRefresh('data/weekly/macro.json', 'weekly', force);
-  logRefreshDecision('Weekly Macro', 'data/weekly/macro.json', 'weekly', check);
+  const proxyFile = 'data/weekly/yield_curve.json';
+  const check = shouldRefresh(proxyFile, 'weekly', force);
+  logRefreshDecision('Weekly Macro', proxyFile, 'weekly', check);
   if (!check.needed) { skip('Data is fresh - skipping fetch (use --force to override)'); return; }
 
   section('Fetching Weekly / Macro');
   const indicators = await fetchWeeklyMacro();
 
   mkdirSync('data/weekly', { recursive: true });
-  writeFileSync('data/weekly/macro.json', JSON.stringify({ last_updated: new Date().toISOString(), indicators }, null, 2));
-  ok(`Saved: data/weekly/macro.json`);
+
+  const timestamp = new Date().toISOString();
+  for (const ind of indicators) {
+    const filePath = `data/weekly/${ind.id}.json`;
+    writeFileSync(filePath, JSON.stringify({ last_updated: timestamp, indicators: [ind] }, null, 2));
+    ok(`Saved: ${filePath}`);
+  }
 
   const succeeded = indicators.filter(i => !i.error).length;
   const failed    = indicators.filter(i =>  i.error).length;

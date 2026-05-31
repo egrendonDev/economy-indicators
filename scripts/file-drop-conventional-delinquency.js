@@ -59,7 +59,7 @@ const __dirname  = dirname(__filename);
 const ROOT       = join(__dirname, '..');
 
 const MANUAL_DIR    = join(ROOT, 'data', 'manual-file-dropzone');
-const JSON_PATH     = join(ROOT, 'data', 'quarterly', 'residential.json');
+const JSON_PATH     = join(ROOT, 'data', 'quarterly', 'conventional_delinquency.json');
 const INDICATOR_ID  = 'conventional_delinquency';
 const HISTORY_QTRS  = 20;
 

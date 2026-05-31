@@ -261,17 +261,39 @@
 // ─── CONFIG ────────────────────────────────────────────────────────────────────
 
 const DATA_FILES = [
-  'data/weekly/macro.json',
-  'data/monthly/macro.json',
-  'data/monthly/stock_market.json',
-  'data/monthly/residential.json',
-  'data/monthly/auto.json',
-  'data/monthly/credit_cards.json',
-  'data/quarterly/macro.json',
-  'data/quarterly/residential.json',
-  'data/quarterly/commercial.json',
-  'data/quarterly/auto.json',
-  'data/quarterly/credit_cards.json'
+  // Weekly
+  'data/weekly/yield_curve.json',
+  'data/weekly/jobless_claims.json',
+  'data/weekly/credit_spreads.json',
+  // Monthly - macro
+  'data/monthly/ism_manufacturing.json',
+  'data/monthly/real_m2.json',
+  'data/monthly/weekly_hours.json',
+  'data/monthly/durable_goods.json',
+  // Monthly - stock market
+  'data/monthly/shiller_cape.json',
+  'data/monthly/sp500_dividend_yield.json',
+  'data/monthly/price_to_sales.json',
+  'data/monthly/trailing_pe.json',
+  'data/monthly/margin_debt.json',
+  'data/monthly/tobins_q.json',
+  // Monthly - residential / auto / credit
+  'data/monthly/housing_starts.json',
+  'data/monthly/fha_delinquency.json',
+  'data/monthly/vehicle_sales.json',
+  'data/monthly/revolving_credit.json',
+  // Quarterly - macro
+  'data/quarterly/loan_officer_survey.json',
+  // Quarterly - residential
+  'data/quarterly/mortgage_delinquency.json',
+  'data/quarterly/conventional_delinquency.json',
+  // Quarterly - commercial
+  'data/quarterly/commercial_re_delinquency.json',
+  'data/quarterly/ci_loan_delinquency.json',
+  // Quarterly - auto / credit
+  'data/quarterly/auto_delinquency.json',
+  'data/quarterly/cc_delinquency.json',
+  'data/quarterly/cc_chargeoff.json'
 ];
 
 // direction: 'higher' = higher is worse (delinquency, spreads, CAPE)
@@ -586,11 +608,28 @@ function buildRiskDial(score) {
     prev = z.end;
   }
 
+  // Score range labels inside each arc band at mid-radius
+  // Zones: Normal(0-3), Mild(4-7), Elevated(8-13), High(14-19), Critical(20+)
+  const zoneLabels = [
+    { f_start: 0,       f_end: 3/MAX,  label: '0-3'   },
+    { f_start: 3/MAX,   f_end: 7/MAX,  label: '4-7'   },
+    { f_start: 7/MAX,   f_end: 13/MAX, label: '8-13'  },
+    { f_start: 13/MAX,  f_end: 19/MAX, label: '14-19' },
+    { f_start: 19/MAX,  f_end: 1,      label: '20+'   },
+  ];
+  const rMid = (R + ir) / 2; // mid-radius = 44
+  let labels = '';
+  for (const { f_start, f_end, label } of zoneLabels) {
+    const f_mid = (f_start + f_end) / 2;
+    labels += `<text x="${px(f_mid, rMid)}" y="${py(f_mid, rMid)}" fill="rgba(0,0,0,0.55)" font-size="5" font-weight="700" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+  }
+
   // Needle: vertical line rotated. -90° = pointing left (score=0), +90° = pointing right (score=MAX)
   const needleRot = (-90 + (capped / MAX) * 180).toFixed(1);
 
   return `<svg viewBox="0 0 120 72" width="120" height="72" style="flex-shrink:0;overflow:visible" aria-label="Risk dial">
     ${paths}
+    ${labels}
     <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - R + 10}" stroke="#e6edf3" stroke-width="2.5" stroke-linecap="round" transform="rotate(${needleRot},${cx},${cy})"/>
     <circle cx="${cx}" cy="${cy}" r="5" fill="#21262d" stroke="#c9d1d9" stroke-width="1.5"/>
   </svg>`;

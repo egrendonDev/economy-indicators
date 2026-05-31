@@ -1,18 +1,15 @@
 /**
  * html-scrape-multpl-shared.js
  *
- * Scrapes multpl.com for 3 stock market valuation indicators and writes
- * results to data/monthly/stock_market.json.
- *
- * Indicators:
- *   shiller_cape         - https://www.multpl.com/shiller-pe/table/by-month
- *   sp500_dividend_yield - https://www.multpl.com/s-p-500-dividend-yield/table/by-month
- *   price_to_sales       - https://www.multpl.com/s-p-500-price-to-sales/table/by-month
- *   trailing_pe          - https://www.multpl.com/s-p-500-pe-ratio/table/by-month
+ * Scrapes multpl.com for 4 stock market valuation indicators and writes
+ * each result to its own per-indicator JSON file:
+ *   data/monthly/shiller_cape.json
+ *   data/monthly/sp500_dividend_yield.json
+ *   data/monthly/price_to_sales.json
+ *   data/monthly/trailing_pe.json
  *
  * Usage:
  *   npm run html-scrape:multpl
- *   npm run manually:load-data:multpl   (also runs npm install first)
  *
  * Safety:
  *   - 1-hour cooldown guard: skips if last run was less than 1 hour ago
@@ -21,7 +18,7 @@
  *   - Duplicate/stale date guard - re-running back to back is safe and non-destructive
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { createRequire } from 'module';
@@ -58,8 +55,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 const ROOT       = join(__dirname, '..');
 
-const JSON_PATH      = join(ROOT, 'data', 'monthly', 'stock_market.json');
 const HISTORY_MONTHS = 36;
+const PROXY_FILE     = join(ROOT, 'data', 'monthly', 'shiller_cape.json');
 
 // ─── Indicator definitions ─────────────────────────────────────────────────────
 
@@ -153,25 +150,19 @@ async function scrapeIndicator(indicator) {
   return { id: indicator.id, history, latest };
 }
 
-// ─── Load existing JSON ────────────────────────────────────────────────────────
+// ─── Load / write per-indicator file ──────────────────────────────────────────
 
-function loadStockMarket() {
-  if (!existsSync(JSON_PATH)) {
-    fail(`${JSON_PATH} not found. Run npm run api-pull:monthly first to initialize it.`, true);
-  }
-  return JSON.parse(readFileSync(JSON_PATH, 'utf8'));
+function loadExistingIndicator(id) {
+  const filePath = join(ROOT, 'data', 'monthly', `${id}.json`);
+  if (!existsSync(filePath)) return null;
+  try {
+    const file = JSON.parse(readFileSync(filePath, 'utf8'));
+    return file.indicators?.[0] ?? null;
+  } catch { return null; }
 }
 
-// ─── Write result for one indicator ───────────────────────────────────────────
-
-function writeIndicator(stockData, result) {
+function writeIndicatorFile(result) {
   const { id, history, latest, error } = result;
-  const idx = stockData.indicators.findIndex(i => i.id === id);
-
-  if (idx === -1) {
-    warn(`${id} - not found in stock_market.json, skipping`);
-    return false;
-  }
 
   if (error) {
     warn(`${id} - scrape error, keeping existing data`);
@@ -179,29 +170,37 @@ function writeIndicator(stockData, result) {
   }
 
   // ─── Duplicate/stale guard ─────────────────────────────────────────────────
-  const existing = stockData.indicators[idx]?.latest;
-  if (existing?.date && latest?.date) {
-    if (latest.date < existing.date) {
-      warn(`${id} - stale data detected (incoming: ${latest.date}, existing: ${existing.date})`);
+  const existing = loadExistingIndicator(id);
+  if (existing?.latest?.date && latest?.date) {
+    if (latest.date < existing.latest.date) {
+      warn(`${id} - stale data detected (incoming: ${latest.date}, existing: ${existing.latest.date})`);
       warn(`       Suspected cause: source may not yet have published the latest month.`);
       warn(`       Action: skipping write, existing data preserved.`);
       return false;
     }
-    if (latest.date === existing.date) {
+    if (latest.date === existing.latest.date) {
       skip(`${id} - duplicate data (same latest date: ${latest.date}), skipping write`);
       return false;
     }
   }
 
-  stockData.indicators[idx] = {
-    ...stockData.indicators[idx],
+  const filePath = join(ROOT, 'data', 'monthly', `${id}.json`);
+  mkdirSync(join(ROOT, 'data', 'monthly'), { recursive: true });
+
+  const updatedIndicator = {
+    ...(existing ?? {}),
     latest,
     history,
     manual_update_required: false,
     note: `Scraped from multpl.com on ${new Date().toISOString()}`
   };
 
-  ok(`${id} - JSON updated`);
+  writeFileSync(filePath, JSON.stringify({
+    last_updated: new Date().toISOString(),
+    indicators: [updatedIndicator]
+  }, null, 2));
+
+  ok(`${id} - saved to data/monthly/${id}.json`);
   return true;
 }
 
@@ -209,19 +208,11 @@ function writeIndicator(stockData, result) {
 // Source publishes monthly. Skip if all indicators already have current-month data.
 
 function allIndicatorsCurrentMonth() {
-  if (!existsSync(JSON_PATH)) return false;
-  let stockData;
-  try {
-    stockData = JSON.parse(readFileSync(JSON_PATH, 'utf8'));
-  } catch { return false; }
-
   const currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
-  const ids = INDICATORS.map(i => i.id);
-
-  return ids.every(id => {
-    const ind = stockData.indicators?.find(i => i.id === id);
-    if (!ind?.latest?.date) return false;
-    return ind.latest.date.slice(0, 7) === currentMonth;
+  return INDICATORS.every(({ id }) => {
+    const existing = loadExistingIndicator(id);
+    if (!existing?.latest?.date) return false;
+    return existing.latest.date.slice(0, 7) === currentMonth;
   });
 }
 
@@ -231,8 +222,8 @@ async function main() {
   banner('HTML Scrape - multpl.com', c.cyan);
 
   // Guard 1: 1-hour cooldown
-  const cooldown = shouldRefresh(JSON_PATH, 'html_scrape', false);
-  logRefreshDecision('multpl.com cooldown check', JSON_PATH, 'html_scrape', cooldown);
+  const cooldown = shouldRefresh(PROXY_FILE, 'html_scrape', false);
+  logRefreshDecision('multpl.com cooldown check', PROXY_FILE, 'html_scrape', cooldown);
   if (!cooldown.needed) {
     warn(`Cooldown not met - last run was ${cooldown.hoursSince}h ago (minimum: 1h).`);
     warn(`Skipping to avoid unnecessary requests.`);
@@ -254,25 +245,16 @@ async function main() {
     results.push(await scrapeIndicator(ind));
   }
 
-  section('Writing to stock_market.json');
-  const stockData = loadStockMarket();
+  section('Writing per-indicator files');
   let written = 0;
   let skipped = 0;
   let failed  = 0;
 
   for (const result of results) {
-    const didWrite = writeIndicator(stockData, result);
+    const didWrite = writeIndicatorFile(result);
     if (didWrite) written++;
     else if (result.error) failed++;
     else skipped++;
-  }
-
-  if (written > 0) {
-    stockData.last_updated = new Date().toISOString();
-    writeFileSync(JSON_PATH, JSON.stringify(stockData, null, 2));
-    ok(`Saved: data/monthly/stock_market.json`);
-  } else {
-    skip(`No changes written to stock_market.json`);
   }
 
   const summary = `${written} updated, ${skipped} skipped, ${failed} failed`;

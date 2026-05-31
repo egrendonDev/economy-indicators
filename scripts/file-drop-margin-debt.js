@@ -3,7 +3,7 @@
  *
  * Scans data/manual-file-dropzone/ for any unprocessed FINRA margin statistics xlsx file,
  * extracts the last 36 months of margin debt data, and updates
- * the margin_debt entry in data/monthly/stock_market.json.
+ * the margin_debt entry in data/monthly/margin_debt.json.
  *
  * After processing, renames the source file to:
  *   {originalName}-[PROCESSED]-{YYYYMMDDHHMMSS}.xlsx
@@ -17,7 +17,7 @@
  *   Column A: Year-Month (YYYY-MM, newest first)
  *   Column B: Debit Balances in Customers' Securities Margin Accounts (millions USD)
  *
- * Output: updates margin_debt in data/monthly/stock_market.json
+ * Output: updates margin_debt in data/monthly/margin_debt.json
  *
  * See README.md for full setup instructions.
  */
@@ -58,7 +58,7 @@ const __dirname = dirname(__filename);
 const ROOT = join(__dirname, '..');
 
 const MANUAL_DIR = join(ROOT, 'data', 'manual-file-dropzone');
-const JSON_PATH  = join(ROOT, 'data', 'monthly', 'stock_market.json');
+const JSON_PATH  = join(ROOT, 'data', 'monthly', 'margin_debt.json');
 const HISTORY_MONTHS = 36;
 
 banner('Margin Debt - FINRA xlsx Import', c.cyan);

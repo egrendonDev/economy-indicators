@@ -38,10 +38,10 @@ async function fetchFredIndicator(indicator) {
 }
 
 // ─── Manual / scrape placeholder ─────────────────────────────────────────────
-// These indicators require scraping or PDF parsing.
-// The dashboard will display the last saved value until manually updated.
+// Loads cached value from the indicator's own per-indicator JSON file.
 
-function loadExisting(filePath, id) {
+function loadExisting(id) {
+  const filePath = `data/monthly/${id}.json`;
   if (!existsSync(filePath)) return null;
   try {
     const file = JSON.parse(readFileSync(filePath, 'utf8'));
@@ -49,8 +49,8 @@ function loadExisting(filePath, id) {
   } catch { return null; }
 }
 
-function manualPlaceholder(indicator, existingFilePath) {
-  const existing = loadExisting(existingFilePath, indicator.id);
+function manualPlaceholder(indicator) {
+  const existing = loadExisting(indicator.id);
   if (existing && !existing.error) {
     skip(`${indicator.label} - cached (manual update required)`);
     return { ...existing, manual_update_required: true };
@@ -81,64 +81,15 @@ function buildBase(indicator) {
   };
 }
 
-// ─── Category fetch functions ─────────────────────────────────────────────────
+// ─── Fetch all monthly indicators ─────────────────────────────────────────────
 
-async function fetchMacro(indicators) {
-  section('Monthly / Macro');
+async function fetchAllMonthly(indicators) {
   const results = [];
-  for (const ind of indicators.filter(i => i.category === 'macro')) {
+  for (const ind of indicators) {
     if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/monthly/macro.json'));
+    else results.push(manualPlaceholder(ind));
   }
   return results;
-}
-
-async function fetchStockMarket(indicators) {
-  section('Monthly / Stock Market');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'stock_market')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/monthly/stock_market.json'));
-  }
-  return results;
-}
-
-async function fetchResidential(indicators) {
-  section('Monthly / Residential');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'residential')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/monthly/residential.json'));
-  }
-  return results;
-}
-
-async function fetchAuto(indicators) {
-  section('Monthly / Auto');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'auto')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/monthly/auto.json'));
-  }
-  return results;
-}
-
-async function fetchCreditCards(indicators) {
-  section('Monthly / Credit Cards');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'credit_cards')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/monthly/credit_cards.json'));
-  }
-  return results;
-}
-
-// ─── Write helper ─────────────────────────────────────────────────────────────
-
-function writeOutput(folder, filename, indicators) {
-  mkdirSync(folder, { recursive: true });
-  writeFileSync(`${folder}/${filename}`, JSON.stringify({ last_updated: new Date().toISOString(), indicators }, null, 2));
-  ok(`Saved: ${folder}/${filename}`);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -147,31 +98,28 @@ async function main() {
   banner('Monthly Data Fetch - FRED API', c.cyan);
 
   const force = process.argv.includes('--force');
-  const check = shouldRefresh('data/monthly/macro.json', 'monthly', force);
-  logRefreshDecision('Monthly Data', 'data/monthly/macro.json', 'monthly', check);
+  const proxyFile = 'data/monthly/ism_manufacturing.json';
+  const check = shouldRefresh(proxyFile, 'monthly', force);
+  logRefreshDecision('Monthly Data', proxyFile, 'monthly', check);
   if (!check.needed) { skip('Data is fresh - skipping fetch (use --force to override)'); return; }
 
-  const monthly = byFrequency('monthly');
-
-  const [macro, stockMarket, residential, auto, creditCards] = await Promise.allSettled([
-    fetchMacro(monthly),
-    fetchStockMarket(monthly),
-    fetchResidential(monthly),
-    fetchAuto(monthly),
-    fetchCreditCards(monthly)
-  ]);
+  section('Fetching Monthly Indicators');
+  const monthly  = byFrequency('monthly');
+  const results  = await fetchAllMonthly(monthly);
 
   section('Writing output files');
-  writeOutput('data/monthly', 'macro.json',        macro.value       ?? []);
-  writeOutput('data/monthly', 'stock_market.json', stockMarket.value ?? []);
-  writeOutput('data/monthly', 'residential.json',  residential.value ?? []);
-  writeOutput('data/monthly', 'auto.json',          auto.value        ?? []);
-  writeOutput('data/monthly', 'credit_cards.json', creditCards.value ?? []);
+  mkdirSync('data/monthly', { recursive: true });
 
-  const allResults = [macro, stockMarket, residential, auto, creditCards].flatMap(r => r.value ?? []);
-  const succeeded  = allResults.filter(i => !i.error && !i.manual_update_required).length;
-  const manual     = allResults.filter(i => i.manual_update_required).length;
-  const failed     = allResults.filter(i => i.error).length;
+  const timestamp = new Date().toISOString();
+  for (const ind of results) {
+    const filePath = `data/monthly/${ind.id}.json`;
+    writeFileSync(filePath, JSON.stringify({ last_updated: timestamp, indicators: [ind] }, null, 2));
+    ok(`Saved: ${filePath}`);
+  }
+
+  const succeeded = results.filter(i => !i.error && !i.manual_update_required).length;
+  const manual    = results.filter(i => i.manual_update_required).length;
+  const failed    = results.filter(i => i.error).length;
 
   if (failed > 0) {
     banner(`DONE - ${succeeded} fetched, ${manual} manual, ${failed} FAILED`, c.red);

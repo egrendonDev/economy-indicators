@@ -38,8 +38,10 @@ async function fetchFredIndicator(indicator) {
 }
 
 // ─── Manual / scrape placeholder ─────────────────────────────────────────────
+// Loads cached value from the indicator's own per-indicator JSON file.
 
-function loadExisting(filePath, id) {
+function loadExisting(id) {
+  const filePath = `data/quarterly/${id}.json`;
   if (!existsSync(filePath)) return null;
   try {
     const file = JSON.parse(readFileSync(filePath, 'utf8'));
@@ -47,8 +49,8 @@ function loadExisting(filePath, id) {
   } catch { return null; }
 }
 
-function manualPlaceholder(indicator, existingFilePath) {
-  const existing = loadExisting(existingFilePath, indicator.id);
+function manualPlaceholder(indicator) {
+  const existing = loadExisting(indicator.id);
   if (existing && !existing.error) {
     skip(`${indicator.label} - cached (manual update required)`);
     return { ...existing, manual_update_required: true };
@@ -79,64 +81,15 @@ function buildBase(indicator) {
   };
 }
 
-// ─── Category fetch functions ─────────────────────────────────────────────────
+// ─── Fetch all quarterly indicators ───────────────────────────────────────────
 
-async function fetchMacro(indicators) {
-  section('Quarterly / Macro');
+async function fetchAllQuarterly(indicators) {
   const results = [];
-  for (const ind of indicators.filter(i => i.category === 'macro')) {
+  for (const ind of indicators) {
     if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/quarterly/macro.json'));
+    else results.push(manualPlaceholder(ind));
   }
   return results;
-}
-
-async function fetchResidential(indicators) {
-  section('Quarterly / Residential');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'residential')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/quarterly/residential.json'));
-  }
-  return results;
-}
-
-async function fetchCommercial(indicators) {
-  section('Quarterly / Commercial');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'commercial')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/quarterly/commercial.json'));
-  }
-  return results;
-}
-
-async function fetchAuto(indicators) {
-  section('Quarterly / Auto');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'auto')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/quarterly/auto.json'));
-  }
-  return results;
-}
-
-async function fetchCreditCards(indicators) {
-  section('Quarterly / Credit Cards');
-  const results = [];
-  for (const ind of indicators.filter(i => i.category === 'credit_cards')) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind, 'data/quarterly/credit_cards.json'));
-  }
-  return results;
-}
-
-// ─── Write helper ─────────────────────────────────────────────────────────────
-
-function writeOutput(folder, filename, indicators) {
-  mkdirSync(folder, { recursive: true });
-  writeFileSync(`${folder}/${filename}`, JSON.stringify({ last_updated: new Date().toISOString(), indicators }, null, 2));
-  ok(`Saved: ${folder}/${filename}`);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -145,31 +98,28 @@ async function main() {
   banner('Quarterly Data Fetch - FRED API', c.cyan);
 
   const force = process.argv.includes('--force');
-  const check = shouldRefresh('data/quarterly/macro.json', 'quarterly', force);
-  logRefreshDecision('Quarterly Data', 'data/quarterly/macro.json', 'quarterly', check);
+  const proxyFile = 'data/quarterly/loan_officer_survey.json';
+  const check = shouldRefresh(proxyFile, 'quarterly', force);
+  logRefreshDecision('Quarterly Data', proxyFile, 'quarterly', check);
   if (!check.needed) { skip('Data is fresh - skipping fetch (use --force to override)'); return; }
 
+  section('Fetching Quarterly Indicators');
   const quarterly = byFrequency('quarterly');
-
-  const [macro, residential, commercial, auto, creditCards] = await Promise.allSettled([
-    fetchMacro(quarterly),
-    fetchResidential(quarterly),
-    fetchCommercial(quarterly),
-    fetchAuto(quarterly),
-    fetchCreditCards(quarterly)
-  ]);
+  const results   = await fetchAllQuarterly(quarterly);
 
   section('Writing output files');
-  writeOutput('data/quarterly', 'macro.json',        macro.value       ?? []);
-  writeOutput('data/quarterly', 'residential.json',  residential.value ?? []);
-  writeOutput('data/quarterly', 'commercial.json',   commercial.value  ?? []);
-  writeOutput('data/quarterly', 'auto.json',          auto.value        ?? []);
-  writeOutput('data/quarterly', 'credit_cards.json', creditCards.value ?? []);
+  mkdirSync('data/quarterly', { recursive: true });
 
-  const allResults = [macro, residential, commercial, auto, creditCards].flatMap(r => r.value ?? []);
-  const succeeded  = allResults.filter(i => !i.error && !i.manual_update_required).length;
-  const manual     = allResults.filter(i => i.manual_update_required).length;
-  const failed     = allResults.filter(i => i.error).length;
+  const timestamp = new Date().toISOString();
+  for (const ind of results) {
+    const filePath = `data/quarterly/${ind.id}.json`;
+    writeFileSync(filePath, JSON.stringify({ last_updated: timestamp, indicators: [ind] }, null, 2));
+    ok(`Saved: ${filePath}`);
+  }
+
+  const succeeded = results.filter(i => !i.error && !i.manual_update_required).length;
+  const manual    = results.filter(i => i.manual_update_required).length;
+  const failed    = results.filter(i => i.error).length;
 
   if (failed > 0) {
     banner(`DONE - ${succeeded} fetched, ${manual} manual, ${failed} FAILED`, c.red);

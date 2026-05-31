@@ -4,7 +4,7 @@
  * Scans data/manual-file-dropzone/ for an unprocessed HUD FHA Loan Performance
  * Trends PDF, extracts the Non-Seasonally Adjusted Serious Delinquency Rate
  * from Table 1, and updates the fha_delinquency entry in
- * data/monthly/residential.json.
+ * data/monthly/fha_delinquency.json.
  *
  * After processing, renames the source file to:
  *   {originalName}-[PROCESSED]-{YYYYMMDDHHMMSS}.pdf
@@ -18,7 +18,7 @@
  *   URL: https://www.hud.gov/hud-partners/single-family-loan-performance
  *   Metric: Serious Delinquency Rate (90+ days + in-foreclosure + in-bankruptcy), Non-SA
  *
- * Output: updates fha_delinquency in data/monthly/residential.json
+ * Output: updates fha_delinquency in data/monthly/fha_delinquency.json
  *
  * See README.md for full setup instructions.
  */
@@ -59,7 +59,7 @@ const __dirname  = dirname(__filename);
 const ROOT       = join(__dirname, '..');
 
 const MANUAL_DIR   = join(ROOT, 'data', 'manual-file-dropzone');
-const JSON_PATH    = join(ROOT, 'data', 'monthly', 'residential.json');
+const JSON_PATH    = join(ROOT, 'data', 'monthly', 'fha_delinquency.json');
 const INDICATOR_ID = 'fha_delinquency';
 const HISTORY_MONTHS = 36;
 
@@ -252,14 +252,14 @@ async function main() {
     } catch { /* ignore parse errors, proceed with write */ }
   }
 
-  // ─── Load and update residential.json ────────────────────────────────────
+  // ─── Load and update fha_delinquency.json ────────────────────────────────
 
   let json;
   if (existsSync(JSON_PATH)) {
     try {
       json = JSON.parse(readFileSync(JSON_PATH, 'utf8'));
     } catch {
-      warn('Could not parse existing residential.json - will overwrite indicator entry.');
+      warn('Could not parse existing fha_delinquency.json - will overwrite indicator entry.');
       json = { indicators: [] };
     }
   } else {
