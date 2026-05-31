@@ -1,0 +1,10 @@
+{
+  "last_updated": "2026-05-31T05:58:43.969Z",
+  "indicators": [
+    {
+      "id": "credit_spreads",
+      "label": "High-Yield Credit Spreads",
+      "error": "FRED API error for BAMLH0A0HYM2: 429"
+    }
+  ]
+}

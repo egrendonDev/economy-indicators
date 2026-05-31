@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "fha_delinquency",
+      "label": "FHA Delinquency Rate",
+      "description": "Serious delinquency (90+ days + foreclosure + bankruptcy) for FHA loans; low-down-payment borrower stress shows up here first",
+      "unit": "%",
+      "source": "HUD",
+      "url": "https://www.hud.gov/hud-partners/single-family-loan-performance",
+      "type": "lagging",
+      "importance": "medium",
+      "category": "residential",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.hud.gov/hud-partners/single-family-loan-performance"
+    }
+  ]
+}

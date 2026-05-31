@@ -1,0 +1,17 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "vehicle_sales",
+      "label": "Total Vehicle Sales (SAAR)",
+      "description": "Pace of car buying; sharp drops signal consumer pullback on big purchases",
+      "unit": "millions of units",
+      "source": "FRED",
+      "url": "https://fred.stlouisfed.org/series/TOTALSA",
+      "type": "leading",
+      "importance": "medium",
+      "category": "auto",
+      "error": "FRED API error for TOTALSA: 429"
+    }
+  ]
+}

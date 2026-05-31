@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "price_to_sales",
+      "label": "Price-to-Sales (S&P 500)",
+      "description": "Price vs revenue; harder to manipulate than earnings-based metrics",
+      "unit": "ratio",
+      "source": "multpl.com",
+      "url": "https://www.multpl.com/s-p-500-price-to-sales",
+      "type": "leading",
+      "importance": "medium",
+      "category": "stock_market",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.multpl.com/s-p-500-price-to-sales"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "ism_pmi",
+      "label": "ISM Manufacturing PMI",
+      "description": "Factory order and production health; below 50 signals contraction",
+      "unit": "index",
+      "source": "FRED",
+      "url": "https://fred.stlouisfed.org/series/MANEMP",
+      "type": "leading",
+      "importance": "high",
+      "category": "macro",
+      "latest": {
+        "date": "2026-04-01",
+        "value": 12596
+      },
+      "history": [
+        {
+          "date": "2023-05-01",
+          "value": 12869
+        },
+        {
+          "date": "2023-06-01",
+          "value": 12875
+        },
+        {
+          "date": "2023-07-01",
+          "value": 12862
+        },
+        {
+          "date": "2023-08-01",
+          "value": 12861
+        },
+        {
+          "date": "2023-09-01",
+          "value": 12872
+        },
+        {
+          "date": "2023-10-01",
+          "value": 12837
+        },
+        {
+          "date": "2023-11-01",
+          "value": 12859
+        },
+        {
+          "date": "2023-12-01",
+          "value": 12872
+        },
+        {
+          "date": "2024-01-01",
+          "value": 12875
+        },
+        {
+          "date": "2024-02-01",
+          "value": 12852
+        },
+        {
+          "date": "2024-03-01",
+          "value": 12836
+        },
+        {
+          "date": "2024-04-01",
+          "value": 12833
+        },
+        {
+          "date": "2024-05-01",
+          "value": 12825
+        },
+        {
+          "date": "2024-06-01",
+          "value": 12814
+        },
+        {
+          "date": "2024-07-01",
+          "value": 12806
+        },
+        {
+          "date": "2024-08-01",
+          "value": 12772
+        },
+        {
+          "date": "2024-09-01",
+          "value": 12758
+        },
+        {
+          "date": "2024-10-01",
+          "value": 12697
+        },
+        {
+          "date": "2024-11-01",
+          "value": 12711
+        },
+        {
+          "date": "2024-12-01",
+          "value": 12693
+        },
+        {
+          "date": "2025-01-01",
+          "value": 12673
+        },
+        {
+          "date": "2025-02-01",
+          "value": 12671
+        },
+        {
+          "date": "2025-03-01",
+          "value": 12666
+        },
+        {
+          "date": "2025-04-01",
+          "value": 12662
+        },
+        {
+          "date": "2025-05-01",
+          "value": 12651
+        },
+        {
+          "date": "2025-06-01",
+          "value": 12636
+        },
+        {
+          "date": "2025-07-01",
+          "value": 12625
+        },
+        {
+          "date": "2025-08-01",
+          "value": 12615
+        },
+        {
+          "date": "2025-09-01",
+          "value": 12612
+        },
+        {
+          "date": "2025-10-01",
+          "value": 12603
+        },
+        {
+          "date": "2025-11-01",
+          "value": 12593
+        },
+        {
+          "date": "2025-12-01",
+          "value": 12580
+        },
+        {
+          "date": "2026-01-01",
+          "value": 12582
+        },
+        {
+          "date": "2026-02-01",
+          "value": 12583
+        },
+        {
+          "date": "2026-03-01",
+          "value": 12598
+        },
+        {
+          "date": "2026-04-01",
+          "value": 12596
+        }
+      ]
+    }
+  ]
+}

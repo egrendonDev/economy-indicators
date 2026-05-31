@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "shiller_cape",
+      "label": "Shiller CAPE Ratio",
+      "description": "10-year inflation-adjusted P/E; high values signal large downside risk",
+      "unit": "ratio",
+      "source": "multpl.com",
+      "url": "https://www.multpl.com/shiller-pe",
+      "type": "leading",
+      "importance": "high",
+      "category": "stock_market",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.multpl.com/shiller-pe"
+    }
+  ]
+}

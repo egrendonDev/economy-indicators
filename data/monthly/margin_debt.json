@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "margin_debt",
+      "label": "Margin Debt",
+      "description": "Borrowed money in market; sharp drop after peak signals forced selling",
+      "unit": "millions USD",
+      "source": "FINRA",
+      "url": "https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics",
+      "type": "leading",
+      "importance": "medium",
+      "category": "stock_market",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics"
+    }
+  ]
+}

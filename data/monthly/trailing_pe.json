@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "trailing_pe",
+      "label": "Trailing P/E (S&P 500)",
+      "description": "Current price vs earnings; elevated readings mean little margin of safety",
+      "unit": "ratio",
+      "source": "multpl.com",
+      "url": "https://www.multpl.com/s-p-500-pe-ratio",
+      "type": "leading",
+      "importance": "high",
+      "category": "stock_market",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.multpl.com/s-p-500-pe-ratio"
+    }
+  ]
+}

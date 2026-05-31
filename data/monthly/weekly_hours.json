@@ -1,0 +1,17 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "weekly_hours",
+      "label": "Avg Weekly Hours Worked",
+      "description": "Employers cut hours before headcount; early labor stress signal",
+      "unit": "hours",
+      "source": "FRED",
+      "url": "https://fred.stlouisfed.org/series/AWHAETP",
+      "type": "leading",
+      "importance": "medium",
+      "category": "macro",
+      "error": "FRED API error for AWHAETP: 429"
+    }
+  ]
+}

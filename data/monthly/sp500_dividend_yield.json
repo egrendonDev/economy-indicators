@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "sp500_dividend_yield",
+      "label": "S&P 500 Dividend Yield",
+      "description": "Very low yield means premium prices paid with minimal income cushion",
+      "unit": "%",
+      "source": "multpl.com",
+      "url": "https://www.multpl.com/s-p-500-dividend-yield",
+      "type": "leading",
+      "importance": "medium",
+      "category": "stock_market",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.multpl.com/s-p-500-dividend-yield"
+    }
+  ]
+}

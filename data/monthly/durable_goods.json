@@ -1,0 +1,17 @@
+{
+  "last_updated": "2026-05-31T05:58:16.446Z",
+  "indicators": [
+    {
+      "id": "durable_goods",
+      "label": "Durable Goods Orders",
+      "description": "Business investment in equipment; drops signal capex pullback",
+      "unit": "millions USD",
+      "source": "FRED",
+      "url": "https://fred.stlouisfed.org/series/DGORDER",
+      "type": "leading",
+      "importance": "medium",
+      "category": "macro",
+      "error": "FRED API error for DGORDER: 429"
+    }
+  ]
+}
