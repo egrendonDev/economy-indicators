@@ -9,15 +9,16 @@
     "api-pull:monthly": "node scripts/api-pull-monthly.js",
     "api-pull:quarterly": "node scripts/api-pull-quarterly.js",
     "api-pull:all": "node scripts/api-pull-weekly.js && node scripts/api-pull-monthly.js && node scripts/api-pull-quarterly.js",
+    "api-pull:all:force": "node scripts/api-pull-weekly.js --force && node scripts/api-pull-monthly.js --force && node scripts/api-pull-quarterly.js --force",
     "html-scrape:multpl": "node scripts/html-scrape-multpl-shared.js",
+    "run:api-pull:all:force:serve": "npm run api-pull:all:force && npx serve . --listen 3000",
+    "run:html-scrape:multpl:serve": "npm run html-scrape:multpl && npx serve . --listen 3000",
+    "run:file-drop:margin-debt:serve": "npm run file-drop:margin-debt && npx serve . --listen 3000",
+    "run:file-drop:fha-delinquency:serve": "npm run file-drop:fha-delinquency && npx serve . --listen 3000",
+    "run:file-drop:conventional-delinquency:serve": "npm run file-drop:conventional-delinquency && npx serve . --listen 3000",
     "file-drop:margin-debt": "node scripts/file-drop-margin-debt.js",
     "file-drop:fha-delinquency": "node scripts/file-drop-fha-delinquency.js",
-    "file-drop:conventional-delinquency": "node scripts/file-drop-conventional-delinquency.js",
-    "run:api-load-data-auto:serve:local": "npm run api-pull:all -- --force && npx serve . --listen 3000",
-    "run:html-scrape-auto:multpl": "npm run html-scrape:multpl && npx serve . --listen 3000",
-    "run:file-drop-manually:margin-debt": "npm run file-drop:margin-debt && npx serve . --listen 3000",
-    "run:file-drop-manually:fha-delinquency": "npm run file-drop:fha-delinquency && npx serve . --listen 3000",
-    "run:file-drop-manually:conventional-delinquency": "npm run file-drop:conventional-delinquency && npx serve . --listen 3000"
+    "file-drop:conventional-delinquency": "node scripts/file-drop-conventional-delinquency.js"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
