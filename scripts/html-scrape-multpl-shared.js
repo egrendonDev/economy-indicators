@@ -189,6 +189,7 @@ function writeIndicatorFile(result) {
 
   const updatedIndicator = {
     ...(existing ?? {}),
+    id,
     latest,
     history,
     manual_update_required: false,

@@ -1,7 +1,8 @@
 {
-  "last_updated": "2026-05-31T17:23:59.098Z",
+  "last_updated": "2026-05-31T17:36:55.462Z",
   "indicators": [
     {
+      "id": "shiller_cape",
       "latest": {
         "date": "2026-05-01",
         "value": 41.04
@@ -153,7 +154,7 @@
         }
       ],
       "manual_update_required": false,
-      "note": "Scraped from multpl.com on 2026-05-31T17:23:59.098Z"
+      "note": "Scraped from multpl.com on 2026-05-31T17:36:55.462Z"
     }
   ]
 }
