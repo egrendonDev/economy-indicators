@@ -1,16 +1,7 @@
 {
-  "last_updated": "2026-05-31T17:09:50.151Z",
+  "last_updated": "2026-05-31T17:23:59.108Z",
   "indicators": [
     {
-      "id": "trailing_pe",
-      "label": "Trailing P/E (S&P 500)",
-      "description": "Current price vs earnings; elevated readings mean little margin of safety",
-      "unit": "ratio",
-      "source": "multpl.com",
-      "url": "https://www.multpl.com/s-p-500-pe-ratio",
-      "type": "leading",
-      "importance": "high",
-      "category": "stock_market",
       "latest": {
         "date": "2025-09-01",
         "value": 28.13
@@ -161,8 +152,8 @@
           "value": 28.13
         }
       ],
-      "manual_update_required": true,
-      "note": "Scraped from multpl.com on 2026-05-31T11:10:21.071Z"
+      "manual_update_required": false,
+      "note": "Scraped from multpl.com on 2026-05-31T17:23:59.108Z"
     }
   ]
 }

@@ -98,7 +98,7 @@
         }
       ],
       "note": "Parsed from nmdb-mortgage-performance-statistics-national-census-areas-quarterly.csv on 2026-05-31T06:17:55.704Z. Metric: P90DL (90+ days past due), Enterprise Acquisitions, United States. Source: FHFA NMDB Residential Mortgage Performance Statistics.",
-      "manual_update_required": true
+      "manual_update_required": false
     }
   ]
 }

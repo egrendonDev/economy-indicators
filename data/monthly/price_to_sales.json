@@ -1,16 +1,7 @@
 {
-  "last_updated": "2026-05-31T17:09:50.151Z",
+  "last_updated": "2026-05-31T17:23:59.106Z",
   "indicators": [
     {
-      "id": "price_to_sales",
-      "label": "Price-to-Sales (S&P 500)",
-      "description": "Price vs revenue; harder to manipulate than earnings-based metrics",
-      "unit": "ratio",
-      "source": "multpl.com",
-      "url": "https://www.multpl.com/s-p-500-price-to-sales",
-      "type": "leading",
-      "importance": "medium",
-      "category": "stock_market",
       "latest": {
         "date": "2024-12-01",
         "value": 2.98
@@ -117,8 +108,8 @@
           "value": 2.98
         }
       ],
-      "manual_update_required": true,
-      "note": "Scraped from multpl.com on 2026-05-31T11:10:21.068Z"
+      "manual_update_required": false,
+      "note": "Scraped from multpl.com on 2026-05-31T17:23:59.106Z"
     }
   ]
 }

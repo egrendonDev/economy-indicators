@@ -70,7 +70,7 @@
         }
       ],
       "note": "Parsed from FHALPT_Mar2026.pdf on 2026-05-31T06:17:42.230Z. Metric: Non-SA Serious Delinquency Rate (Table 1).",
-      "manual_update_required": true
+      "manual_update_required": false
     }
   ]
 }

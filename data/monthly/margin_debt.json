@@ -162,7 +162,7 @@
         }
       ],
       "note": "Parsed from margin-statistics.xlsx on 2026-05-31T06:17:16.799Z. Values in millions USD.",
-      "manual_update_required": true
+      "manual_update_required": false
     }
   ]
 }

@@ -1,16 +1,7 @@
 {
-  "last_updated": "2026-05-31T17:09:50.151Z",
+  "last_updated": "2026-05-31T17:23:59.102Z",
   "indicators": [
     {
-      "id": "sp500_dividend_yield",
-      "label": "S&P 500 Dividend Yield",
-      "description": "Very low yield means premium prices paid with minimal income cushion",
-      "unit": "%",
-      "source": "multpl.com",
-      "url": "https://www.multpl.com/s-p-500-dividend-yield",
-      "type": "leading",
-      "importance": "medium",
-      "category": "stock_market",
       "latest": {
         "date": "2025-12-01",
         "value": 1.15
@@ -161,8 +152,8 @@
           "value": 1.15
         }
       ],
-      "manual_update_required": true,
-      "note": "Scraped from multpl.com on 2026-05-31T11:10:21.064Z"
+      "manual_update_required": false,
+      "note": "Scraped from multpl.com on 2026-05-31T17:23:59.102Z"
     }
   ]
 }
