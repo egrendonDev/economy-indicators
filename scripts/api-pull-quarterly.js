@@ -20,6 +20,9 @@ if (!API_KEY) {
   process.exit(1);
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const FETCH_DELAY_MS = 400; // avoid FRED API 429 rate limiting
+
 const OBSERVATION_LIMIT = 20; // 5 years of quarterly data
 
 // ─── FRED fetcher ─────────────────────────────────────────────────────────────
@@ -86,8 +89,12 @@ function buildBase(indicator) {
 async function fetchAllQuarterly(indicators) {
   const results = [];
   for (const ind of indicators) {
-    if (ind.access === 'fred_api') results.push(await fetchFredIndicator(ind));
-    else results.push(manualPlaceholder(ind));
+    if (ind.access === 'fred_api') {
+      results.push(await fetchFredIndicator(ind));
+      await sleep(FETCH_DELAY_MS);
+    } else {
+      results.push(manualPlaceholder(ind));
+    }
   }
   return results;
 }

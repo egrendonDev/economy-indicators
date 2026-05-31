@@ -1,0 +1,20 @@
+{
+  "last_updated": "2026-05-31T06:04:41.903Z",
+  "indicators": [
+    {
+      "id": "conventional_delinquency",
+      "label": "Conventional Delinquency Rate",
+      "description": "Fannie/Freddie loan stress; baseline for prime borrower health",
+      "unit": "%",
+      "source": "FHFA",
+      "url": "https://www.fhfa.gov/data/nmdb",
+      "type": "lagging",
+      "importance": "medium",
+      "category": "residential",
+      "latest": null,
+      "history": [],
+      "manual_update_required": true,
+      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.fhfa.gov/data/nmdb"
+    }
+  ]
+}

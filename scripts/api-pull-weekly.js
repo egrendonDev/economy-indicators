@@ -20,6 +20,9 @@ if (!API_KEY) {
   process.exit(1);
 }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const FETCH_DELAY_MS = 400; // avoid FRED API 429 rate limiting
+
 // Observation limits per FRED series type
 // Yield curve and credit spreads are daily on FRED - fetch 365 for ~1yr of daily data
 // Jobless claims is weekly - fetch 104 for ~2yrs of weekly data
@@ -62,6 +65,7 @@ async function fetchWeeklyMacro() {
       });
 
       ok(`${indicator.label.padEnd(32)} ${latest.value} ${indicator.unit}  (${latest.date})`);
+      await sleep(FETCH_DELAY_MS);
     } catch (err) {
       fail(`${indicator.label} - ${err.message}`);
       results.push({ id: indicator.id, label: indicator.label, error: err.message });
