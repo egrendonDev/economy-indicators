@@ -2,31 +2,35 @@
  * file-drop-conventional-delinquency.js
  *
  * Scans data/manual-file-dropzone/ for an unprocessed FHFA NMDB Residential
- * Mortgage Performance Statistics CSV, extracts the quarterly serious delinquency
- * rate (90+ days past due) for Enterprise Acquisitions (Fannie Mae / Freddie Mac)
- * at national level, and updates the conventional_delinquency entry in
+ * Mortgage Performance Statistics ZIP or CSV, extracts the quarterly serious
+ * delinquency rate (90+ days past due) for Enterprise Acquisitions (Fannie/Freddie)
+ * at national level, and updates conventional_delinquency in
  * data/quarterly/residential.json.
  *
- * After processing, renames the source file to:
- *   {originalName}-[PROCESSED]-{YYYYMMDDHHMMSS}.csv
+ * Accepted input (in priority order):
+ *   .zip - the raw download from FHFA; script unzips, processes, then deletes the zip
+ *   .csv - pre-extracted CSV; script processes and renames to [PROCESSED]
+ *
+ * After processing:
+ *   CSV  -> renamed to {name}-[PROCESSED]-{YYYYMMDDHHMMSS}.csv
+ *   ZIP  -> deleted after the CSV inside is processed and renamed
  *
  * Usage:
  *   npm run file-drop:conventional-delinquency
  *   npm run run:file-drop-manually:conventional-delinquency   (also serves locally)
  *
- * Input: any .csv file in data/manual-file-dropzone/ that does not contain "[PROCESSED]"
- *   Source: FHFA NMDB Residential Mortgage Performance Statistics
- *   Download page: https://www.fhfa.gov/data/nmdb
+ * Input source: FHFA NMDB Residential Mortgage Performance Statistics
+ *   Download: https://www.fhfa.gov/data/nmdb
  *   File: nmdb-mortgage-performance-statistics-national-census-areas-quarterly.zip
- *   Step: unzip and drop the .csv into data/manual-file-dropzone/
  *   Metric: P90DL (90+ days past due), Enterprise Acquisitions, GEOID=USA
  *
  * Output: updates conventional_delinquency in data/quarterly/residential.json
  */
 
-import { readFileSync, writeFileSync, readdirSync, renameSync, existsSync, statSync } from 'fs';
+import { readFileSync, writeFileSync, readdirSync, renameSync, unlinkSync, existsSync, statSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { execSync } from 'child_process';
 
 // ─── Logging helpers ───────────────────────────────────────────────────────────
 const c = {
@@ -89,43 +93,105 @@ function parseCSVRow(line) {
   return fields;
 }
 
+// ─── Unzip helper ─────────────────────────────────────────────────────────────
+function unzip(zipPath, destDir) {
+  if (process.platform === 'win32') {
+    execSync(
+      `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`,
+      { stdio: 'pipe' }
+    );
+  } else {
+    execSync(`unzip -o "${zipPath}" -d "${destDir}"`, { stdio: 'pipe' });
+  }
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
-banner('Conventional Delinquency - FHFA NMDB CSV Import', c.cyan);
+banner('Conventional Delinquency - FHFA NMDB Import', c.cyan);
 
 if (!existsSync(MANUAL_DIR)) {
   fail('data/manual-file-dropzone/ folder not found.', false);
   fail('Run: mkdir data/manual-file-dropzone in the project root.', true);
 }
 
-const candidates = readdirSync(MANUAL_DIR)
+const allFiles = readdirSync(MANUAL_DIR);
+
+// Prefer .zip files (raw download) over pre-extracted .csv
+const zipCandidates = allFiles
+  .filter(f => f.toLowerCase().endsWith('.zip') && !f.includes('[PROCESSED]'))
+  .map(f => ({ name: f, mtime: statSync(join(MANUAL_DIR, f)).mtimeMs }))
+  .sort((a, b) => b.mtime - a.mtime);
+
+const csvCandidates = allFiles
   .filter(f => f.toLowerCase().endsWith('.csv') && !f.includes('[PROCESSED]'))
   .map(f => ({ name: f, mtime: statSync(join(MANUAL_DIR, f)).mtimeMs }))
   .sort((a, b) => b.mtime - a.mtime);
 
-if (candidates.length === 0) {
-  fail('No unprocessed .csv file found in data/manual-file-dropzone/\n', false);
+if (zipCandidates.length === 0 && csvCandidates.length === 0) {
+  fail('No unprocessed .zip or .csv file found in data/manual-file-dropzone/\n', false);
   console.log(`  To update Conventional Delinquency, follow these steps:\n`);
   console.log(`  ${c.cyan}1.${c.reset} Go to:`);
   console.log(`     https://www.fhfa.gov/data/nmdb\n`);
   console.log(`  ${c.cyan}2.${c.reset} Under ${c.bold}Residential Mortgage Performance Statistics${c.reset}, download:`);
   console.log(`     ${c.bold}National, Census Regions, and Census Divisions${c.reset} [CSV]\n`);
   console.log(`     (file: nmdb-mortgage-performance-statistics-national-census-areas-quarterly.zip)\n`);
-  console.log(`  ${c.cyan}3.${c.reset} Unzip the file to get the .csv inside it.`);
-  console.log(`     ${c.gray}Tip: right-click the .zip and choose "Extract All" on Windows${c.reset}\n`);
-  console.log(`  ${c.cyan}4.${c.reset} Drop the extracted .csv into this folder ${c.bold}(do not rename it)${c.reset}:`);
+  console.log(`  ${c.cyan}3.${c.reset} Drop the .zip into this folder ${c.bold}(do not rename it)${c.reset}:`);
   console.log(`     economy-indicators/data/manual-file-dropzone/\n`);
-  console.log(`  ${c.cyan}5.${c.reset} Re-run: ${c.bold}npm run run:file-drop-manually:conventional-delinquency${c.reset}\n`);
+  console.log(`  ${c.cyan}4.${c.reset} Re-run: ${c.bold}npm run run:file-drop-manually:conventional-delinquency${c.reset}\n`);
   process.exit(1);
 }
 
-if (candidates.length > 1) {
-  warn('Multiple unprocessed .csv files found - using most recently modified:');
-  candidates.forEach((f, i) => log(`  ${i === 0 ? '->' : '  '} ${f.name}`));
-}
+// ─── Unzip if needed ──────────────────────────────────────────────────────────
 
-const CSV_PATH = join(MANUAL_DIR, candidates[0].name);
-info(`File found:    ${candidates[0].name}`);
+let ZIP_PATH = null;
+let CSV_PATH = null;
+
+if (zipCandidates.length > 0) {
+  if (zipCandidates.length > 1) {
+    warn('Multiple unprocessed .zip files found - using most recently modified:');
+    zipCandidates.forEach((f, i) => log(`  ${i === 0 ? '->' : '  '} ${f.name}`));
+  }
+
+  ZIP_PATH = join(MANUAL_DIR, zipCandidates[0].name);
+  info(`ZIP found:     ${zipCandidates[0].name}`);
+  info('Extracting ZIP...');
+
+  // Snapshot CSV names before extraction so we can find the newly added one
+  const csvsBefore = new Set(
+    readdirSync(MANUAL_DIR).filter(f => f.toLowerCase().endsWith('.csv') && !f.includes('[PROCESSED]'))
+  );
+
+  try {
+    unzip(ZIP_PATH, MANUAL_DIR);
+  } catch (e) {
+    fail(`Failed to extract ZIP: ${e.message}`, true);
+  }
+
+  // Find CSV(s) that didn't exist before extraction
+  const csvsAfter = readdirSync(MANUAL_DIR)
+    .filter(f => f.toLowerCase().endsWith('.csv') && !f.includes('[PROCESSED]'));
+  const newCsvs = csvsAfter.filter(f => !csvsBefore.has(f));
+
+  if (newCsvs.length === 0) {
+    fail('No new .csv found after extracting the ZIP. The ZIP may not contain a CSV file.', true);
+  }
+  if (newCsvs.length > 1) {
+    warn(`Multiple new CSVs extracted - using first: ${newCsvs[0]}`);
+    newCsvs.forEach(f => log(`  - ${f}`));
+  }
+
+  CSV_PATH = join(MANUAL_DIR, newCsvs[0]);
+  ok(`Extracted:     ${newCsvs[0]}`);
+
+} else {
+  // No zip - use pre-existing CSV
+  if (csvCandidates.length > 1) {
+    warn('Multiple unprocessed .csv files found - using most recently modified:');
+    csvCandidates.forEach((f, i) => log(`  ${i === 0 ? '->' : '  '} ${f.name}`));
+  }
+  CSV_PATH = join(MANUAL_DIR, csvCandidates[0].name);
+  info(`CSV found:     ${csvCandidates[0].name}`);
+}
 
 // ─── Parse CSV ─────────────────────────────────────────────────────────────────
 
@@ -223,7 +289,7 @@ if (rowMap.size === 0) {
   console.log(`  ${c.cyan}2.${c.reset} Scroll to ${c.bold}Residential Mortgage Performance Statistics${c.reset}`);
   console.log(`  ${c.cyan}3.${c.reset} Download: ${c.bold}National, Census Regions, and Census Divisions [CSV]${c.reset}`);
   console.log(`     (nmdb-mortgage-performance-statistics-national-census-areas-quarterly.zip)\n`);
-  console.log(`  ${c.cyan}4.${c.reset} Unzip and drop the .csv in data/manual-file-dropzone/ then re-run.\n`);
+  console.log(`  ${c.cyan}4.${c.reset} Drop the .zip in data/manual-file-dropzone/ then re-run.\n`);
   process.exit(1);
 }
 
@@ -241,10 +307,11 @@ if (existsSync(JSON_PATH)) {
     const existing_ind = existing.indicators?.find(i => i.id === INDICATOR_ID);
     if (existing_ind?.latest?.date && existing_ind.latest.date >= latest.date) {
       warn(`Existing data (${existing_ind.latest.date}) is same or newer than parsed data (${latest.date}).`);
-      warn('Skipping write - data is not newer. Rename the CSV to force re-process.');
+      warn('Skipping write - data is not newer.');
+      cleanupFiles();
       process.exit(0);
     }
-  } catch { /* ignore parse errors */ }
+  } catch { /* ignore - stale check is best-effort */ }
 }
 
 // ─── Load and update residential.json ─────────────────────────────────────────
@@ -268,7 +335,7 @@ const updatedIndicator = {
   category:    'residential',
   latest,
   history,
-  note: `Parsed from ${candidates[0].name} on ${timestamp}. Metric: P90DL (90+ days past due), Enterprise Acquisitions, United States. Source: FHFA NMDB Residential Mortgage Performance Statistics.`
+  note: `Parsed from ${CSV_PATH.split(/[\\/]/).pop()} on ${timestamp}. Metric: P90DL (90+ days past due), Enterprise Acquisitions, United States. Source: FHFA NMDB Residential Mortgage Performance Statistics.`
 };
 
 const idx = json.indicators.findIndex(i => i.id === INDICATOR_ID);
@@ -280,12 +347,29 @@ writeFileSync(JSON_PATH, JSON.stringify(json, null, 2));
 ok(`Saved ${history.length} quarters to ${JSON_PATH}`);
 ok(`Latest: ${latest.date} = ${latest.value}% serious delinquency (Fannie/Freddie)`);
 
-// ─── Rename processed CSV ──────────────────────────────────────────────────────
+// ─── Rename CSV and clean up ZIP ───────────────────────────────────────────────
 
-const stamp   = timestamp.replace(/[-:T]/g, '').slice(0, 14);
-const base    = candidates[0].name.replace(/\.csv$/i, '');
-const newName = `${base}-[PROCESSED]-${stamp}.csv`;
-renameSync(CSV_PATH, join(MANUAL_DIR, newName));
-ok(`Renamed to: ${newName}`);
+function cleanupFiles() {
+  if (!CSV_PATH || !existsSync(CSV_PATH)) return;
+  const stamp       = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+  const csvBasename = CSV_PATH.split(/[\\/]/).pop().replace(/\.csv$/i, '');
+  const newCsvName  = `${csvBasename}-[PROCESSED]-${stamp}.csv`;
+  try {
+    renameSync(CSV_PATH, join(MANUAL_DIR, newCsvName));
+    ok(`CSV renamed to: ${newCsvName}`);
+  } catch (e) {
+    warn(`Could not rename CSV: ${e.message}`);
+  }
 
+  if (ZIP_PATH) {
+    try {
+      unlinkSync(ZIP_PATH);
+      ok(`ZIP deleted:    ${ZIP_PATH.split(/[\\/]/).pop()}`);
+    } catch {
+      warn(`Could not delete ZIP (EPERM on Windows mount) - please delete manually: ${ZIP_PATH.split(/[\\/]/).pop()}`);
+    }
+  }
+}
+
+cleanupFiles();
 banner('SUCCESS - Conventional Delinquency data updated', c.green);

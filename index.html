@@ -430,7 +430,7 @@ const MANUAL_STEPS = {
     label: 'Conventional Delinquency Rate',
     steps: [
       'Go to fhfa.gov/data/nmdb and under "Residential Mortgage Performance Statistics" download the National, Census Regions, and Census Divisions [CSV] (quarterly ZIP file).',
-      'Unzip the file to get the .csv inside, then drop the .csv into economy-indicators/data/manual-file-dropzone/ (do not rename it).',
+      'Drop the .zip directly into economy-indicators/data/manual-file-dropzone/ (do not rename it - the script handles unzipping automatically).',
       'Run: npm run run:file-drop-manually:conventional-delinquency'
     ]
   }
