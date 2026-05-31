@@ -887,7 +887,12 @@ function buildRiskDial(score) {
   const cx = 60, cy = 68, R = 54, ir = 34;
 
   // Zone end fractions mapping score ranges to arc positions
-  // Normal: 0-3, Mild: 4-7, Elevated: 8-13, High: 14-19, Critical: 20-28    { end: 19 / MAX, fill: '#f0883e' },
+  // Normal: 0-3, Mild: 4-7, Elevated: 8-13, High: 14-19, Critical: 20-28
+  const zones = [
+    { end: 3  / MAX, fill: '#3fb950' },
+    { end: 7  / MAX, fill: '#7ee787' },
+    { end: 13 / MAX, fill: '#d29922' },
+    { end: 19 / MAX, fill: '#f0883e' },
     { end: 1,        fill: '#f85149' },
   ];
 
