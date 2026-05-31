@@ -102,11 +102,26 @@
     .alert-box ul li { margin-bottom: 2px; }
 
     /* ---- Sections ---- */
-    .section-title { font-size: 18px; font-weight: 700; margin: 28px 0 4px; display: flex; align-items: center; gap: 8px; }
-    .section-title i { color: var(--blue); }
-    .section-desc { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .section-title { margin: 40px 0 6px; padding: 18px 22px; background: #0a1628; border: 1px solid rgba(88,166,255,0.25); border-left: 6px solid var(--blue); border-radius: 0 10px 10px 0; display: flex; align-items: flex-start; gap: 14px; }
+    .section-title i { color: var(--blue); font-size: 32px; flex-shrink: 0; margin-top: 2px; }
+    .section-title-body { display: flex; flex-direction: column; gap: 4px; }
+    .section-title-top { display: flex; align-items: center; gap: 10px; }
+    .section-title-name { font-size: 24px; font-weight: 700; color: var(--text); }
+    .section-title-tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 2px 8px; border-radius: 4px; background: rgba(88,166,255,0.15); color: var(--blue); border: 1px solid rgba(88,166,255,0.3); }
+    .section-title-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .section-title-investigate { font-size: 12px; color: var(--blue); margin-top: 2px; opacity: 0.8; }
+    .section-desc { display: none; }
 
-    .category-label { font-size: 13px; font-weight: 600; color: var(--blue); text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .category-label { font-size: 22px; font-weight: 700; color: var(--text); margin: 32px 0 16px; padding: 16px 20px; background: #0d1f38; border: 1px solid rgba(88,166,255,0.3); border-left: 5px solid var(--blue); border-radius: 0 8px 8px 0; display: flex; align-items: flex-start; gap: 12px; }
+    .category-label i { color: var(--blue); font-size: 26px; flex-shrink: 0; margin-top: 4px; }
+    .category-label-body { display: flex; flex-direction: column; gap: 6px; }
+    .category-label-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .category-label-title { font-weight: 700; }
+    .category-label-desc { font-size: 16px; font-weight: 400; color: var(--muted); }
+    .category-label-investigate { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+    .category-label-investigate-label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+    .investigate-pill { font-size: 12px; color: var(--blue); background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.25); border-radius: 20px; padding: 3px 10px; text-decoration: none; white-space: nowrap; transition: background 0.15s, border-color 0.15s; }
+    .investigate-pill:hover { background: rgba(88,166,255,0.18); border-color: rgba(88,166,255,0.5); }
 
     /* ---- Indicator cards ---- */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
@@ -251,13 +266,29 @@
   <div class="alerts" id="alerts"></div>
 
   <!-- Leading section -->
-  <div class="section-title"><i class="ti ti-trending-up"></i> LEADING INDICATORS</div>
-  <div class="section-desc">These change before the economy. Rising stress here is an early warning signal.</div>
+  <div class="section-title">
+    <i class="ti ti-trending-up"></i>
+    <div class="section-title-body">
+      <div class="section-title-top">
+        <span class="section-title-name">Indicators</span>
+        <span class="section-title-tag">Leading</span>
+      </div>
+      <div class="section-title-desc">These change before the economy moves. Rising stress here is an early warning signal before a downturn is confirmed.</div>
+    </div>
+  </div>
   <div id="leading-section"></div>
 
   <!-- Lagging section -->
-  <div class="section-title"><i class="ti ti-trending-down"></i> LAGGING INDICATORS</div>
-  <div class="section-desc">These confirm a downturn already in progress. Rising stress here means the damage is real.</div>
+  <div class="section-title">
+    <i class="ti ti-trending-down"></i>
+    <div class="section-title-body">
+      <div class="section-title-top">
+        <span class="section-title-name">Indicators</span>
+        <span class="section-title-tag">Lagging</span>
+      </div>
+      <div class="section-title-desc">These confirm a downturn already in progress. Rising stress here means the damage is real and spreading.</div>
+    </div>
+  </div>
   <div id="lagging-section"></div>
 
   </div><!-- end tab-dashboard -->
@@ -398,17 +429,74 @@ const MESSAGES = {
 // Section layout: type -> category order with display names
 const LAYOUT = {
   leading: [
-    { key: 'macro',        label: 'Macro & Credit',  icon: 'ti-building-bank' },
-    { key: 'stock_market', label: 'Stock Market',     icon: 'ti-chart-candlestick' },
-    { key: 'residential',  label: 'Residential',      icon: 'ti-home' },
-    { key: 'auto',         label: 'Auto',             icon: 'ti-car' },
-    { key: 'credit_cards', label: 'Credit Cards',     icon: 'ti-credit-card' }
+    { key: 'macro', label: 'Macro & Credit', icon: 'ti-building-bank', desc: 'Credit conditions, money supply, and yield signals',
+      investigate: [
+        { label: 'Fed Meeting Minutes',    url: 'https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm' },
+        { label: 'Bank Lending Survey',    url: 'https://www.federalreserve.gov/releases/sloos/' },
+        { label: 'FRED Yield Curve',       url: 'https://fred.stlouisfed.org/series/T10Y2Y' },
+        { label: 'HY Credit Spreads',      url: 'https://fred.stlouisfed.org/series/BAMLH0A0HYM2' },
+      ]
+    },
+    { key: 'stock_market', label: 'Stock Market', icon: 'ti-chart-candlestick', desc: 'Valuation multiples and investor leverage',
+      investigate: [
+        { label: 'SEC Insider Filings',    url: 'https://efts.sec.gov/LATEST/search-index?q=%22form+4%22&dateRange=custom&startdt=2025-01-01&forms=4' },
+        { label: 'VIX Fear Index',         url: 'https://finance.yahoo.com/quote/%5EVIX/' },
+        { label: 'Shiller CAPE History',   url: 'https://www.multpl.com/shiller-pe' },
+        { label: 'Forward P/E History',    url: 'https://www.multpl.com/s-p-500-pe-ratio' },
+      ]
+    },
+    { key: 'residential', label: 'Residential', icon: 'ti-home', desc: 'New construction pipeline and builder confidence',
+      investigate: [
+        { label: '30yr Mortgage Rate',     url: 'https://fred.stlouisfed.org/series/MORTGAGE30US' },
+        { label: 'Housing Affordability',  url: 'https://fred.stlouisfed.org/series/FIXHAI' },
+        { label: 'Building Permits',       url: 'https://fred.stlouisfed.org/series/PERMIT' },
+        { label: 'Housing Starts',         url: 'https://fred.stlouisfed.org/series/HOUST' },
+      ]
+    },
+    { key: 'auto', label: 'Auto', icon: 'ti-car', desc: 'Consumer demand for big-ticket purchases',
+      investigate: [
+        { label: 'NY Fed HH Debt',         url: 'https://www.newyorkfed.org/microeconomics/hhdc' },
+        { label: 'Avg Auto Loan Term',     url: 'https://fred.stlouisfed.org/series/DTCTLNM' },
+        { label: 'Used Car Price Index',   url: 'https://fred.stlouisfed.org/series/CUSR0000SETA02' },
+      ]
+    },
+    { key: 'credit_cards', label: 'Credit Cards', icon: 'ti-credit-card', desc: 'Borrowing costs and revolving balance trends',
+      investigate: [
+        { label: 'CFPB Credit Trends',     url: 'https://www.consumerfinance.gov/data-research/consumer-credit-trends/' },
+        { label: 'NY Fed HH Debt',         url: 'https://www.newyorkfed.org/microeconomics/hhdc' },
+        { label: 'Household Debt Service', url: 'https://fred.stlouisfed.org/series/TDSP' },
+      ]
+    },
   ],
   lagging: [
-    { key: 'residential',  label: 'Residential',      icon: 'ti-home' },
-    { key: 'commercial',   label: 'Commercial',        icon: 'ti-building' },
-    { key: 'auto',         label: 'Auto',             icon: 'ti-car' },
-    { key: 'credit_cards', label: 'Credit Cards',     icon: 'ti-credit-card' }
+    { key: 'residential', label: 'Residential', icon: 'ti-home', desc: 'Actual mortgage delinquency and foreclosure stress',
+      investigate: [
+        { label: 'FRED Mortgage Delinquency', url: 'https://fred.stlouisfed.org/series/DRSFRMACBS' },
+        { label: 'FHFA Mortgage Data',     url: 'https://www.fhfa.gov/data/nmdb' },
+        { label: 'HUD FHA Performance',    url: 'https://www.hud.gov/program_offices/housing/sfh' },
+      ]
+    },
+    { key: 'commercial', label: 'Commercial', icon: 'ti-building', desc: 'Office, retail, and business loan defaults',
+      investigate: [
+        { label: 'FRED CRE Delinquency',   url: 'https://fred.stlouisfed.org/series/DRCRELEXFACBS' },
+        { label: 'FRED C&I Delinquency',   url: 'https://fred.stlouisfed.org/series/DRBLACBS' },
+        { label: 'FDIC Quarterly Profile', url: 'https://www.fdic.gov/analysis/quarterly-banking-profile/' },
+      ]
+    },
+    { key: 'auto', label: 'Auto', icon: 'ti-car', desc: 'Auto loan defaults and repossession stress',
+      investigate: [
+        { label: 'NY Fed Auto Delinquency',url: 'https://www.newyorkfed.org/microeconomics/hhdc' },
+        { label: 'Used Car Price Index',   url: 'https://fred.stlouisfed.org/series/CUSR0000SETA02' },
+        { label: 'FRED Auto Delinquency',  url: 'https://fred.stlouisfed.org/series/DROCLACBS' },
+      ]
+    },
+    { key: 'credit_cards', label: 'Credit Cards', icon: 'ti-credit-card', desc: 'Payment failures and bank charge-offs',
+      investigate: [
+        { label: 'CFPB Complaint Database',url: 'https://www.consumerfinance.gov/data-research/consumer-complaints/' },
+        { label: 'NY Fed HH Debt Report',  url: 'https://www.newyorkfed.org/microeconomics/hhdc' },
+        { label: 'FRED Loan Loss Reserves',url: 'https://fred.stlouisfed.org/series/USRSLLNRAACBS' },
+      ]
+    },
   ]
 };
 
@@ -1093,17 +1181,32 @@ function renderCard(indicator, dataMap) {
   </div>`;
 }
 
-function renderCategory(catKey, catLabel, catIcon, allIndicators, dataMap, filterType) {
-  const inds = allIndicators.filter(i => i.category === catKey && i.type === filterType);
+function renderCategory(cat, allIndicators, dataMap, filterType) {
+  const inds = allIndicators.filter(i => i.category === cat.key && i.type === filterType);
   if (!inds.length) return '';
-  return `<div class="category-label"><i class="ti ${catIcon}"></i> ${catLabel}</div>
-    <div class="cards-grid">${inds.map(i => renderCard(i, dataMap)).join('')}</div>`;
+  const pills = cat.investigate
+    ? cat.investigate.map(item => `<a class="investigate-pill" href="${item.url}" target="_blank" rel="noopener">${item.label}</a>`).join('')
+    : '';
+  const investigateRow = pills
+    ? `<div class="category-label-investigate"><span class="category-label-investigate-label">If flagged:</span>${pills}</div>`
+    : '';
+  return `<div class="category-label">
+    <i class="ti ${cat.icon}"></i>
+    <div class="category-label-body">
+      <div class="category-label-top">
+        <span class="category-label-title">${cat.label}</span>
+        <span class="category-label-desc">- ${cat.desc}</span>
+      </div>
+      ${investigateRow}
+    </div>
+  </div>
+  <div class="cards-grid">${inds.map(i => renderCard(i, dataMap)).join('')}</div>`;
 }
 
 function renderSection(containerId, type, allIndicators, dataMap) {
   const cats = LAYOUT[type];
   const el = document.getElementById(containerId);
-  el.innerHTML = cats.map(c => renderCategory(c.key, c.label, c.icon, allIndicators, dataMap, type)).join('');
+  el.innerHTML = cats.map(c => renderCategory(c, allIndicators, dataMap, type)).join('');
 }
 
 function renderSummary(allIndicators, dataMap) {
