@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-30T14:07:35.513Z",
+  "last_updated": "2026-05-31T02:04:09.303Z",
   "indicators": [
     {
       "id": "mortgage_delinquency",
@@ -11,107 +11,29 @@
       "type": "lagging",
       "importance": "medium",
       "category": "residential",
-      "latest": {
-        "date": "2026-01-01",
-        "value": 1.89
-      },
+      "latest": { "date": "2026-01-01", "value": 1.89 },
       "history": [
-        {
-          "date": "2021-04-01",
-          "value": 2.47
-        },
-        {
-          "date": "2021-07-01",
-          "value": 2.3
-        },
-        {
-          "date": "2021-10-01",
-          "value": 2.29
-        },
-        {
-          "date": "2022-01-01",
-          "value": 2.09
-        },
-        {
-          "date": "2022-04-01",
-          "value": 1.95
-        },
-        {
-          "date": "2022-07-01",
-          "value": 1.84
-        },
-        {
-          "date": "2022-10-01",
-          "value": 1.79
-        },
-        {
-          "date": "2023-01-01",
-          "value": 1.74
-        },
-        {
-          "date": "2023-04-01",
-          "value": 1.72
-        },
-        {
-          "date": "2023-07-01",
-          "value": 1.72
-        },
-        {
-          "date": "2023-10-01",
-          "value": 1.7
-        },
-        {
-          "date": "2024-01-01",
-          "value": 1.71
-        },
-        {
-          "date": "2024-04-01",
-          "value": 1.73
-        },
-        {
-          "date": "2024-07-01",
-          "value": 1.74
-        },
-        {
-          "date": "2024-10-01",
-          "value": 1.78
-        },
-        {
-          "date": "2025-01-01",
-          "value": 1.77
-        },
-        {
-          "date": "2025-04-01",
-          "value": 1.78
-        },
-        {
-          "date": "2025-07-01",
-          "value": 1.78
-        },
-        {
-          "date": "2025-10-01",
-          "value": 1.79
-        },
-        {
-          "date": "2026-01-01",
-          "value": 1.89
-        }
+        { "date": "2021-04-01", "value": 2.47 },
+        { "date": "2021-07-01", "value": 2.3 },
+        { "date": "2021-10-01", "value": 2.29 },
+        { "date": "2022-01-01", "value": 2.09 },
+        { "date": "2022-04-01", "value": 1.95 },
+        { "date": "2022-07-01", "value": 1.84 },
+        { "date": "2022-10-01", "value": 1.79 },
+        { "date": "2023-01-01", "value": 1.74 },
+        { "date": "2023-04-01", "value": 1.72 },
+        { "date": "2023-07-01", "value": 1.72 },
+        { "date": "2023-10-01", "value": 1.7 },
+        { "date": "2024-01-01", "value": 1.71 },
+        { "date": "2024-04-01", "value": 1.73 },
+        { "date": "2024-07-01", "value": 1.74 },
+        { "date": "2024-10-01", "value": 1.78 },
+        { "date": "2025-01-01", "value": 1.77 },
+        { "date": "2025-04-01", "value": 1.78 },
+        { "date": "2025-07-01", "value": 1.78 },
+        { "date": "2025-10-01", "value": 1.79 },
+        { "date": "2026-01-01", "value": 1.89 }
       ]
-    },
-    {
-      "id": "foreclosure_rate",
-      "label": "Foreclosure Rate",
-      "description": "Loans entering foreclosure; measures depth of housing distress",
-      "unit": "%",
-      "source": "MBA",
-      "url": "https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey",
-      "type": "lagging",
-      "importance": "medium",
-      "category": "residential",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey"
     },
     {
       "id": "conventional_delinquency",
@@ -119,29 +41,34 @@
       "description": "Fannie/Freddie loan stress; baseline for prime borrower health",
       "unit": "%",
       "source": "FHFA",
-      "url": "https://www.fhfa.gov/data",
+      "url": "https://www.fhfa.gov/data/nmdb",
       "type": "lagging",
       "importance": "medium",
       "category": "residential",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.fhfa.gov/data"
-    },
-    {
-      "id": "mba_delinquency",
-      "label": "MBA National Delinquency Survey",
-      "description": "Industry-wide delinquency across all mortgage loan types",
-      "unit": "%",
-      "source": "MBA",
-      "url": "https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey",
-      "type": "lagging",
-      "importance": "medium",
-      "category": "residential",
-      "latest": null,
-      "history": [],
-      "manual_update_required": true,
-      "note": "This indicator requires manual data entry or a custom scraper. Source: https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey"
+      "latest": { "date": "2025-10-01", "value": 0.3 },
+      "history": [
+        { "date": "2021-01-01", "value": 0.2 },
+        { "date": "2021-04-01", "value": 0.2 },
+        { "date": "2021-07-01", "value": 0.2 },
+        { "date": "2021-10-01", "value": 0.2 },
+        { "date": "2022-01-01", "value": 0.2 },
+        { "date": "2022-04-01", "value": 0.2 },
+        { "date": "2022-07-01", "value": 0.2 },
+        { "date": "2022-10-01", "value": 0.2 },
+        { "date": "2023-01-01", "value": 0.2 },
+        { "date": "2023-04-01", "value": 0.2 },
+        { "date": "2023-07-01", "value": 0.2 },
+        { "date": "2023-10-01", "value": 0.3 },
+        { "date": "2024-01-01", "value": 0.3 },
+        { "date": "2024-04-01", "value": 0.3 },
+        { "date": "2024-07-01", "value": 0.3 },
+        { "date": "2024-10-01", "value": 0.3 },
+        { "date": "2025-01-01", "value": 0.3 },
+        { "date": "2025-04-01", "value": 0.3 },
+        { "date": "2025-07-01", "value": 0.3 },
+        { "date": "2025-10-01", "value": 0.3 }
+      ],
+      "note": "Parsed from nmdb-mortgage-performance-statistics-national-census-areas-quarterly.csv on 2026-05-31T02:04:09.303Z. Metric: P90DL (90+ days past due), Enterprise Acquisitions, United States. Source: FHFA NMDB Residential Mortgage Performance Statistics."
     }
   ]
 }

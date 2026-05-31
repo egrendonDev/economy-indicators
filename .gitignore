@@ -14,3 +14,4 @@ data/manual-file-dropzone/*.xlsx
 data/manual-file-dropzone/*.xls
 data/manual-file-dropzone/*.csv
 data/manual-file-dropzone/*.pdf
+data/manual-file-dropzone/*.zip

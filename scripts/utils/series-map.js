@@ -273,46 +273,18 @@ export const indicators = [
     url: 'https://fred.stlouisfed.org/series/DRSFRMACBS'
   },
   {
-    id: 'foreclosure_rate',
-    label: 'Foreclosure Rate',
-    description: 'Loans entering foreclosure; measures depth of housing distress',
-    source: 'MBA',
-    access: 'scrape',
-    type: 'lagging',
-    importance: 'medium',
-    category: 'residential',
-    frequency: 'quarterly',
-    fredSeries: null,
-    unit: '%',
-    url: 'https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey'
-  },
-  {
     id: 'conventional_delinquency',
     label: 'Conventional Delinquency Rate',
     description: "Fannie/Freddie loan stress; baseline for prime borrower health",
     source: 'FHFA',
-    access: 'scrape',
+    access: 'file_drop',
     type: 'lagging',
     importance: 'medium',
     category: 'residential',
     frequency: 'quarterly',
     fredSeries: null,
     unit: '%',
-    url: 'https://www.fhfa.gov/data'
-  },
-  {
-    id: 'mba_delinquency',
-    label: 'MBA National Delinquency Survey',
-    description: 'Industry-wide delinquency across all mortgage loan types',
-    source: 'MBA',
-    access: 'scrape',
-    type: 'lagging',
-    importance: 'medium',
-    category: 'residential',
-    frequency: 'quarterly',
-    fredSeries: null,
-    unit: '%',
-    url: 'https://www.mba.org/news-and-research/research-and-economics/single-family-research/national-delinquency-survey'
+    url: 'https://www.fhfa.gov/data/nmdb'
   },
 
   // ─── QUARTERLY / COMMERCIAL ────────────────────────────────────────────────
