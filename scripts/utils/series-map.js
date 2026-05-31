@@ -215,16 +215,16 @@ export const indicators = [
   {
     id: 'tobins_q',
     label: "Tobin's Q Ratio",
-    description: 'Market value vs asset replacement cost; above 1 means overpaying for assets',
-    source: 'longtermtrends.net',
-    access: 'scrape',
+    description: 'Corporate equity market value as % of net worth; above 150% signals overvaluation',
+    source: 'FRED',
+    access: 'fred_api',
     type: 'leading',
     importance: 'low',
     category: 'stock_market',
     frequency: 'monthly',
-    fredSeries: null,
-    unit: 'ratio',
-    url: 'https://www.longtermtrends.net/tobins-q/'
+    fredSeries: 'NCBCEPNW',
+    unit: '%',
+    url: 'https://fred.stlouisfed.org/series/NCBCEPNW'
   },
 
   // ─── MONTHLY / RESIDENTIAL ─────────────────────────────────────────────────
@@ -245,16 +245,16 @@ export const indicators = [
   {
     id: 'fha_delinquency',
     label: 'FHA Delinquency Rate',
-    description: 'Low down payment borrower stress; shows strain before prime market does',
+    description: 'Serious delinquency (90+ days + foreclosure + bankruptcy) for FHA loans; low-down-payment borrower stress shows up here first',
     source: 'HUD',
-    access: 'pdf',
+    access: 'file_drop',
     type: 'lagging',
     importance: 'medium',
     category: 'residential',
     frequency: 'monthly',
     fredSeries: null,
     unit: '%',
-    url: 'https://www.hud.gov/program_offices/housing/rmra/oe/rpts/sfnotes/index'
+    url: 'https://www.hud.gov/hud-partners/single-family-loan-performance'
   },
 
   // ─── QUARTERLY / RESIDENTIAL ───────────────────────────────────────────────

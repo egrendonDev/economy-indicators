@@ -60,6 +60,7 @@ economy-indicators/
 │   ├── api-pull-quarterly.js   # FRED API - macro, residential, commercial, auto, CC
 │   ├── html-scrape-multpl-shared.js  # HTML scrape - CAPE, dividend yield, P/S, trailing P/E
 │   ├── file-drop-margin-debt.js # File drop - FINRA margin debt xlsx
+│   ├── file-drop-fha-delinquency.js # File drop - HUD FHA Loan Performance Trends PDF
 │   └── utils/
 │       ├── fred-client.js      # FRED API wrapper
 │       ├── series-map.js       # Master indicator definitions
@@ -83,7 +84,9 @@ economy-indicators/
 | `npm run api-pull:quarterly` | Fetch quarterly indicators - macro, residential, commercial, auto, CC |
 | `npm run html-scrape:multpl` | HTML scrape multpl.com for CAPE, dividend yield, P/S, trailing P/E |
 | `npm run file-drop:margin-debt` | Parse FINRA xlsx from data/manual-file-dropzone/ into stock_market.json |
+| `npm run file-drop:fha-delinquency` | Parse HUD PDF from data/manual-file-dropzone/ into residential.json |
 | `npm run manually:file-drop:margin-debt` | Run file-drop:margin-debt then start local server |
+| `npm run run:file-drop-manually:fha-delinquency` | Run file-drop:fha-delinquency then start local server |
 | `npm run manually:html-scrape:multpl` | Run html-scrape:multpl then start local server |
 | `npm run autoAPI:load-data:serve:local` | Force fetch all API data then start local server at port 3000 |
 
@@ -125,6 +128,37 @@ npm run manually:file-drop:margin-debt
 
 - The `data/manual-file-dropzone/` folder is tracked in git via `.gitkeep`, but all `.xlsx` files inside it are gitignored
 - You only need to re-run this script when FINRA publishes a new monthly report (approximately the 3rd week of each month)
+
+### FHA Delinquency Rate (HUD) - file-drop
+
+The FHA Serious Delinquency Rate (90+ days past due, in-foreclosure, or in-bankruptcy) comes from HUD's monthly FHA Loan Performance Trends PDF and requires a one-time manual download each time you want to update.
+
+**Steps:**
+
+1. Go to [hud.gov/hud-partners/single-family-loan-performance](https://www.hud.gov/hud-partners/single-family-loan-performance)
+2. Download the latest **FHA Single Family Loan Performance Trends** PDF (the filename may vary - that is fine)
+3. Drop the downloaded file into the `data/manual-file-dropzone/` folder in this project (do not rename it)
+4. From the project root, run:
+
+```bash
+npm run run:file-drop-manually:fha-delinquency
+```
+
+**What the script does:**
+
+- Scans `data/manual-file-dropzone/` for any `.pdf` file that has not already been processed
+- If multiple unprocessed files exist, it uses the most recently modified one
+- Extracts the Non-Seasonally Adjusted Serious Delinquency Rate from Table 1
+- Writes the data into `data/monthly/residential.json` under the `fha_delinquency` indicator
+- Renames the source file to `{originalName}-[PROCESSED]-{timestamp}.pdf`
+- Safe to re-run: duplicate/stale date guard prevents overwriting good data
+
+**Notes:**
+
+- The `data/manual-file-dropzone/` folder is tracked in git via `.gitkeep`, but all `.pdf` and `.xlsx` files inside it are gitignored
+- You only need to re-run this script when HUD publishes a new monthly report (typically the following month)
+- Metric tracked: Non-Seasonally Adjusted Serious Delinquency Rate (90+ days + in-foreclosure + in-bankruptcy)
+
 
 ### CAPE, Dividend Yield, Price/Sales, Trailing P/E - html-scrape
 
@@ -281,7 +315,8 @@ Every time GitHub Actions commits new JSON data, GitHub Pages automatically rebu
 | Margin Debt | FINRA xlsx | file-drop-margin-debt |
 | Housing Starts | FRED API | Automatic |
 | Mortgage / Commercial / Auto / CC Delinquency | FRED API | Automatic |
-| FHA Delinquency, Loan Officer Survey | HUD / Federal Reserve | Manual update required |
+| FHA Delinquency | HUD PDF | file-drop-fha-delinquency |
+| Loan Officer Survey | FRED API | Automatic (api-pull-quarterly) |
 
 ---
 

@@ -9,17 +9,20 @@
     "api-pull:quarterly": "node scripts/api-pull-quarterly.js",
     "api-pull:all": "node scripts/api-pull-weekly.js && node scripts/api-pull-monthly.js && node scripts/api-pull-quarterly.js",
     "file-drop:margin-debt": "node scripts/file-drop-margin-debt.js",
+    "file-drop:fha-delinquency": "node scripts/file-drop-fha-delinquency.js",
     "html-scrape:multpl": "node scripts/html-scrape-multpl-shared.js",
     "serve": "npx serve . --listen 3000",
     "run:api-load-data-auto:serve:local": "npm run api-pull:all -- --force && npx serve . --listen 3000",
     "run:html-scrape-auto:multpl": "npm run html-scrape:multpl && npx serve . --listen 3000",
-    "run:file-drop-manually:margin-debt": "npm run file-drop:margin-debt && npx serve . --listen 3000"
+    "run:file-drop-manually:margin-debt": "npm run file-drop:margin-debt && npx serve . --listen 3000",
+    "run:file-drop-manually:fha-delinquency": "npm run file-drop:fha-delinquency && npx serve . --listen 3000"
   },
   "dependencies": {
     "cheerio": "^1.0.0",
     "node-fetch": "^3.3.2",
     "dotenv": "^16.4.5",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "pdf-parse": "^1.1.1"
   },
   "engines": {
     "node": ">=18.0.0"

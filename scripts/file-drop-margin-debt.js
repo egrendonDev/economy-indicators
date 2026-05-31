@@ -76,9 +76,16 @@ const candidates = readdirSync(MANUAL_DIR)
   .sort((a, b) => b.mtime - a.mtime);
 
 if (candidates.length === 0) {
-  fail('No unprocessed .xlsx file found in data/manual-file-dropzone/', false);
-  fail('Download from: https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics', false);
-  fail('Place the file in data/manual-file-dropzone/ and re-run.', true);
+  fail('No unprocessed .xlsx file found in data/manual-file-dropzone/\n', false);
+  console.log(`  To update Margin Debt, follow these steps:\n`);
+  console.log(`  ${c.cyan}1.${c.reset} Go to:`);
+  console.log(`     https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics\n`);
+  console.log(`  ${c.cyan}2.${c.reset} Download the Excel file listed under ${c.bold}Monthly Margin Statistics${c.reset}`);
+  console.log(`     (filename may vary - that is fine)\n`);
+  console.log(`  ${c.cyan}3.${c.reset} Drop the file into this folder ${c.bold}(do not rename it)${c.reset}:`);
+  console.log(`     economy-indicators/data/manual-file-dropzone/\n`);
+  console.log(`  ${c.cyan}4.${c.reset} Re-run: ${c.bold}npm run run:file-drop-manually:margin-debt${c.reset}\n`);
+  process.exit(1);
 }
 
 if (candidates.length > 1) {
@@ -111,4 +118,4 @@ const dataRows = rows.filter(row => {
 });
 
 if (dataRows.length === 0) {
-  fail('No data rows matching YYYY-MM pattern found in column A.', fa
+  fail('No data rows matching YYY

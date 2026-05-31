@@ -291,9 +291,9 @@ const THRESHOLDS = {
   margin_debt:              { warn: null,  danger: null,  direction: 'higher',   avg: 'trend' },
   sp500_dividend_yield:     { warn: 1.8,   danger: 1.4,   direction: 'lower',    avg: '2.0%' },
   price_to_sales:           { warn: 2.2,   danger: 3.0,   direction: 'higher',   avg: '1.5' },
-  tobins_q:                 { warn: 1.2,   danger: 1.7,   direction: 'higher',   avg: '1.0' },
+  tobins_q:                 { warn: 150,   danger: 200,   direction: 'higher',   avg: '95%' },
   housing_starts:           { warn: 1200,  danger: 900,   direction: 'lower',    avg: '1,400K' },
-  fha_delinquency:          { warn: 9,     danger: 12,    direction: 'higher',   avg: '8%' },
+  fha_delinquency:          { warn: 6,     danger: 8,     direction: 'higher',   avg: '4%' },
   mortgage_delinquency:     { warn: 3,     danger: 5,     direction: 'higher',   avg: '2.0%' },
   foreclosure_rate:         { warn: 0.5,   danger: 1.0,   direction: 'higher',   avg: '0.3%' },
   conventional_delinquency: { warn: 2,     danger: 4,     direction: 'higher',   avg: '1.5%' },
@@ -372,11 +372,11 @@ const INDICATOR_META = {
   margin_debt:              { frequency: 'Monthly',   access: 'file_drop',   importance: 'Medium' },
   sp500_dividend_yield:     { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
   price_to_sales:           { frequency: 'Monthly',   access: 'html_scrape', importance: 'Medium' },
-  tobins_q:                 { frequency: 'Monthly',   access: 'scrape',   importance: 'Low' },
+  tobins_q:                 { frequency: 'Monthly',   access: 'fred_api', importance: 'Low' },
   housing_starts:           { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   vehicle_sales:            { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
   revolving_credit:         { frequency: 'Monthly',   access: 'fred_api', importance: 'Medium' },
-  fha_delinquency:          { frequency: 'Monthly',   access: 'pdf',      importance: 'Medium' },
+  fha_delinquency:          { frequency: 'Monthly',   access: 'file_drop', importance: 'Medium' },
   mortgage_delinquency:     { frequency: 'Quarterly', access: 'fred_api', importance: 'Medium' },
   foreclosure_rate:         { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
   conventional_delinquency: { frequency: 'Quarterly', access: 'scrape',   importance: 'Medium' },
@@ -424,20 +424,12 @@ const MANUAL_STEPS = {
       'The script scrapes <a href="https://www.multpl.com/s-p-500-price-to-sales/table/by-month" target="_blank">multpl.com/s-p-500-price-to-sales</a>, validates the data, and updates price_to_sales in data/monthly/stock_market.json. Safe to re-run - duplicate data is ignored.'
     ]
   },
-  tobins_q: {
-    label: "Tobin's Q Ratio",
-    steps: [
-      'Go to longtermtrends.net/tobins-q.',
-      'Find the current Q ratio value in the chart or data section.',
-      'Open data/monthly/stock_market.json, find tobins_q, update latest.date and latest.value.'
-    ]
-  },
   fha_delinquency: {
     label: 'FHA Delinquency Rate',
     steps: [
-      'Go to hud.gov/program_offices/housing/rmra/oe/rpts/sfnotes/index and download the latest Single Family Notes PDF.',
-      'Find the "Delinquency and Default" table - record the total delinquency rate %.',
-      'Open data/monthly/residential.json, find fha_delinquency, update latest.date and latest.value.'
+      'Go to hud.gov/hud-partners/single-family-loan-performance and download the latest FHA Loan Performance Trends PDF.',
+      'Drop the downloaded PDF into the data/manual-file-dropzone/ folder in this project (do not rename it).',
+      'From the project root, run: npm run manually:file-drop:fha-delinquency — the script extracts the Non-Seasonally Adjusted Serious Delinquency Rate from Table 1 and updates residential.json automatically.'
     ]
   },
   foreclosure_rate: {
@@ -492,9 +484,9 @@ const TOOLTIPS = {
   margin_debt:              'Total money borrowed from brokers to buy stocks on leverage. Rising margin debt amplifies gains on the way up but creates forced selling on the way down - when prices drop, margin calls trigger cascading sell-offs that can accelerate market declines rapidly.',
   sp500_dividend_yield:     'Annual dividend income as a percentage of the S&P 500 index price. Very low yields mean stocks provide almost no income cushion. Historically, yields below 1.5% have coincided with overvalued markets that are highly vulnerable to sharp price corrections.',
   price_to_sales:           'Stock market price divided by company revenues. Unlike earnings, revenues are harder to manipulate with accounting adjustments. A high P/S ratio means investors are paying a steep premium per dollar of actual sales, signaling potential overvaluation.',
-  tobins_q:                 'Market value of all stocks divided by the replacement cost of corporate assets. A ratio above 1 means the market values companies above what it would cost to physically rebuild them - a sign that financial valuations have detached from real asset values.',
+  tobins_q:                 'Corporate equity market value as a percentage of net worth (book equity), sourced from the Federal Reserve Z.1 Flow of Funds (NCBCEPNW). Values above 150% indicate the market is pricing equities at a significant premium over book value. Above 200% is historically extreme, seen near the dot-com and 2021 peaks.',
   housing_starts:           'Number of new residential construction projects begun each month. Declining starts signal builders and buyers are losing confidence. Housing drives significant economic activity through materials, labor, and furnishings - weakness here spreads broadly.',
-  fha_delinquency:          'Percentage of FHA-insured loans that are past due. FHA borrowers have lower down payments and are more financially vulnerable than conventional borrowers. Rising FHA delinquency is an early stress signal that spreads to the broader mortgage market.',
+  fha_delinquency:          'Serious Delinquency Rate (90+ days past due, in-foreclosure, or in-bankruptcy) for FHA-insured loans. FHA borrowers use low down payments (3.5% min) and are more financially vulnerable than conventional borrowers. FHA stress shows up 6-12 months before prime mortgage markets. Above 6% is elevated; above 8% signals widespread distress in the entry-level housing market.',
   mortgage_delinquency:     'Percentage of single-family mortgages 30+ days past due. Rising delinquency means homeowners are struggling with payments, which leads to foreclosures, bank losses, and tighter lending standards - a lagging confirmation that a downturn is underway.',
   foreclosure_rate:         'Percentage of mortgages actively in the foreclosure process. Foreclosures represent the final stage of homeowner financial distress and confirm that housing market weakness has become severe enough to produce widespread property losses for lenders.',
   conventional_delinquency: 'Delinquency rate on conventional prime mortgages backed by Fannie Mae and Freddie Mac. When even prime borrowers miss payments, financial stress has moved beyond subprime into the mainstream market - indicating a broad and severe downturn.',
@@ -588,6 +580,44 @@ function getRiskLevel(score) {
   if (score >= 8)  return { label: 'Elevated',     cls: 'risk-elevated' };
   if (score >= 4)  return { label: 'Mild Concern', cls: 'risk-mild' };
   return              { label: 'Normal',        cls: 'risk-normal' };
+}
+
+function buildRiskDial(score) {
+  const MAX = 28;
+  const capped = Math.min(score, MAX);
+  const cx = 60, cy = 68, R = 54, ir = 34;
+
+  // Zone end fractions mapping score ranges to arc positions
+  // Normal: 0-3, Mild: 4-7, Elevated: 8-13, High: 14-19, Critical: 20-28
+  const zones = [
+    { end: 3  / MAX, fill: '#3fb950' },
+    { end: 7  / MAX, fill: '#7ee787' },
+    { end: 13 / MAX, fill: '#d29922' },
+    { end: 19 / MAX, fill: '#f0883e' },
+    { end: 1,        fill: '#f85149' },
+  ];
+
+  // frac=0 → left (9-o'clock), frac=1 → right (3-o'clock), arc goes through top
+  const px = (f, r) => (cx + r * Math.cos(Math.PI * (1 - f))).toFixed(1);
+  const py = (f, r) => (cy - r * Math.sin(Math.PI * (1 - f))).toFixed(1);
+
+  let paths = '';
+  let prev = 0;
+  for (const z of zones) {
+    // Outer arc: sweep=1 (clockwise in SVG = goes upward, left→top→right)
+    // Inner arc: sweep=0 (counter-clockwise in SVG = returns right→top→left)
+    paths += `<path d="M ${px(prev,R)},${py(prev,R)} A ${R},${R} 0 0,1 ${px(z.end,R)},${py(z.end,R)} L ${px(z.end,ir)},${py(z.end,ir)} A ${ir},${ir} 0 0,0 ${px(prev,ir)},${py(prev,ir)} Z" fill="${z.fill}" opacity="0.88"/>`;
+    prev = z.end;
+  }
+
+  // Needle: vertical line rotated. -90° = pointing left (score=0), +90° = pointing right (score=MAX)
+  const needleRot = (-90 + (capped / MAX) * 180).toFixed(1);
+
+  return `<svg viewBox="0 0 120 72" width="120" height="72" style="flex-shrink:0;overflow:visible" aria-label="Risk dial">
+    ${paths}
+    <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - R + 10}" stroke="#e6edf3" stroke-width="2.5" stroke-linecap="round" transform="rotate(${needleRot},${cx},${cy})"/>
+    <circle cx="${cx}" cy="${cy}" r="5" fill="#21262d" stroke="#c9d1d9" stroke-width="1.5"/>
+  </svg>`;
 }
 
 function sparkline(history, status) {
@@ -689,10 +719,13 @@ function renderSummary(allIndicators, dataMap) {
 
   // Summary cards
   document.getElementById('summary-row').innerHTML = `
-    <div class="summary-card ${risk.cls}">
-      <div class="label">Overall Risk Level</div>
-      <div class="value">${risk.label}</div>
-      <div class="sub">Risk score: ${score} pts</div>
+    <div class="summary-card ${risk.cls}" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <div>
+        <div class="label">Overall Risk Level</div>
+        <div class="value">${risk.label}</div>
+        <div class="sub">Risk score: ${score} pts</div>
+      </div>
+      ${buildRiskDial(score)}
     </div>
     <div class="summary-card">
       <div class="label">Leading - Warnings</div>
@@ -746,11 +779,11 @@ const ALL_INDICATORS = [
   { id:'margin_debt',              label:'Margin Debt',                     type:'leading',  category:'stock_market', unit:'millions USD',     url:'https://www.finra.org/investors/learn-to-invest/advanced-investing/margin-statistics' },
   { id:'sp500_dividend_yield',     label:'S&P 500 Dividend Yield',          type:'leading',  category:'stock_market', unit:'%',               url:'https://www.multpl.com/s-p-500-dividend-yield' },
   { id:'price_to_sales',           label:'Price-to-Sales (S&P 500)',        type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.multpl.com/s-p-500-price-to-sales' },
-  { id:'tobins_q',                 label:"Tobin's Q Ratio",                 type:'leading',  category:'stock_market', unit:'ratio',            url:'https://www.longtermtrends.net/tobins-q/' },
+  { id:'tobins_q',                 label:"Tobin's Q Ratio",                 type:'leading',  category:'stock_market', unit:'%',                url:'https://fred.stlouisfed.org/series/NCBCEPNW' },
   { id:'housing_starts',           label:'Housing Starts & Permits',        type:'leading',  category:'residential',  unit:'thousands of units',url:'https://fred.stlouisfed.org/series/HOUST' },
   { id:'vehicle_sales',            label:'Total Vehicle Sales (SAAR)',      type:'leading',  category:'auto',         unit:'millions of units', url:'https://fred.stlouisfed.org/series/TOTALSA' },
   { id:'revolving_credit',         label:'Revolving Credit Outstanding',    type:'leading',  category:'credit_cards', unit:'trillions USD',    url:'https://fred.stlouisfed.org/series/REVOLSL' },
-  { id:'fha_delinquency',          label:'FHA Delinquency Rate',            type:'lagging',  category:'residential',  unit:'%',               url:'https://www.hud.gov/program_offices/housing/rmra/oe/rpts/sfnotes/index' },
+  { id:'fha_delinquency',          label:'FHA Delinquency Rate',            type:'lagging',  category:'residential',  unit:'%',               url:'https://www.hud.gov/hud-partners/single-family-loan-performance' },
   { id:'mortgage_delinquency',     label:'Mortgage Delinquency Rate',       type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/DRSFRMACBS' },
   { id:'foreclosure_rate',         label:'Foreclosure Rate',                type:'lagging',  category:'residential',  unit:'%',               url:'https://fred.stlouisfed.org/series/QUSRHTSA' },
   { id:'conventional_delinquency', label:'Conventional Delinquency Rate',   type:'lagging',  category:'residential',  unit:'%',               url:'https://www.fhfa.gov/data' },
