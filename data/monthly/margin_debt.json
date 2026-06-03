@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-31T17:09:50.151Z",
+  "last_updated": "2026-06-03T11:49:20.269Z",
   "indicators": [
     {
       "id": "margin_debt",
@@ -162,7 +162,7 @@
         }
       ],
       "note": "Parsed from margin-statistics.xlsx on 2026-05-31T06:17:16.799Z. Values in millions USD.",
-      "manual_update_required": false
+      "manual_update_required": true
     }
   ]
 }

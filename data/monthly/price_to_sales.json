@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-05-31T17:36:55.468Z",
+  "last_updated": "2026-06-03T11:49:20.269Z",
   "indicators": [
     {
       "id": "price_to_sales",
@@ -109,7 +109,7 @@
           "value": 2.98
         }
       ],
-      "manual_update_required": false,
+      "manual_update_required": true,
       "note": "Scraped from multpl.com on 2026-05-31T17:36:55.468Z"
     }
   ]
