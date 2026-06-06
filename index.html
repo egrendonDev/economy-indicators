@@ -125,7 +125,7 @@
 
     /* ---- Indicator cards ---- */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-    .ind-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; position: relative; overflow: hidden; }
+    .ind-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
     .ind-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--border); }
     .ind-card.green::before { background: var(--green); }
     .ind-card.orange::before { background: var(--orange); }
@@ -148,14 +148,15 @@
     .current-val.pending{ color: var(--muted);  }
     .avg-pill { font-size: 12px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; }
 
-    .sparkline-wrap { margin-bottom: 8px; height: 36px; }
+    .sparkline-wrap { margin-bottom: 8px; height: 36px; min-height: 36px; }
     .sparkline-wrap svg { width: 100%; height: 36px; }
 
-    .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
     .card-manual { font-size: 13px; color: var(--muted); font-style: italic; }
     .card-manual a { color: var(--blue); }
 
-    .badge-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+    .badge-section { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 4px; }
     .badge { font-size: 12px; color: var(--muted); background: #1c2128; border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; white-space: nowrap; }
     .badge-info { cursor: help; }
     .badge-trend-good { color: var(--green); border-color: var(--green); background: var(--green-bg); font-size: 13px; font-weight: 700; }
@@ -1000,6 +1001,21 @@ function formatDate(dateStr) {
   return `${m}/${d}/${y}`;
 }
 
+function formatDateTime(isoStr) {
+  if (!isoStr) return null;
+  const dt = new Date(isoStr);
+  if (isNaN(dt)) return null;
+  const dd   = String(dt.getUTCDate()).padStart(2, '0');
+  const mo   = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const yy   = String(dt.getUTCFullYear()).slice(2);
+  let   h    = dt.getUTCHours();
+  const min  = String(dt.getUTCMinutes()).padStart(2, '0');
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  const hh   = String(h).padStart(2, '0');
+  return `${mo}/${dd}/${yy}--${hh}:${min} ${ampm}`;
+}
+
 function getClusterLabel(id) {
   for (const [, cluster] of Object.entries(CLUSTERS)) {
     if (cluster.indicators.includes(id)) return cluster.label;
@@ -1145,24 +1161,30 @@ function renderCard(indicator, dataMap) {
   const pillLabel = status === 'pending' ? 'Pending' : status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : 'Warning';
 
   const meta = INDICATOR_META[indicator.id] || {};
-  const sourceLabel = meta.access === 'fred_api' ? 'Updated-Auto API' : 'Updated-Manually';
-  const dateLabel = formatDate(d?.latest?.date);
+  const dateLabel = formatDateTime(d?.file_updated);
   const trend = getTrend(hist, value);
   const stale = isStale(d?.file_updated, meta.frequency);
 
   const tooltipText = (TOOLTIPS[indicator.id] || indicator.description).replace(/"/g, '&quot;');
   const tabTarget = meta.access === 'fred_api' ? 'fred-api' : meta.access === 'html_scrape' ? 'html-scrape' : 'manual';
   const clusterLabel = getClusterLabel(indicator.id);
-  const badges = [
+
+  const row1 = [
+    clusterLabel ? `<span class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38">${clusterLabel}</span>` : '',
     meta.frequency  ? `<span class="badge">${meta.frequency}</span>` : '',
     meta.importance ? `<span class="badge">${meta.importance}</span>` : '',
-    clusterLabel    ? `<span class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38">${clusterLabel}</span>` : '',
-    meta.access     ? `<span class="badge">${sourceLabel}</span>` : '',
-    trend           ? `<span class="badge ${getTrendClass(indicator.id, trend)}">${trend} Trend</span>` : '',
-    dateLabel       ? `<span class="badge ${stale ? 'badge-trend-bad' : ''}">Updated ${dateLabel}${stale ? ' - Stale' : ''}</span>` : '',
-    `<span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>`,
-    `<span class="badge badge-view-details" onclick="viewDetails('${tabTarget}','${indicator.id}')">View Details</span>`
   ].filter(Boolean).join('');
+
+  const badgeRows = `
+    <div class="badge-row">${row1}</div>
+    <div class="badge-row">
+      ${trend ? `<span class="badge ${getTrendClass(indicator.id, trend)}">${trend} Trend</span>` : ''}
+      <span class="badge badge-info" data-tooltip="${tooltipText}">ℹ Info</span>
+      <span class="badge badge-view-details" onclick="viewDetails('${tabTarget}','${indicator.id}')">View Details</span>
+    </div>
+    <div class="badge-row" style="justify-content:center">
+      ${dateLabel ? `<span class="badge ${stale ? 'badge-trend-bad' : ''}" style="font-size:16px">Updated ${dateLabel}${stale ? ' - Stale' : ''}</span>` : ''}
+    </div>`;
 
   return `<div class="ind-card ${status}">
     <div class="card-top">
@@ -1177,7 +1199,7 @@ function renderCard(indicator, dataMap) {
     <div class="card-desc">
       ${msg || TOOLTIPS[indicator.id] || indicator.description}
     </div>
-    ${badges ? `<div class="badge-row">${badges}</div>` : ''}
+    <div class="badge-section">${badgeRows}</div>
   </div>`;
 }
 
