@@ -179,8 +179,13 @@ function writeIndicatorFile(result) {
       return false;
     }
     if (latest.date === existing.latest.date) {
-      skip(`${id} - duplicate data (same latest date: ${latest.date}), skipping write`);
-      return false;
+      // Skip only if the flag is already correct. If api-pull-monthly clobbered
+      // manual_update_required back to true, we still need to write to fix it.
+      if (existing.manual_update_required === false) {
+        skip(`${id} - duplicate data (same latest date: ${latest.date}), skipping write`);
+        return false;
+      }
+      skip(`${id} - same date but manual_update_required is set; rewriting to clear flag`);
     }
   }
 

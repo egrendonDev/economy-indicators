@@ -64,8 +64,12 @@ function loadExisting(id) {
 function manualPlaceholder(indicator) {
   const existing = loadExisting(indicator.id);
   if (existing && !existing.error) {
-    skip(`${indicator.label} - cached (manual update required)`);
-    return { ...existing, manual_update_required: true };
+    // Preserve existing manual_update_required flag - don't clobber it with true.
+    // file_drop indicators are updated by their own scripts (which set false after processing).
+    // Forcing true here would hide valid data on the dashboard every time api-pull runs.
+    const label = existing.manual_update_required === false ? 'auto-updated by other script' : 'manual update required';
+    skip(`${indicator.label} - cached (${label})`);
+    return { ...existing };
   }
   warn(`${indicator.label} - no data yet (manual update required)`);
   return {
