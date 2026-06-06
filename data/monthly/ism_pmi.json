@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-05T10:38:46.408Z",
+  "last_updated": "2026-06-06T09:14:52.975Z",
   "indicators": [
     {
       "id": "ism_pmi",
@@ -12,14 +12,10 @@
       "importance": "high",
       "category": "macro",
       "latest": {
-        "date": "2026-04-01",
-        "value": 12596
+        "date": "2026-05-01",
+        "value": 12605
       },
       "history": [
-        {
-          "date": "2023-05-01",
-          "value": 12869
-        },
         {
           "date": "2023-06-01",
           "value": 12875
@@ -158,7 +154,11 @@
         },
         {
           "date": "2026-04-01",
-          "value": 12596
+          "value": 12598
+        },
+        {
+          "date": "2026-05-01",
+          "value": 12605
         }
       ]
     }
