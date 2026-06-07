@@ -373,14 +373,14 @@ const THRESHOLDS = {
   yield_curve:              { warn: 0,     danger: -0.5,  direction: 'inverted', avg: '+1.0%' },
   jobless_claims:           { warn: 250,   danger: 350,   direction: 'higher',   avg: '220K' },
   credit_spreads:           { warn: 4,     danger: 6,     direction: 'higher',   avg: '4.0%' },
-  ism_pmi:                  { warn: 12500, danger: 12000, direction: 'lower',    avg: '~12,500' },
-  real_m2:                  { warn: 20000, danger: 19000, direction: 'lower',    avg: 'varies' },
+  ism_pmi:                  { warn: 12500, danger: 12000, direction: 'lower',    avg: '~12,500K' },
+  real_m2:                  { warn: 0,     danger: -2,    direction: 'lower',    avg: '0% to +5%',  yoy: true },
   weekly_hours:             { warn: 34.2,  danger: 33.5,  direction: 'lower',    avg: '34.5 hrs' },
-  durable_goods:            { warn: 250000,danger: 220000,direction: 'lower',    avg: 'varies' },
+  durable_goods:            { warn: -5,    danger: -10,   direction: 'lower',    avg: 'warn < -5%', yoy: true },
   loan_officer_survey:      { warn: 20,    danger: 40,    direction: 'higher',   avg: '~0%' },
   shiller_cape:             { warn: 25,    danger: 35,    direction: 'higher',   avg: '17' },
   trailing_pe:              { warn: 22,    danger: 28,    direction: 'higher',   avg: '18' },
-  margin_debt:              { warn: null,  danger: null,  direction: 'higher',   avg: 'trend' },
+  margin_debt:              { warn: 20,    danger: 40,    direction: 'higher',   avg: 'warn > +20%', yoy: true },
   sp500_dividend_yield:     { warn: 1.8,   danger: 1.4,   direction: 'lower',    avg: '2.0%' },
   price_to_sales:           { warn: 2.2,   danger: 3.0,   direction: 'higher',   avg: '1.5' },
   tobins_q:                 { warn: 150,   danger: 200,   direction: 'higher',   avg: '95%' },
@@ -392,7 +392,7 @@ const THRESHOLDS = {
   ci_loan_delinquency:      { warn: 1,     danger: 2,     direction: 'higher',   avg: '0.8%' },
   vehicle_sales:            { warn: 14,    danger: 12,    direction: 'lower',    avg: '16M' },
   auto_delinquency:         { warn: 4,     danger: 6,     direction: 'higher',   avg: '2.5%' },
-  revolving_credit:         { warn: 1100000, danger: 1250000, direction: 'higher', avg: '~$1.1T' },
+  revolving_credit:         { warn: 5,       danger: 10,      direction: 'higher', avg: 'warn > +5%', yoy: true },
   cc_delinquency:           { warn: 3,     danger: 5,     direction: 'higher',   avg: '2.5%' },
   cc_chargeoff:             { warn: 3.5,   danger: 6,     direction: 'higher',   avg: '3.5%' },
   cc_apr:                   { warn: 20,    danger: 24,    direction: 'higher',   avg: '~15%' }
@@ -403,14 +403,14 @@ const MESSAGES = {
   yield_curve:              { green: 'Normal yield curve - banks lending profitably', orange: 'Yield curve slightly inverted - credit caution signal', red: 'Deep inversion - historically precedes recession by 6-18 months' },
   jobless_claims:           { green: 'Low layoff activity - labor market healthy', orange: 'Claims ticking up - worth watching for sustained trend', red: 'Elevated layoffs - labor market deteriorating' },
   credit_spreads:           { green: 'Tight spreads - investors comfortable with risk', orange: 'Spreads widening - credit stress building', red: 'Wide spreads - companies paying premium to borrow, stress is real' },
-  ism_pmi:                  { green: 'Manufacturing employment stable', orange: 'Manufacturing showing softness', red: 'Manufacturing employment falling - factory sector in contraction' },
-  real_m2:                  { green: 'Money supply supporting economic activity', orange: 'Money supply growth slowing', red: 'Real money supply shrinking - economic fuel running low' },
+  ism_pmi:                  { green: 'Factory payrolls stable - manufacturing sector holding employment', orange: 'Manufacturing employment softening - factory sector showing strain', red: 'Manufacturing employment falling - factory sector in contraction' },
+  real_m2:                  { green: 'Money supply growing YoY - healthy liquidity conditions', orange: 'Real M2 growth near zero YoY - liquidity tightening', red: 'Real M2 contracting YoY - economic fuel running low' },
   weekly_hours:             { green: 'Employers maintaining worker hours - stable demand', orange: 'Hours being trimmed - early labor stress signal', red: 'Hours cut significantly - layoffs likely next' },
-  durable_goods:            { green: 'Business investment in equipment holding up', orange: 'Durable goods orders softening', red: 'Business capex pulling back - companies losing confidence' },
+  durable_goods:            { green: 'Business capex growing YoY - companies investing confidently', orange: 'Durable goods orders slowing YoY - business investment cooling', red: 'Durable goods contracting YoY - companies pulling back on capex' },
   loan_officer_survey:      { green: 'Banks lending freely - credit flowing normally', orange: 'Banks tightening standards - credit becoming selective', red: 'Significant tightening - credit crunch risk elevated' },
   shiller_cape:             { green: 'Valuations in reasonable range historically', orange: 'Market moderately overvalued vs history', red: 'Extreme overvaluation - large drawdown risk if earnings disappoint' },
   trailing_pe:              { green: 'Earnings supporting current prices reasonably', orange: 'Paying a premium - less margin of safety', red: 'Very high premium - vulnerable to any earnings miss' },
-  margin_debt:              { green: 'Margin debt at normal levels', orange: 'Elevated borrowing in markets', red: 'Extreme margin debt - forced selling risk if market dips' },
+  margin_debt:              { green: 'Margin debt growing at normal pace YoY', orange: 'Margin debt rising rapidly YoY - speculative leverage building', red: 'Extreme margin debt surge YoY - forced selling risk if market dips' },
   sp500_dividend_yield:     { green: 'Decent income floor under stock prices', orange: 'Minimal income buffer - market priced for perfection', red: 'Near-zero yield - stocks offer almost no income cushion' },
   price_to_sales:           { green: 'Price reflects reasonable revenue multiples', orange: 'Revenue premium elevated', red: 'Extreme revenue multiple - hard to justify at these prices' },
   tobins_q:                 { green: 'Market values assets near replacement cost', orange: 'Paying premium over asset replacement cost', red: 'Extreme premium - market prices well above asset values' },
@@ -422,7 +422,7 @@ const MESSAGES = {
   ci_loan_delinquency:      { green: 'Businesses keeping up with loans', orange: 'Business loan stress increasing', red: 'Elevated business defaults - corporate health deteriorating' },
   vehicle_sales:            { green: 'Auto demand healthy - consumers buying', orange: 'Car sales slowing - big-ticket hesitation', red: 'Steep sales drop - consumers pulling back on major purchases' },
   auto_delinquency:         { green: 'Auto borrowers current on payments', orange: 'Auto delinquency rising - lower-income stress', red: 'High auto defaults - consumer financial stress confirmed' },
-  revolving_credit:         { green: 'Card balances at manageable levels', orange: 'Balances rising - consumers borrowing more to cover spending', red: 'Surging balances - consumers funding everyday expenses with debt' },
+  revolving_credit:         { green: 'Revolving balances growing modestly YoY - pace not alarming', orange: 'Revolving credit accelerating YoY - consumers stretching budgets', red: 'Revolving credit surging YoY - consumers funding expenses with debt' },
   cc_delinquency:           { green: 'Cardholders keeping up with minimum payments', orange: 'More cardholders missing payments', red: 'Widespread payment missed - consumer financial distress confirmed' },
   cc_chargeoff:             { green: 'Banks writing off minimal bad debt', orange: 'Charge-offs rising - defaults materializing', red: 'Banks absorbing heavy credit losses - deep consumer distress' },
   cc_apr:                   { green: 'Card rates within historical range - borrowing costs manageable', orange: 'Elevated APR squeezing household budgets - watch delinquency next', red: 'Record-high card rates - minimum payments consuming large share of income' }
@@ -977,6 +977,16 @@ function getStatus(id, value) {
   return 'green';
 }
 
+const YOY_INDICATORS = new Set(['real_m2', 'durable_goods', 'revolving_credit', 'margin_debt']);
+
+function computeYoY(history) {
+  if (!history || history.length < 13) return null;
+  const latest  = history[history.length - 1];
+  const yearAgo = history[history.length - 13];
+  if (!latest || !yearAgo || yearAgo.value === 0) return null;
+  return ((latest.value - yearAgo.value) / Math.abs(yearAgo.value)) * 100;
+}
+
 function formatValue(id, value, unit) {
   if (value === null || value === undefined) return '--';
   const v = Number(value);
@@ -1154,11 +1164,16 @@ function renderCard(indicator, dataMap) {
   const d = dataMap[indicator.id];
   const hasPending = !d || d.manual_update_required || d.error || !d.latest;
   const value = hasPending ? null : d.latest?.value;
-  const status = hasPending ? 'pending' : getStatus(indicator.id, value);
+  const hist = d?.history || [];
+
+  const isYoy = YOY_INDICATORS.has(indicator.id);
+  const yoyPct = (!hasPending && isYoy) ? computeYoY(hist) : null;
+  const statusValue = yoyPct !== null ? yoyPct : value;
+
   const cfg = THRESHOLDS[indicator.id] || {};
+  const status = hasPending ? 'pending' : getStatus(indicator.id, statusValue);
   const msgSet = MESSAGES[indicator.id] || {};
   const msg = hasPending ? null : msgSet[status];
-  const hist = d?.history || [];
   const pillLabel = status === 'pending' ? 'Pending' : status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : 'Warning';
 
   const meta = INDICATOR_META[indicator.id] || {};
@@ -1193,8 +1208,12 @@ function renderCard(indicator, dataMap) {
       <div class="status-pill ${status}">${pillLabel}</div>
     </div>
     <div class="card-values">
-      <div class="current-val ${status}">${hasPending ? '--' : formatValue(indicator.id, value, indicator.unit)}</div>
-      ${cfg.avg ? `<div class="avg-pill">avg ${cfg.avg}</div>` : ''}
+      <div class="current-val ${status}">${hasPending ? '--' : yoyPct !== null ? (yoyPct >= 0 ? '+' : '') + yoyPct.toFixed(1) + '%' : formatValue(indicator.id, value, indicator.unit)}</div>
+      ${yoyPct !== null ? `
+        <div class="avg-pill" style="color:#79c0ff;border-color:#388bfd66;background:#0d1f38">YoY</div>
+        <div class="avg-pill">${cfg.avg}</div>
+        <div class="avg-pill">${formatValue(indicator.id, value, indicator.unit)}</div>
+      ` : cfg.avg ? `<div class="avg-pill">avg ${cfg.avg}</div>` : ''}
     </div>
     <div class="sparkline-wrap">${sparkline(hist, status)}</div>
     <div class="card-desc">
@@ -1320,7 +1339,7 @@ const ALL_INDICATORS = [
   { id:'yield_curve',              label:'Yield Curve (2yr vs 10yr)',       type:'leading',  category:'macro',        unit:'%',               url:'https://fred.stlouisfed.org/series/T10Y2Y' },
   { id:'jobless_claims',           label:'Initial Jobless Claims',          type:'leading',  category:'macro',        unit:'thousands',        url:'https://fred.stlouisfed.org/series/ICSA' },
   { id:'credit_spreads',           label:'High-Yield Credit Spreads',       type:'leading',  category:'macro',        unit:'%',               url:'https://fred.stlouisfed.org/series/BAMLH0A0HYM2' },
-  { id:'ism_pmi',                  label:'ISM Manufacturing PMI',           type:'leading',  category:'macro',        unit:'index',            url:'https://fred.stlouisfed.org/series/MANEMP' },
+  { id:'ism_pmi',                  label:'Manufacturing Employment',         type:'leading',  category:'macro',        unit:'thousands',        url:'https://fred.stlouisfed.org/series/MANEMP' },
   { id:'real_m2',                  label:'Real M2 Money Supply',            type:'leading',  category:'macro',        unit:'billions USD',     url:'https://fred.stlouisfed.org/series/M2REAL' },
   { id:'weekly_hours',             label:'Avg Weekly Hours Worked',         type:'leading',  category:'macro',        unit:'hours',            url:'https://fred.stlouisfed.org/series/AWHAETP' },
   { id:'durable_goods',            label:'Durable Goods Orders',            type:'leading',  category:'macro',        unit:'millions USD',     url:'https://fred.stlouisfed.org/series/DGORDER' },
