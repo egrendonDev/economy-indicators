@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-15T12:55:29.758Z",
+  "last_updated": "2026-06-23T10:25:03.763Z",
   "indicators": [
     {
       "id": "jobless_claims",
@@ -11,14 +11,10 @@
       "type": "leading",
       "importance": "high",
       "latest": {
-        "date": "2026-06-06",
-        "value": 229000
+        "date": "2026-06-13",
+        "value": 226000
       },
       "history": [
-        {
-          "date": "2024-06-15",
-          "value": 236000
-        },
         {
           "date": "2024-06-22",
           "value": 233000
@@ -429,7 +425,11 @@
         },
         {
           "date": "2026-06-06",
-          "value": 229000
+          "value": 230000
+        },
+        {
+          "date": "2026-06-13",
+          "value": 226000
         }
       ]
     }
