@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-07T09:53:34.927Z",
+  "last_updated": "2026-06-24T04:56:04.575Z",
   "indicators": [
     {
       "id": "fha_delinquency",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "residential",
       "latest": {
-        "date": "2026-03-01",
-        "value": 6.63
+        "date": "2026-04-01",
+        "value": 6.53
       },
       "history": [
-        {
-          "date": "2025-03-01",
-          "value": 4.47
-        },
         {
           "date": "2025-04-01",
           "value": 4.29
@@ -67,10 +63,13 @@
         {
           "date": "2026-03-01",
           "value": 6.63
+        },
+        {
+          "date": "2026-04-01",
+          "value": 6.53
         }
       ],
-      "note": "Parsed from FHALPT_Mar2026.pdf on 2026-05-31T06:17:42.230Z. Metric: Non-SA Serious Delinquency Rate (Table 1).",
-      "manual_update_required": false
+      "note": "Parsed from FHALPT_Apr2026.pdf on 2026-06-24T04:56:04.575Z. Metric: Non-SA Serious Delinquency Rate (Table 1)."
     }
   ]
 }

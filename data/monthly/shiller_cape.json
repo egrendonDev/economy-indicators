@@ -1,17 +1,13 @@
 {
-  "last_updated": "2026-06-07T09:53:34.927Z",
+  "last_updated": "2026-06-24T04:49:33.371Z",
   "indicators": [
     {
       "id": "shiller_cape",
       "latest": {
-        "date": "2026-05-01",
-        "value": 41.04
+        "date": "2026-06-01",
+        "value": 41.32
       },
       "history": [
-        {
-          "date": "2023-07-01",
-          "value": 30.89
-        },
         {
           "date": "2023-08-01",
           "value": 30.09
@@ -146,15 +142,19 @@
         },
         {
           "date": "2026-05-01",
-          "value": 42.66
+          "value": 41.1
         },
         {
-          "date": "2026-05-01",
-          "value": 41.04
+          "date": "2026-06-01",
+          "value": 40.96
+        },
+        {
+          "date": "2026-06-01",
+          "value": 41.32
         }
       ],
       "manual_update_required": false,
-      "note": "Scraped from multpl.com on 2026-05-31T17:36:55.462Z"
+      "note": "Scraped from multpl.com on 2026-06-24T04:49:33.371Z"
     }
   ]
 }
