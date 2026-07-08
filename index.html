@@ -163,7 +163,7 @@
     .badge-trend-good { color: var(--green); border-color: var(--green); background: var(--green-bg); font-size: 13px; font-weight: 700; }
     .badge-trend-bad  { color: var(--red);   border-color: var(--red);   background: var(--red-bg);   font-size: 13px; font-weight: 700; }
     .badge-trend-flat { font-size: 13px; font-weight: 700; }
-    #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 8px; width: 280px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; }
+    #tooltip { position: fixed; display: none; background: #1c2128; border: 1px solid var(--border); color: var(--text); font-size: 13px; line-height: 1.6; padding: 10px 14px; border-radius: 8px; width: 280px; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,0.5); pointer-events: none; white-space: pre-line; }
 
     /* ---- View Details badge ---- */
     .badge-view-details { cursor: pointer; color: var(--blue); border-color: var(--blue); background: #0d1f38; font-weight: 600; transition: background 0.15s, box-shadow 0.15s; }
@@ -197,6 +197,7 @@
   <header>
     <h1><i class="ti ti-chart-line"></i> Economy Downturn Indicators</h1>
     <div class="header-sub" id="last-updated">Last updated: --</div>
+    <span id="freshness-badge" class="status-pill" style="display:none;margin-top:8px;font-size:13px;cursor:help" data-tooltip=""></span>
   </header>
 
   <!-- Tab bar -->
@@ -1315,6 +1316,34 @@ function renderSummary(allIndicators, dataMap) {
 
   if (latestDate) {
     document.getElementById('last-updated').textContent = `Last updated: ${latestDate}`;
+  }
+
+  // Freshness badge - X/Y current, hover for which are stale
+  let staleList = [];
+  let freshnessTotal = 0;
+  for (const ind of allIndicators) {
+    const meta = INDICATOR_META[ind.id] || {};
+    if (!meta.frequency) continue;
+    freshnessTotal++;
+    const d = dataMap[ind.id];
+    if (isStale(d?.file_updated, meta.frequency)) {
+      const days = d?.file_updated ? Math.floor((Date.now() - new Date(d.file_updated)) / 86400000) : null;
+      const over = days !== null ? days - STALE_THRESHOLDS[meta.frequency] : null;
+      staleList.push(`${ind.label} — ${over !== null ? over + 'd overdue' : 'no data'}`);
+    }
+  }
+  const freshnessBadge = document.getElementById('freshness-badge');
+  if (freshnessBadge) {
+    freshnessBadge.style.display = 'inline-block';
+    if (staleList.length) {
+      freshnessBadge.className = 'status-pill red';
+      freshnessBadge.innerHTML = `<i class="ti ti-alert-triangle" style="margin-right:4px"></i>${freshnessTotal - staleList.length}/${freshnessTotal} current, ${staleList.length} stale`;
+      freshnessBadge.dataset.tooltip = staleList.join('\n');
+    } else {
+      freshnessBadge.className = 'status-pill green';
+      freshnessBadge.innerHTML = `<i class="ti ti-check" style="margin-right:4px"></i>${freshnessTotal}/${freshnessTotal} current`;
+      freshnessBadge.removeAttribute('data-tooltip');
+    }
   }
 
   // Alert boxes
