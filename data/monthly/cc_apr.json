@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-08T09:17:39.242Z",
+  "last_updated": "2026-07-09T10:25:22.040Z",
   "indicators": [
     {
       "id": "cc_apr",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "credit_cards",
       "latest": {
-        "date": "2026-02-01",
-        "value": 21
+        "date": "2026-05-01",
+        "value": 20.94
       },
       "history": [
-        {
-          "date": "2023-05-01",
-          "value": 20.84
-        },
         {
           "date": "2023-08-01",
           "value": 21.19
@@ -63,6 +59,10 @@
         {
           "date": "2026-02-01",
           "value": 21
+        },
+        {
+          "date": "2026-05-01",
+          "value": 20.94
         }
       ]
     }
