@@ -67,6 +67,16 @@ jobs:
             npm run api-pull:quarterly
           fi
 
+      - name: Run api-pull-buy-signal (if due)
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            npm run api-pull:buy-signal -- --force
+          else
+            npm run api-pull:buy-signal
+          fi
+
       - name: Run html-scrape-multpl-shared (1h cooldown enforced in script)
         # No FRED_API_KEY needed - scrapes public HTML pages only.
         # The script enforces a 1-hour cooldown internally and exits cleanly

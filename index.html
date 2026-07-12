@@ -31,6 +31,9 @@
     .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 600; padding: 8px 16px; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; }
     .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
     .tab-btn:hover:not(.active) { color: var(--text); }
+    .tab-btn-primary { font-size: 15px; font-weight: 700; }
+    .tab-btn-secondary { font-size: 11px; }
+    .tab-bar-spacer { flex: 1; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
@@ -202,10 +205,12 @@
 
   <!-- Tab bar -->
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('dashboard', this)">Dashboard</button>
-    <button class="tab-btn" onclick="switchTab('manual', this)">Manual Updates</button>
-    <button class="tab-btn" onclick="switchTab('fred-api', this)">FRED-API Updates</button>
-    <button class="tab-btn" onclick="switchTab('html-scrape', this)">HTML-Scraper Updates</button>
+    <button class="tab-btn tab-btn-primary active" onclick="switchTab('dashboard', this)">Dashboard</button>
+    <button class="tab-btn tab-btn-primary" onclick="switchTab('buying-indicators', this)">Buying Indicators</button>
+    <span class="tab-bar-spacer"></span>
+    <button class="tab-btn tab-btn-secondary" onclick="switchTab('manual', this)">Manual Updates</button>
+    <button class="tab-btn tab-btn-secondary" onclick="switchTab('fred-api', this)">FRED-API Updates</button>
+    <button class="tab-btn tab-btn-secondary" onclick="switchTab('html-scrape', this)">HTML-Scraper Updates</button>
   </div>
 
   <!-- Dashboard tab -->
@@ -295,6 +300,62 @@
   <div id="lagging-section"></div>
 
   </div><!-- end tab-dashboard -->
+
+  <!-- Buying Indicators tab -->
+  <div id="tab-buying-indicators" class="tab-panel">
+    <h2 style="font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><i class="ti ti-target-arrow" style="color:var(--blue)"></i> Buying Indicators</h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Signals for when market stress may represent a buying opportunity, plus external resources worth checking before deciding.</p>
+
+    <div id="buy-signal-card"></div>
+
+    <div class="category-label">
+      <i class="ti ti-scale"></i>
+      <div class="category-label-body">
+        <div class="category-label-top">
+          <span class="category-label-title">Valuation checks</span>
+          <span class="category-label-desc">- External references for whether the market is priced for trouble</span>
+        </div>
+        <div class="category-label-investigate">
+          <span class="category-label-investigate-label">Resources:</span>
+          <a class="investigate-pill" href="https://buffettindicator.org/" target="_blank" rel="noopener">Buffett Indicator</a>
+          <a class="investigate-pill" href="https://www.cnn.com/markets/fear-and-greed" target="_blank" rel="noopener">Fear and Greed Index</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-label">
+      <i class="ti ti-building-bank"></i>
+      <div class="category-label-body">
+        <div class="category-label-top">
+          <span class="category-label-title">Monetary policy</span>
+          <span class="category-label-desc">- Fed policy signals that tend to coincide with market bottoms</span>
+        </div>
+        <div class="category-label-investigate">
+          <span class="category-label-investigate-label">Resources:</span>
+          <a class="investigate-pill" href="https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm" target="_blank" rel="noopener">Fed Meeting Minutes</a>
+          <a class="investigate-pill" href="https://www.cmegroup.com/markets/interest-rates/cme-fedwatch-tool.html" target="_blank" rel="noopener">CME FedWatch Tool</a>
+          <a class="investigate-pill" href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank" rel="noopener">HY Credit Spreads</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-label">
+      <i class="ti ti-activity"></i>
+      <div class="category-label-body">
+        <div class="category-label-top">
+          <span class="category-label-title">Recession &amp; sentiment signals</span>
+          <span class="category-label-desc">- External checks worth pulling up before deciding it's a good time to buy</span>
+        </div>
+        <div class="category-label-investigate">
+          <span class="category-label-investigate-label">Resources:</span>
+          <a class="investigate-pill" href="https://www.newyorkfed.org/research/capital_markets/ycfaq#/interactive" target="_blank" rel="noopener">NY Fed Recession Model</a>
+          <a class="investigate-pill" href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank" rel="noopener">Sahm Rule Tracker</a>
+          <a class="investigate-pill" href="https://www.conference-board.org/topics/us-leading-indicators" target="_blank" rel="noopener">Conference Board LEI</a>
+          <a class="investigate-pill" href="https://www.aaii.com/sentimentsurvey" target="_blank" rel="noopener">AAII Sentiment Survey</a>
+        </div>
+      </div>
+    </div>
+  </div><!-- end tab-buying-indicators -->
 
   <!-- Manual Updates tab -->
   <div id="tab-manual" class="tab-panel">
@@ -1159,6 +1220,332 @@ function sparkline(history, status) {
   </svg>`;
 }
 
+// ─── AXIS CHARTS (Buy Signal tab) ─────────────────────────────────────────────
+// Larger labeled charts, distinct from the compact unlabeled sparkline() above.
+// Used only by the Buying Indicators tab's single standalone card.
+
+function formatAxisDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+function niceTicks(min, max, count = 3) {
+  const ticks = [];
+  for (let i = 0; i < count; i++) ticks.push(min + ((max - min) * i) / (count - 1));
+  return ticks;
+}
+
+// Evenly-spaced date labels plus faint vertical gridlines, so a spike in one
+// stacked chart can be lined up against the same date in the chart above or
+// below it (e.g. checking whether a VIX spike lines up with a recession).
+function xAxisMarkup(history, xFor, padT, innerH, height, count = 7) {
+  const n = history.length;
+  const idxs = [];
+  for (let i = 0; i < count; i++) idxs.push(Math.round((i / (count - 1)) * (n - 1)));
+  return idxs.map((idx, k) => {
+    const x = xFor(idx).toFixed(1);
+    const anchor = k === 0 ? 'start' : k === count - 1 ? 'end' : 'middle';
+    return `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" stroke="#21262d" stroke-width="1"/>
+      <text x="${x}" y="${height - 4}" text-anchor="${anchor}" font-size="10" fill="#6b7280">${formatAxisDate(history[idx].date)}</text>`;
+  }).join('');
+}
+
+// Single-line chart with labeled y-axis ticks, x-axis date range, and an
+// optional dashed threshold line (used to show how close a value is to
+// triggering a condition).
+function axisChart(history, opts = {}) {
+  const { width = 500, height = 120, color = '#3fb950', yMin, yMax, yFormat = v => v.toFixed(0),
+          thresholdValue = null, thresholdLabel = '' } = opts;
+  if (!history || history.length < 2) return '<div style="font-size:11px;color:#8b949e">No history</div>';
+
+  const padL = 46, padR = 12, padT = 10, padB = 20;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const vals = history.map(h => h.value);
+  const mn = yMin ?? Math.min(...vals);
+  const mx = yMax ?? Math.max(...vals);
+  const range = (mx - mn) || 1;
+
+  const xFor = i => padL + (i / (history.length - 1)) * innerW;
+  const yFor = v => padT + innerH - ((v - mn) / range) * innerH;
+
+  const points = history.map((h, i) => `${xFor(i).toFixed(1)},${yFor(h.value).toFixed(1)}`).join(' ');
+  const yTicks = niceTicks(mn, mx, 3).map(t =>
+    `<text x="${padL - 6}" y="${(yFor(t) + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#8b949e">${yFormat(t)}</text>`
+  ).join('');
+
+  const thresholdEl = thresholdValue != null && thresholdValue >= mn && thresholdValue <= mx
+    ? `<line x1="${padL}" y1="${yFor(thresholdValue).toFixed(1)}" x2="${width - padR}" y2="${yFor(thresholdValue).toFixed(1)}" stroke="#d29922" stroke-width="1" stroke-dasharray="3,3"/>
+       <text x="${width - padR}" y="${(yFor(thresholdValue) - 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#d29922">${thresholdLabel}</text>`
+    : '';
+
+  const xAxis = xAxisMarkup(history, xFor, padT, innerH, height, 7);
+
+  return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
+    <line x1="${padL}" y1="${padT + innerH}" x2="${width - padR}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
+    ${xAxis}
+    ${yTicks}
+    ${thresholdEl}
+    <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" opacity="0.9"/>
+  </svg>`;
+}
+
+// Two lines, two independently-scaled y-axes (left + right), shared x-axis.
+// Both scales are real - values are not normalized onto a fake shared range.
+function dualAxisChart(historyA, historyB, opts = {}) {
+  const { width = 500, height = 140, colorA = '#3fb950', colorB = '#58a6ff',
+          aMin, aMax, aFormat = v => v.toFixed(0), aThreshold = null,
+          bMin, bMax, bFormat = v => v.toFixed(0), signalMask = null } = opts;
+  if (!historyA?.length || !historyB?.length) return '<div style="font-size:11px;color:#8b949e">No history</div>';
+
+  const padL = 40, padR = 44, padT = 10, padB = 20;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+
+  const valsA = historyA.map(h => h.value);
+  const mnA = aMin ?? Math.min(...valsA), mxA = aMax ?? Math.max(...valsA);
+  const rangeA = (mxA - mnA) || 1;
+  const valsB = historyB.map(h => h.value);
+  const mnB = bMin ?? Math.min(...valsB), mxB = bMax ?? Math.max(...valsB);
+  const rangeB = (mxB - mnB) || 1;
+
+  const xForA = i => padL + (i / (historyA.length - 1)) * innerW;
+  const yForA = v => padT + innerH - ((v - mnA) / rangeA) * innerH;
+  const xForB = i => padL + (i / (historyB.length - 1)) * innerW;
+  const yForB = v => padT + innerH - ((v - mnB) / rangeB) * innerH;
+
+  const pointsA = historyA.map((h, i) => `${xForA(i).toFixed(1)},${yForA(h.value).toFixed(1)}`).join(' ');
+  const pointsB = historyB.map((h, i) => `${xForB(i).toFixed(1)},${yForB(h.value).toFixed(1)}`).join(' ');
+
+  const leftTicks = niceTicks(mnA, mxA, 3).map(t =>
+    `<text x="${padL - 6}" y="${(yForA(t) + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="${colorA}">${aFormat(t)}</text>`
+  ).join('');
+  const rightTicks = niceTicks(mnB, mxB, 3).map(t =>
+    `<text x="${width - padR + 6}" y="${(yForB(t) + 3).toFixed(1)}" font-size="10" fill="${colorB}">${bFormat(t)}</text>`
+  ).join('');
+
+  const thresholdEl = aThreshold != null && aThreshold >= mnA && aThreshold <= mxA
+    ? `<line x1="${padL}" y1="${yForA(aThreshold).toFixed(1)}" x2="${width - padR}" y2="${yForA(aThreshold).toFixed(1)}" stroke="#d29922" stroke-width="1" stroke-dasharray="3,3"/>`
+    : '';
+
+  const xAxis = xAxisMarkup(historyA, xForA, padT, innerH, height, 7);
+
+  // Shade every historical stretch where both conditions were true at once -
+  // i.e. where a buy signal would have actually fired in the past.
+  let highlights = '';
+  if (signalMask && signalMask.length === historyA.length) {
+    let runStart = null;
+    for (let i = 0; i <= signalMask.length; i++) {
+      const active = i < signalMask.length && signalMask[i];
+      if (active && runStart === null) runStart = i;
+      if (!active && runStart !== null) {
+        const x1 = xForA(runStart).toFixed(1);
+        const x2 = xForA(i - 1).toFixed(1);
+        highlights += `<rect x="${x1}" y="${padT}" width="${Math.max(2, x2 - x1)}" height="${innerH}" fill="#bc8cff" opacity="0.3"/>`;
+        runStart = null;
+      }
+    }
+  }
+
+  return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
+    ${highlights}
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
+    <line x1="${padL}" y1="${padT + innerH}" x2="${width - padR}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
+    <line x1="${width - padR}" y1="${padT}" x2="${width - padR}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
+    ${xAxis}
+    ${leftTicks}
+    ${rightTicks}
+    ${thresholdEl}
+    <polyline points="${pointsA}" fill="none" stroke="${colorA}" stroke-width="2" opacity="0.9"/>
+    <polyline points="${pointsB}" fill="none" stroke="${colorB}" stroke-width="2" opacity="0.9" stroke-dasharray="4,3"/>
+  </svg>`;
+}
+
+// Derives a % drawdown-from-running-high series client-side from raw S&P 500
+// history, so the JSON file only needs to store raw prices.
+function computeDrawdownSeries(history) {
+  let runningMax = -Infinity;
+  return history.map(h => {
+    runningMax = Math.max(runningMax, h.value);
+    return { date: h.date, value: ((h.value - runningMax) / runningMax) * 100 };
+  });
+}
+
+// Last N years of a history array, by calendar date (not just point count).
+function lastNYears(history, years) {
+  if (!history.length) return history;
+  const cutoff = new Date(history[history.length - 1].date + 'T00:00:00');
+  cutoff.setFullYear(cutoff.getFullYear() - years);
+  return history.filter(h => new Date(h.date + 'T00:00:00') >= cutoff);
+}
+
+// Range control state for the Buying Indicators charts - populated once on
+// load, re-read on every button click. 'max' means different things per
+// chart: VIX genuinely has ~36yrs of history, but S&P 500 (and therefore the
+// combined view, which depends on both) is hard-capped at FRED's 10yr window
+// regardless of what's picked, so 10Y and Max look identical for those two.
+const CHART_RANGES = [
+  { key: '1y',  label: '1Y',  years: 1 },
+  { key: '2y',  label: '2Y',  years: 2 },
+  { key: '3y',  label: '3Y',  years: 3 },
+  { key: '4y',  label: '4Y',  years: 4 },
+  { key: '5y',  label: '5Y',  years: 5 },
+  { key: '7y',  label: '7Y',  years: 7 },
+  { key: '10y', label: '10Y', years: 10 },
+  { key: 'max', label: 'Max', years: null }
+];
+let buySignalState = null;
+let buySignalActiveRange = { sp500: '4y', vix: '4y', combined: '4y' };
+
+function filterByRange(history, years) {
+  return years == null ? history : lastNYears(history, years);
+}
+
+function rangeButtonsHTML(chartKey) {
+  const active = buySignalActiveRange[chartKey];
+  return `<div style="display:flex;gap:4px;margin-bottom:6px">${CHART_RANGES.map(r => {
+    const isActive = r.key === active;
+    return `<button data-chart="${chartKey}" data-range="${r.key}" onclick="setChartRange('${chartKey}','${r.key}')"
+      style="font-size:10px;padding:2px 9px;border-radius:12px;cursor:pointer;
+      border:1px solid ${isActive ? '#58a6ff' : '#30363d'};
+      background:${isActive ? 'rgba(88,166,255,0.15)' : 'transparent'};
+      color:${isActive ? '#58a6ff' : '#8b949e'}">${r.label}</button>`;
+  }).join('')}</div>`;
+}
+
+function renderSp500Chart(rangeKey) {
+  const s = buySignalState;
+  const years = CHART_RANGES.find(r => r.key === rangeKey).years;
+  const filtered = filterByRange(s.sp500History, years);
+  document.getElementById('chart-sp500').innerHTML = axisChart(filtered, {
+    width: s.chartWidth, color: s.lineColor,
+    yFormat: v => v.toLocaleString('en-US', { maximumFractionDigits: 0 })
+  });
+}
+
+function renderVixChart(rangeKey) {
+  const s = buySignalState;
+  const years = CHART_RANGES.find(r => r.key === rangeKey).years;
+  const filtered = filterByRange(s.vixHistoryFull, years);
+  document.getElementById('chart-vix').innerHTML = axisChart(filtered, {
+    width: s.chartWidth, color: s.lineColor, yMin: 0, yFormat: v => v.toFixed(0),
+    thresholdValue: 30, thresholdLabel: 'VIX 30'
+  });
+}
+
+function renderCombinedChart(rangeKey) {
+  const s = buySignalState;
+  // Combined view can't exceed 10yrs regardless of selection - that's the
+  // S&P/drawdown side's real ceiling from FRED's licensing cap.
+  const years = Math.min(CHART_RANGES.find(r => r.key === rangeKey).years ?? 10, 10);
+  const vixSlice = lastNYears(s.vix10y, years);
+  const drawdownSlice = lastNYears(s.drawdownSeries10y, years);
+  const drawdownByDate = new Map(drawdownSlice.map(h => [h.date, h.value]));
+  const signalMask = vixSlice.map(h => {
+    const dd = drawdownByDate.get(h.date);
+    return h.value >= s.percentileValue && dd !== undefined && dd <= s.drawdownThresholdPct;
+  });
+  document.getElementById('chart-combined').innerHTML = dualAxisChart(vixSlice, drawdownSlice, {
+    width: s.chartWidth, colorA: '#3fb950', colorB: '#58a6ff',
+    aMin: 0, aFormat: v => v.toFixed(0),
+    bMax: 0, bFormat: v => v.toFixed(0) + '%',
+    signalMask
+  });
+}
+
+function setChartRange(chartKey, rangeKey) {
+  buySignalActiveRange[chartKey] = rangeKey;
+  document.querySelectorAll(`button[data-chart="${chartKey}"]`).forEach(b => {
+    const isActive = b.dataset.range === rangeKey;
+    b.style.borderColor = isActive ? '#58a6ff' : '#30363d';
+    b.style.background  = isActive ? 'rgba(88,166,255,0.15)' : 'transparent';
+    b.style.color       = isActive ? '#58a6ff' : '#8b949e';
+  });
+  if (chartKey === 'sp500')    renderSp500Chart(rangeKey);
+  if (chartKey === 'vix')      renderVixChart(rangeKey);
+  if (chartKey === 'combined') renderCombinedChart(rangeKey);
+}
+
+async function renderBuySignalCard() {
+  const container = document.getElementById('buy-signal-card');
+  if (!container) return;
+
+  let data;
+  try {
+    const res = await fetch('data/weekly/buy_signal.json');
+    data = res.ok ? await res.json() : null;
+  } catch {
+    data = null;
+  }
+
+  if (!data) {
+    container.innerHTML = `<div class="ind-card pending" style="max-width:560px;margin-bottom:24px">
+      <div class="card-top">
+        <div class="card-name">Buy Signal Status</div>
+        <div class="status-pill pending">Not Live</div>
+      </div>
+      <div class="card-desc">Data pipeline not built yet - run <code style="background:#1c2128;padding:1px 5px;border-radius:3px;font-size:11px">npm run api-pull:buy-signal</code> to generate data/weekly/buy_signal.json.</div>
+    </div>`;
+    return;
+  }
+
+  const pillMap = {
+    calm:    { cls: 'pending', label: "Watching" },
+    caution: { cls: 'orange',  label: "Don't Buy Yet" },
+    buy:     { cls: 'green',   label: 'Time To Buy' }
+  };
+  const pill = pillMap[data.signal] || pillMap.calm;
+  const lineColor = data.signal === 'buy' ? '#3fb950' : data.signal === 'caution' ? '#d29922' : '#3fb950';
+
+  const sp500History = data.sp500.history;  // already capped at FRED's 10yr window
+  const vixHistoryFull = data.vix.history;  // full history since 1990
+  const drawdownSeries10y = computeDrawdownSeries(sp500History);
+  const vix10y = lastNYears(vixHistoryFull, 10);
+
+  // Match the SVG's internal coordinate system to the real rendered width so
+  // preserveAspectRatio="none" barely has to stretch anything - a big gap
+  // between viewBox width and actual pixel width is what caused the blur.
+  const chartWidth = container.clientWidth > 0 ? container.clientWidth - 40 : 1000;
+
+  buySignalState = {
+    sp500History, vixHistoryFull, drawdownSeries10y, vix10y, chartWidth, lineColor,
+    percentileValue: data.vix.percentile_value,
+    drawdownThresholdPct: data.sp500.drawdown_threshold_pct
+  };
+  buySignalActiveRange = { sp500: '4y', vix: '4y', combined: '4y' };
+
+  container.innerHTML = `<div class="ind-card ${data.signal === 'buy' ? 'green' : data.signal === 'caution' ? 'orange' : ''}" style="width:100%;margin-bottom:24px">
+    <div class="card-top">
+      <div class="card-name">Buy Signal Status</div>
+      <div class="status-pill ${pill.cls}">${pill.label}</div>
+    </div>
+
+    <div style="font-size:12px;color:var(--text);margin-bottom:4px">S&amp;P 500 <strong style="color:${lineColor}">${data.sp500.current.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}</strong> <span style="color:var(--muted)">- max available window (FRED 10yr cap)</span></div>
+    ${rangeButtonsHTML('sp500')}
+    <div id="chart-sp500"></div>
+
+    <div style="font-size:12px;color:var(--text);margin:12px 0 4px">VIX <strong style="color:${lineColor}">${data.vix.current.value}</strong> <span style="color:var(--muted)">- full history since 1990</span></div>
+    ${rangeButtonsHTML('vix')}
+    <div id="chart-vix"></div>
+
+    <div style="font-size:12px;color:var(--text);margin:12px 0 4px">Combined signal view <span style="color:var(--muted)">- capped at 10yr (S&amp;P's FRED limit), both axes real</span></div>
+    <div style="display:flex;gap:14px;font-size:10px;margin-bottom:6px;flex-wrap:wrap">
+      <span style="color:#3fb950">&#8212; VIX (left)</span>
+      <span style="color:#58a6ff">&#8943; S&amp;P 500 Drawdown % (right)</span>
+      <span style="color:#8b949e"><span style="display:inline-block;width:10px;height:10px;background:#bc8cff;opacity:0.7;border-radius:2px;vertical-align:-1px;margin-right:3px"></span>Both conditions met (past buy signal)</span>
+    </div>
+    ${rangeButtonsHTML('combined')}
+    <div id="chart-combined"></div>
+
+    <div class="card-desc" style="margin-top:10px">Signal is <strong>${data.conditions_met}/2</strong> conditions met - VIX at or above its trailing ${data.vix.percentile_window_years}yr ${data.vix.percentile_threshold}th percentile (${data.vix.condition_met ? 'met' : 'not met'}), and S&amp;P 500 down ${Math.abs(data.sp500.drawdown_threshold_pct)}%+ from its rolling all-time high (${data.sp500.condition_met ? 'met' : 'not met'}, currently ${data.sp500.drawdown_pct.toFixed(1)}%).</div>
+  </div>`;
+
+  renderSp500Chart('4y');
+  renderVixChart('4y');
+  renderCombinedChart('4y');
+}
+
 // ─── RENDER ──────────────────────────────────────────────────────────────────
 
 function renderCard(indicator, dataMap) {
@@ -1416,6 +1803,7 @@ async function init() {
     renderManualTab();
     renderFredApiTab();
     renderHtmlScrapeTab();
+    await renderBuySignalCard();
   } catch (e) {
     console.error('Dashboard error:', e);
   } finally {
