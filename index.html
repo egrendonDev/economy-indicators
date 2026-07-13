@@ -1255,10 +1255,18 @@ function xAxisMarkup(history, xFor, padT, innerH, height, count = 7) {
 // triggering a condition).
 function axisChart(history, opts = {}) {
   const { width = 500, height = 120, color = '#3fb950', yMin, yMax, yFormat = v => v.toFixed(0),
-          thresholdValue = null, thresholdLabel = '' } = opts;
-  if (!history || history.length < 2) return '<div style="font-size:11px;color:#8b949e">No history</div>';
+          thresholdValue = null, thresholdLabel = '', crossId = null,
+          // Defaults match the old solo-chart look. The Buy Signal card passes
+          // padL/padR = 40/44 explicitly (see renderSp500Chart/renderVixChart)
+          // so its plot area lines up pixel-for-pixel with dualAxisChart's,
+          // which needs the wider right margin for its right-axis tick labels.
+          // Without this, the same date lands at different x positions across
+          // the three stacked charts - most visible as crosshair "lag" on the
+          // Combined chart, worse near the right edge.
+          padL = 46, padR = 12 } = opts;
+  if (!history || history.length < 2) return { svg: '<div style="font-size:11px;color:#8b949e">No history</div>', meta: null };
 
-  const padL = 46, padR = 12, padT = 10, padB = 20;
+  const padT = 10, padB = 20;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
   const vals = history.map(h => h.value);
@@ -1281,14 +1289,24 @@ function axisChart(history, opts = {}) {
 
   const xAxis = xAxisMarkup(history, xFor, padT, innerH, height, 7);
 
-  return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
+  // Hidden-by-default crosshair line + marker dot, toggled and positioned by
+  // the shared hover handler (see updateBuySignalCrosshair). Kept as real SVG
+  // elements rather than an HTML overlay so they scale with preserveAspectRatio.
+  const crossEls = crossId ? `
+    <line id="cross-line-${crossId}" x1="0" y1="${padT}" x2="0" y2="${padT + innerH}" stroke="#8b949e" stroke-width="1" stroke-dasharray="2,2" opacity="0"/>
+    <circle id="cross-dot-${crossId}" r="3.5" fill="${color}" stroke="#0d1117" stroke-width="1.5" opacity="0"/>` : '';
+
+  const svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
     <line x1="${padL}" y1="${padT + innerH}" x2="${width - padR}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
     ${xAxis}
     ${yTicks}
     ${thresholdEl}
     <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" opacity="0.9"/>
+    ${crossEls}
   </svg>`;
+
+  return { svg, meta: { history, width, padL, innerW, xFor, yFor } };
 }
 
 // Two lines, two independently-scaled y-axes (left + right), shared x-axis.
@@ -1296,8 +1314,8 @@ function axisChart(history, opts = {}) {
 function dualAxisChart(historyA, historyB, opts = {}) {
   const { width = 500, height = 140, colorA = '#3fb950', colorB = '#58a6ff',
           aMin, aMax, aFormat = v => v.toFixed(0), aThreshold = null,
-          bMin, bMax, bFormat = v => v.toFixed(0), signalMask = null } = opts;
-  if (!historyA?.length || !historyB?.length) return '<div style="font-size:11px;color:#8b949e">No history</div>';
+          bMin, bMax, bFormat = v => v.toFixed(0), signalMask = null, crossId = null } = opts;
+  if (!historyA?.length || !historyB?.length) return { svg: '<div style="font-size:11px;color:#8b949e">No history</div>', meta: null };
 
   const padL = 40, padR = 44, padT = 10, padB = 20;
   const innerW = width - padL - padR;
@@ -1348,7 +1366,15 @@ function dualAxisChart(historyA, historyB, opts = {}) {
     }
   }
 
-  return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
+  // Same hidden-by-default crosshair pattern as axisChart, but with two dots
+  // (one per line) sharing a single vertical line since both series share
+  // the A-axis x mapping.
+  const crossEls = crossId ? `
+    <line id="cross-line-${crossId}" x1="0" y1="${padT}" x2="0" y2="${padT + innerH}" stroke="#8b949e" stroke-width="1" stroke-dasharray="2,2" opacity="0"/>
+    <circle id="cross-dot-${crossId}-a" r="3.5" fill="${colorA}" stroke="#0d1117" stroke-width="1.5" opacity="0"/>
+    <circle id="cross-dot-${crossId}-b" r="3.5" fill="${colorB}" stroke="#0d1117" stroke-width="1.5" opacity="0"/>` : '';
+
+  const svg = `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px">
     ${highlights}
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
     <line x1="${padL}" y1="${padT + innerH}" x2="${width - padR}" y2="${padT + innerH}" stroke="#30363d" stroke-width="1"/>
@@ -1359,7 +1385,10 @@ function dualAxisChart(historyA, historyB, opts = {}) {
     ${thresholdEl}
     <polyline points="${pointsA}" fill="none" stroke="${colorA}" stroke-width="2" opacity="0.9"/>
     <polyline points="${pointsB}" fill="none" stroke="${colorB}" stroke-width="2" opacity="0.9" stroke-dasharray="4,3"/>
+    ${crossEls}
   </svg>`;
+
+  return { svg, meta: { historyA, historyB, width, padL, innerW, xForA, yForA, xForB, yForB } };
 }
 
 // Derives a % drawdown-from-running-high series client-side from raw S&P 500
@@ -1397,6 +1426,11 @@ const CHART_RANGES = [
 ];
 let buySignalState = null;
 let buySignalActiveRange = { sp500: '4y', vix: '4y', combined: '4y' };
+// Per-chart hover metadata (history array + coordinate mappers) populated by
+// each render*Chart() call below. Used by updateBuySignalCrosshair() to place
+// the synced crosshair correctly regardless of which range each chart is
+// currently zoomed to.
+let chartCursors = {};
 
 function filterByRange(history, years) {
   return years == null ? history : lastNYears(history, years);
@@ -1418,20 +1452,26 @@ function renderSp500Chart(rangeKey) {
   const s = buySignalState;
   const years = CHART_RANGES.find(r => r.key === rangeKey).years;
   const filtered = filterByRange(s.sp500History, years);
-  document.getElementById('chart-sp500').innerHTML = axisChart(filtered, {
+  const { svg, meta } = axisChart(filtered, {
     width: s.chartWidth, color: s.lineColor,
-    yFormat: v => v.toLocaleString('en-US', { maximumFractionDigits: 0 })
+    yFormat: v => v.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+    crossId: 'sp500', padL: 40, padR: 44
   });
+  document.getElementById('chart-sp500').innerHTML = svg;
+  chartCursors.sp500 = meta;
 }
 
 function renderVixChart(rangeKey) {
   const s = buySignalState;
   const years = CHART_RANGES.find(r => r.key === rangeKey).years;
   const filtered = filterByRange(s.vixHistoryFull, years);
-  document.getElementById('chart-vix').innerHTML = axisChart(filtered, {
+  const { svg, meta } = axisChart(filtered, {
     width: s.chartWidth, color: s.lineColor, yMin: 0, yFormat: v => v.toFixed(0),
-    thresholdValue: 30, thresholdLabel: 'VIX 30'
+    thresholdValue: 30, thresholdLabel: 'VIX 30',
+    crossId: 'vix', padL: 40, padR: 44
   });
+  document.getElementById('chart-vix').innerHTML = svg;
+  chartCursors.vix = meta;
 }
 
 function renderCombinedChart(rangeKey) {
@@ -1446,12 +1486,126 @@ function renderCombinedChart(rangeKey) {
     const dd = drawdownByDate.get(h.date);
     return h.value >= s.percentileValue && dd !== undefined && dd <= s.drawdownThresholdPct;
   });
-  document.getElementById('chart-combined').innerHTML = dualAxisChart(vixSlice, drawdownSlice, {
+  const { svg, meta } = dualAxisChart(vixSlice, drawdownSlice, {
     width: s.chartWidth, colorA: '#3fb950', colorB: '#58a6ff',
     aMin: 0, aFormat: v => v.toFixed(0),
     bMax: 0, bFormat: v => v.toFixed(0) + '%',
-    signalMask
+    signalMask,
+    crossId: 'combined'
   });
+  document.getElementById('chart-combined').innerHTML = svg;
+  chartCursors.combined = meta;
+}
+
+// ─── HOVER CROSSHAIR (Buy Signal tab) ─────────────────────────────────────────
+// One shared date-synced crosshair across all three stacked charts: hovering
+// any of them lines up the same calendar date on the other two, even if each
+// chart is currently zoomed to a different range (1Y vs Max, etc).
+
+function formatFullDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// Binary search for the history entry closest to targetDate. history must be
+// sorted ascending by date (true for all FRED-sourced series here).
+function findClosestIndex(history, targetDate) {
+  const t = targetDate.getTime();
+  let lo = 0, hi = history.length - 1;
+  if (t <= new Date(history[0].date + 'T00:00:00').getTime()) return 0;
+  if (t >= new Date(history[hi].date + 'T00:00:00').getTime()) return hi;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    const midT = new Date(history[mid].date + 'T00:00:00').getTime();
+    if (midT < t) lo = mid + 1; else hi = mid;
+  }
+  if (lo > 0) {
+    const dLo = Math.abs(new Date(history[lo].date + 'T00:00:00').getTime() - t);
+    const dPrev = Math.abs(new Date(history[lo - 1].date + 'T00:00:00').getTime() - t);
+    if (dPrev < dLo) return lo - 1;
+  }
+  return lo;
+}
+
+function setCrossLine(id, x) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.setAttribute('x1', x.toFixed(1));
+  el.setAttribute('x2', x.toFixed(1));
+  el.setAttribute('opacity', '1');
+}
+
+function setCrossDot(id, x, y) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.setAttribute('cx', x.toFixed(1));
+  el.setAttribute('cy', y.toFixed(1));
+  el.setAttribute('opacity', '1');
+}
+
+const CROSSHAIR_IDS = [
+  'cross-line-sp500', 'cross-dot-sp500',
+  'cross-line-vix', 'cross-dot-vix',
+  'cross-line-combined', 'cross-dot-combined-a', 'cross-dot-combined-b'
+];
+
+function hideBuySignalCrosshair() {
+  CROSSHAIR_IDS.forEach(id => { const el = document.getElementById(id); if (el) el.setAttribute('opacity', '0'); });
+  const ro = document.getElementById('buy-signal-readout');
+  if (ro) ro.innerHTML = '<span style="color:var(--muted)">Hover a chart to inspect a date</span>';
+}
+
+function updateBuySignalCrosshair(clientX) {
+  const c = chartCursors;
+  const refKey = c.sp500 ? 'sp500' : c.vix ? 'vix' : c.combined ? 'combined' : null;
+  if (!refKey) return;
+
+  const refSvgId = refKey === 'combined' ? 'chart-combined' : `chart-${refKey}`;
+  const refSvg = document.querySelector(`#${refSvgId} svg`);
+  if (!refSvg) return;
+
+  const refMeta = c[refKey];
+  const refHistory = refKey === 'combined' ? refMeta.historyA : refMeta.history;
+  const rect = refSvg.getBoundingClientRect();
+  const frac = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  const svgX = frac * refMeta.width;
+  let idxRef = Math.round(((svgX - refMeta.padL) / refMeta.innerW) * (refHistory.length - 1));
+  idxRef = Math.min(refHistory.length - 1, Math.max(0, idxRef));
+  const targetDate = new Date(refHistory[idxRef].date + 'T00:00:00');
+
+  // Bright, bold values on a muted label read far better against the dark
+  // card than the old flat-gray line - value color also echoes each series'
+  // own line color so the readout visually ties back to the chart.
+  const readoutParts = [`<strong style="color:var(--text);font-weight:700">${formatFullDate(refHistory[idxRef].date)}</strong>`];
+
+  if (c.sp500) {
+    const m = c.sp500;
+    const idx = findClosestIndex(m.history, targetDate);
+    const h = m.history[idx];
+    setCrossLine('cross-line-sp500', m.xFor(idx));
+    setCrossDot('cross-dot-sp500', m.xFor(idx), m.yFor(h.value));
+    readoutParts.push(`<span style="color:var(--muted)">S&amp;P 500</span> <strong style="color:#3fb950;font-weight:700">${h.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}</strong>`);
+  }
+  if (c.vix) {
+    const m = c.vix;
+    const idx = findClosestIndex(m.history, targetDate);
+    const h = m.history[idx];
+    setCrossLine('cross-line-vix', m.xFor(idx));
+    setCrossDot('cross-dot-vix', m.xFor(idx), m.yFor(h.value));
+    readoutParts.push(`<span style="color:var(--muted)">VIX</span> <strong style="color:#3fb950;font-weight:700">${h.value.toFixed(1)}</strong>`);
+  }
+  if (c.combined) {
+    const m = c.combined;
+    const idxA = findClosestIndex(m.historyA, targetDate);
+    const idxB = findClosestIndex(m.historyB, targetDate);
+    setCrossLine('cross-line-combined', m.xForA(idxA));
+    setCrossDot('cross-dot-combined-a', m.xForA(idxA), m.yForA(m.historyA[idxA].value));
+    setCrossDot('cross-dot-combined-b', m.xForB(idxB), m.yForB(m.historyB[idxB].value));
+    readoutParts.push(`<span style="color:var(--muted)">Drawdown</span> <strong style="color:#58a6ff;font-weight:700">${m.historyB[idxB].value.toFixed(1)}%</strong>`);
+  }
+
+  const ro = document.getElementById('buy-signal-readout');
+  if (ro) ro.innerHTML = readoutParts.join('<span style="color:var(--border)">&nbsp;&nbsp;|&nbsp;&nbsp;</span>');
 }
 
 function setChartRange(chartKey, rangeKey) {
@@ -1521,11 +1675,19 @@ async function renderBuySignalCard() {
       <div class="status-pill ${pill.cls}">${pill.label}</div>
     </div>
 
-    <div style="font-size:12px;color:var(--text);margin-bottom:4px">S&amp;P 500 <strong style="color:${lineColor}">${data.sp500.current.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}</strong> <span style="color:var(--muted)">- max available window (FRED 10yr cap)</span></div>
+    <div id="buy-signal-readout" style="font-size:13px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 14px;margin-bottom:10px"><span style="color:var(--muted)">Hover a chart to inspect a date</span></div>
+
+    <div style="font-size:12px;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span>S&amp;P 500 <strong style="color:${lineColor}">${data.sp500.current.value.toLocaleString('en-US', { maximumFractionDigits: 0 })}</strong> <span style="color:var(--muted)">- max available window (FRED 10yr cap)</span></span>
+      <a href="https://www.google.com/finance/quote/.INX:INDEXSP" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38;text-decoration:none">Google Finance</a>
+    </div>
     ${rangeButtonsHTML('sp500')}
     <div id="chart-sp500"></div>
 
-    <div style="font-size:12px;color:var(--text);margin:12px 0 4px">VIX <strong style="color:${lineColor}">${data.vix.current.value}</strong> <span style="color:var(--muted)">- full history since 1990</span></div>
+    <div style="font-size:12px;color:var(--text);margin:12px 0 4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span>VIX <strong style="color:${lineColor}">${data.vix.current.value}</strong> <span style="color:var(--muted)">- full history since 1990</span></span>
+      <a href="https://www.google.com/finance/quote/VIX:INDEXCBOE" target="_blank" class="badge" style="color:var(--blue);border-color:var(--blue);background:#0d1f38;text-decoration:none">Google Finance</a>
+    </div>
     ${rangeButtonsHTML('vix')}
     <div id="chart-vix"></div>
 
@@ -1544,6 +1706,15 @@ async function renderBuySignalCard() {
   renderSp500Chart('4y');
   renderVixChart('4y');
   renderCombinedChart('4y');
+
+  // Bind the shared hover listener once. container's innerHTML gets replaced
+  // on every renderBuySignalCard() call, but the container node itself
+  // persists, so the listener would otherwise stack up on repeat calls.
+  if (!container.dataset.hoverBound) {
+    container.addEventListener('mousemove', e => updateBuySignalCrosshair(e.clientX));
+    container.addEventListener('mouseleave', hideBuySignalCrosshair);
+    container.dataset.hoverBound = '1';
+  }
 }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
