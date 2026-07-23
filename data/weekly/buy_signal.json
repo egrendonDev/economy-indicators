@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-07-16T09:06:25.654Z",
-  "last_updated_date": "2026-07-15",
+  "last_updated": "2026-07-23T09:16:15.962Z",
+  "last_updated_date": "2026-07-22",
   "signal": "calm",
   "conditions_met": 0,
   "vix": {
     "current": {
-      "date": "2026-07-14",
-      "value": 16.5
+      "date": "2026-07-21",
+      "value": 17.05
     },
     "percentile_threshold": 90,
     "percentile_window_years": 3,
@@ -36928,42 +36928,42 @@
       {
         "date": "2026-07-14",
         "value": 16.5
+      },
+      {
+        "date": "2026-07-15",
+        "value": 15.67
+      },
+      {
+        "date": "2026-07-16",
+        "value": 16.73
+      },
+      {
+        "date": "2026-07-17",
+        "value": 18.77
+      },
+      {
+        "date": "2026-07-20",
+        "value": 18.65
+      },
+      {
+        "date": "2026-07-21",
+        "value": 17.05
       }
     ]
   },
   "sp500": {
     "current": {
-      "date": "2026-07-15",
-      "value": 7572.4
+      "date": "2026-07-22",
+      "value": 7498.96
     },
     "rolling_ath": {
       "date": "2026-06-02",
       "value": 7609.78
     },
-    "drawdown_pct": -0.4912099955583487,
+    "drawdown_pct": -1.4562838873134272,
     "drawdown_threshold_pct": -20,
     "condition_met": false,
     "history": [
-      {
-        "date": "2016-07-18",
-        "value": 2166.89
-      },
-      {
-        "date": "2016-07-19",
-        "value": 2163.78
-      },
-      {
-        "date": "2016-07-20",
-        "value": 2173.02
-      },
-      {
-        "date": "2016-07-21",
-        "value": 2165.17
-      },
-      {
-        "date": "2016-07-22",
-        "value": 2175.03
-      },
       {
         "date": "2016-07-25",
         "value": 2168.48
@@ -46991,6 +46991,26 @@
       {
         "date": "2026-07-15",
         "value": 7572.4
+      },
+      {
+        "date": "2026-07-16",
+        "value": 7533.77
+      },
+      {
+        "date": "2026-07-17",
+        "value": 7457.69
+      },
+      {
+        "date": "2026-07-20",
+        "value": 7443.28
+      },
+      {
+        "date": "2026-07-21",
+        "value": 7509.2
+      },
+      {
+        "date": "2026-07-22",
+        "value": 7498.96
       }
     ]
   }
