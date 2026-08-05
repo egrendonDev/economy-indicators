@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-04T09:31:37.922Z",
+  "last_updated": "2026-08-05T09:28:31.890Z",
   "indicators": [
     {
       "id": "durable_goods",
@@ -13,7 +13,7 @@
       "category": "macro",
       "latest": {
         "date": "2026-06-01",
-        "value": 334772
+        "value": 335418
       },
       "history": [
         {
@@ -154,11 +154,11 @@
         },
         {
           "date": "2026-05-01",
-          "value": 333706
+          "value": 333842
         },
         {
           "date": "2026-06-01",
-          "value": 334772
+          "value": 335418
         }
       ]
     }
