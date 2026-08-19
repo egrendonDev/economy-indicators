@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-18T07:26:26.033Z",
+  "last_updated": "2026-08-19T07:27:29.643Z",
   "indicators": [
     {
       "id": "housing_starts",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "residential",
       "latest": {
-        "date": "2026-06-01",
-        "value": 1427
+        "date": "2026-07-01",
+        "value": 1239
       },
       "history": [
-        {
-          "date": "2023-07-01",
-          "value": 1464
-        },
         {
           "date": "2023-08-01",
           "value": 1321
@@ -154,11 +150,15 @@
         },
         {
           "date": "2026-05-01",
-          "value": 1199
+          "value": 1182
         },
         {
           "date": "2026-06-01",
-          "value": 1427
+          "value": 1415
+        },
+        {
+          "date": "2026-07-01",
+          "value": 1239
         }
       ]
     }
