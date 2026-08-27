@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-26T07:34:46.856Z",
+  "last_updated": "2026-08-27T17:55:39.195Z",
   "indicators": [
     {
       "id": "durable_goods",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "macro",
       "latest": {
-        "date": "2026-06-01",
-        "value": 335418
+        "date": "2026-07-01",
+        "value": 339250
       },
       "history": [
-        {
-          "date": "2023-07-01",
-          "value": 293278
-        },
         {
           "date": "2023-08-01",
           "value": 289128
@@ -158,7 +154,11 @@
         },
         {
           "date": "2026-06-01",
-          "value": 335418
+          "value": 335653
+        },
+        {
+          "date": "2026-07-01",
+          "value": 339250
         }
       ]
     }
