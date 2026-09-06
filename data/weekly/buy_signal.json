@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-08-29T12:50:56.206Z",
-  "last_updated_date": "2026-08-28",
+  "last_updated": "2026-09-06T11:23:29.602Z",
+  "last_updated_date": "2026-09-04",
   "signal": "calm",
   "conditions_met": 0,
   "vix": {
     "current": {
-      "date": "2026-08-27",
-      "value": 14.51
+      "date": "2026-09-03",
+      "value": 14.32
     },
     "percentile_threshold": 90,
     "percentile_window_years": 3,
@@ -37056,42 +37056,42 @@
       {
         "date": "2026-08-27",
         "value": 14.51
+      },
+      {
+        "date": "2026-08-28",
+        "value": 14.43
+      },
+      {
+        "date": "2026-08-31",
+        "value": 14.92
+      },
+      {
+        "date": "2026-09-01",
+        "value": 16.34
+      },
+      {
+        "date": "2026-09-02",
+        "value": 15.2
+      },
+      {
+        "date": "2026-09-03",
+        "value": 14.32
       }
     ]
   },
   "sp500": {
     "current": {
-      "date": "2026-08-28",
-      "value": 7711.76
+      "date": "2026-09-04",
+      "value": 7718.6
     },
     "rolling_ath": {
       "date": "2026-08-13",
       "value": 7798.99
     },
-    "drawdown_pct": -1.1184781619158324,
+    "drawdown_pct": -1.0307744977234157,
     "drawdown_threshold_pct": -20,
     "condition_met": false,
     "history": [
-      {
-        "date": "2016-08-29",
-        "value": 2180.38
-      },
-      {
-        "date": "2016-08-30",
-        "value": 2176.12
-      },
-      {
-        "date": "2016-08-31",
-        "value": 2170.95
-      },
-      {
-        "date": "2016-09-01",
-        "value": 2170.86
-      },
-      {
-        "date": "2016-09-02",
-        "value": 2179.98
-      },
       {
         "date": "2016-09-06",
         "value": 2186.48
@@ -47127,6 +47127,26 @@
       {
         "date": "2026-08-28",
         "value": 7711.76
+      },
+      {
+        "date": "2026-08-31",
+        "value": 7686.14
+      },
+      {
+        "date": "2026-09-01",
+        "value": 7631.47
+      },
+      {
+        "date": "2026-09-02",
+        "value": 7666.6
+      },
+      {
+        "date": "2026-09-03",
+        "value": 7747.71
+      },
+      {
+        "date": "2026-09-04",
+        "value": 7718.6
       }
     ]
   }
