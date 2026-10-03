@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-02T13:16:10.992Z",
+  "last_updated": "2026-10-03T12:06:20.145Z",
   "indicators": [
     {
       "id": "vehicle_sales",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "auto",
       "latest": {
-        "date": "2026-08-01",
-        "value": 16.982
+        "date": "2026-09-01",
+        "value": 16.378
       },
       "history": [
-        {
-          "date": "2023-09-01",
-          "value": 16.185
-        },
         {
           "date": "2023-10-01",
           "value": 15.844
@@ -150,15 +146,19 @@
         },
         {
           "date": "2026-06-01",
-          "value": 17.217
+          "value": 17.218
         },
         {
           "date": "2026-07-01",
-          "value": 16.58
+          "value": 16.601
         },
         {
           "date": "2026-08-01",
-          "value": 16.982
+          "value": 16.98
+        },
+        {
+          "date": "2026-09-01",
+          "value": 16.378
         }
       ]
     }
