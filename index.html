@@ -154,6 +154,24 @@
 
     .sparkline-wrap { margin-bottom: 8px; height: 36px; min-height: 36px; }
     .sparkline-wrap svg { width: 100%; height: 36px; }
+    .sparkline-wrap.clickable { position: relative; cursor: zoom-in; border-radius: 4px; }
+    .sparkline-wrap.clickable:hover { background: rgba(88,166,255,0.06); outline: 1px solid #30363d; }
+    .sparkline-wrap .expand-hint { position: absolute; top: 0; right: 2px; font-size: 12px; line-height: 1; color: var(--muted); opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+    .sparkline-wrap.clickable:hover .expand-hint { opacity: 1; }
+    .chart-modal-overlay { position: fixed; inset: 0; background: rgba(1,4,9,0.72); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
+    .chart-modal-overlay.open { display: flex; }
+    .chart-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; width: min(920px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; padding: 18px 20px; }
+    .chart-modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .chart-modal-title { font-size: 17px; font-weight: 600; }
+    .chart-modal-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .chart-modal-meta a { color: var(--blue); text-decoration: none; }
+    .chart-modal-close { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; cursor: pointer; font-size: 16px; line-height: 1; padding: 4px 9px; }
+    .chart-modal-close:hover { color: var(--text); border-color: var(--muted); }
+    .chart-modal-desc { font-size: 13px; color: var(--muted); margin: 10px 0 4px; line-height: 1.5; }
+    .chart-modal-readout { font-size: 13px; color: var(--muted); margin: 8px 0 4px; min-height: 20px; }
+    .chart-modal-readout strong { color: var(--text); font-weight: 700; }
+    .chart-modal-legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .chart-modal-legend .swatch { display: inline-block; width: 18px; border-top: 2px dashed; vertical-align: middle; margin-right: 6px; }
 
     .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
     .card-manual { font-size: 13px; color: var(--muted); font-style: italic; }
@@ -1058,6 +1076,19 @@ function scoringValue(id, d) {
   return yoy !== null ? yoy : d.latest.value;
 }
 
+// Full YoY % series for charting. Same 12-periods-back rule as computeYoY(),
+// so the last point always equals the value the card is scored on.
+function yoySeries(history) {
+  if (!history || history.length < 13) return [];
+  const out = [];
+  for (let i = 12; i < history.length; i++) {
+    const prev = Number(history[i - 12].value);
+    if (!prev) continue;
+    out.push({ date: history[i].date, value: ((Number(history[i].value) - prev) / Math.abs(prev)) * 100, raw: Number(history[i].value) });
+  }
+  return out;
+}
+
 function formatValue(id, value, unit) {
   if (value === null || value === undefined) return '--';
   const v = Number(value);
@@ -1265,6 +1296,10 @@ function xAxisMarkup(history, xFor, padT, innerH, height, count = 7) {
 function axisChart(history, opts = {}) {
   const { width = 500, height = 120, color = '#3fb950', yMin, yMax, yFormat = v => v.toFixed(0),
           thresholdValue = null, thresholdLabel = '', crossId = null,
+          // Optional extra threshold lines [{ value, color, label }] and y tick
+          // count, used by the dashboard chart popup. Defaults leave the Buy
+          // Signal charts unchanged.
+          thresholds = [], yTickCount = 3,
           // Defaults match the old solo-chart look. The Buy Signal card passes
           // padL/padR = 40/44 explicitly (see renderSp500Chart/renderVixChart)
           // so its plot area lines up pixel-for-pixel with dualAxisChart's,
@@ -1287,7 +1322,7 @@ function axisChart(history, opts = {}) {
   const yFor = v => padT + innerH - ((v - mn) / range) * innerH;
 
   const points = history.map((h, i) => `${xFor(i).toFixed(1)},${yFor(h.value).toFixed(1)}`).join(' ');
-  const yTicks = niceTicks(mn, mx, 3).map(t =>
+  const yTicks = niceTicks(mn, mx, yTickCount).map(t =>
     `<text x="${padL - 6}" y="${(yFor(t) + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#8b949e">${yFormat(t)}</text>`
   ).join('');
 
@@ -1295,6 +1330,12 @@ function axisChart(history, opts = {}) {
     ? `<line x1="${padL}" y1="${yFor(thresholdValue).toFixed(1)}" x2="${width - padR}" y2="${yFor(thresholdValue).toFixed(1)}" stroke="#d29922" stroke-width="1" stroke-dasharray="3,3"/>
        <text x="${width - padR}" y="${(yFor(thresholdValue) - 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#d29922">${thresholdLabel}</text>`
     : '';
+
+  const extraThresholdEls = thresholds
+    .filter(t => t && t.value != null && t.value >= mn && t.value <= mx)
+    .map(t => `<line x1="${padL}" y1="${yFor(t.value).toFixed(1)}" x2="${width - padR}" y2="${yFor(t.value).toFixed(1)}" stroke="${t.color}" stroke-width="1.5" stroke-dasharray="5,4"/>
+       <text x="${width - padR}" y="${(yFor(t.value) - 4).toFixed(1)}" text-anchor="end" font-size="11" fill="${t.color}">${t.label}</text>`)
+    .join('');
 
   const xAxis = xAxisMarkup(history, xFor, padT, innerH, height, 7);
 
@@ -1311,6 +1352,7 @@ function axisChart(history, opts = {}) {
     ${xAxis}
     ${yTicks}
     ${thresholdEl}
+    ${extraThresholdEls}
     <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2" opacity="0.9"/>
     ${crossEls}
   </svg>`;
@@ -1783,7 +1825,7 @@ function renderCard(indicator, dataMap) {
         <div class="avg-pill">${formatValue(indicator.id, value, indicator.unit)}</div>
       ` : cfg.avg ? `<div class="avg-pill">avg ${cfg.avg}</div>` : ''}
     </div>
-    <div class="sparkline-wrap">${sparkline(hist, status)}</div>
+    <div class="sparkline-wrap${hasPending ? '' : ' clickable'}"${hasPending ? '' : ` onclick="openChartModal('${indicator.id}')" title="Click to expand"`}>${sparkline(hist, status)}${hasPending ? '' : '<span class="expand-hint">&#x2922;</span>'}</div>
     <div class="card-desc">
       ${msg || TOOLTIPS[indicator.id] || indicator.description}
     </div>
@@ -1974,9 +2016,148 @@ async function loadAllData() {
   return dataMap;
 }
 
+// ─── CHART POPUP (Dashboard tab) ──────────────────────────────────────────────
+// Click any card's sparkline to open a large labeled chart of that indicator.
+// YoY indicators chart their YoY % series (what the status is scored on), so
+// the warn/danger lines are meaningful; everything else charts the raw value.
+
+let DASHBOARD_DATA = {};
+let chartModalState = null;
+
+function ensureChartModal() {
+  let overlay = document.getElementById('chart-modal-overlay');
+  if (overlay) return overlay;
+  overlay = document.createElement('div');
+  overlay.id = 'chart-modal-overlay';
+  overlay.className = 'chart-modal-overlay';
+  overlay.innerHTML = '<div class="chart-modal" role="dialog" aria-modal="true" aria-labelledby="chart-modal-title"></div>';
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeChartModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('open')) closeChartModal(); });
+  window.addEventListener('resize', () => { if (overlay.classList.contains('open')) renderChartModalPlot(); });
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function openChartModal(id) {
+  const ind = ALL_INDICATORS.find(i => i.id === id);
+  const d = DASHBOARD_DATA[id];
+  if (!ind || !d || !d.history || d.history.length < 2) return;
+
+  const isYoy = YOY_INDICATORS.has(id);
+  const series = isYoy
+    ? yoySeries(d.history)
+    : d.history.map(h => ({ date: h.date, value: Number(h.value), raw: Number(h.value) })).filter(p => !isNaN(p.value));
+  if (series.length < 2) return;
+
+  const cfg = THRESHOLDS[id] || {};
+  const meta = INDICATOR_META[id] || {};
+  const status = getStatus(id, scoringValue(id, d));
+  const pillLabel = status === 'green' ? 'Healthy' : status === 'orange' ? 'Watch' : status === 'red' ? 'Warning' : 'Pending';
+  const fmt = v => isYoy ? (v >= 0 ? '+' : '') + v.toFixed(1) + '%' : formatValue(id, v, ind.unit);
+  const cmp = cfg.direction === 'higher' ? '≥' : '≤';
+
+  chartModalState = { id, ind, series, cfg, status, isYoy, fmt };
+
+  const overlay = ensureChartModal();
+  const scoredOn = isYoy ? 'scored on year-over-year % change' : `unit: ${ind.unit}`;
+  const yoyNote = isYoy ? ' Chart shows YoY % change, which is what the status is scored on; the first 12 months of history are used to compute the first point.' : '';
+  const legend = cfg.warn == null ? '' : `
+    <div class="chart-modal-legend">
+      <span><span class="swatch" style="border-color:var(--orange)"></span>Watch ${cmp} ${fmt(cfg.warn)}</span>
+      <span><span class="swatch" style="border-color:var(--red)"></span>Warning ${cmp} ${fmt(cfg.danger)}</span>
+      ${cfg.avg ? `<span>Typical: ${cfg.avg}</span>` : ''}
+    </div>`;
+
+  overlay.querySelector('.chart-modal').innerHTML = `
+    <div class="chart-modal-head">
+      <div>
+        <div class="chart-modal-title" id="chart-modal-title">${ind.label}</div>
+        <div class="chart-modal-meta">${meta.frequency || ''}${meta.frequency ? ' · ' : ''}${scoredOn} · <a href="${ind.url}" target="_blank" rel="noopener">View source</a></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="status-pill ${status}">${pillLabel} ${fmt(series[series.length - 1].value)}</span>
+        <button class="chart-modal-close" onclick="closeChartModal()" aria-label="Close">&#x2715;</button>
+      </div>
+    </div>
+    <div class="chart-modal-desc">${TOOLTIPS[id] || ind.description || ''}${yoyNote}</div>
+    <div class="chart-modal-readout" id="chart-modal-readout">Hover the chart to inspect a date</div>
+    <div id="chart-modal-plot"></div>
+    ${legend}`;
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderChartModalPlot();
+
+  const plot = document.getElementById('chart-modal-plot');
+  plot.addEventListener('mousemove', e => updateChartModalCrosshair(e.clientX));
+  plot.addEventListener('mouseleave', hideChartModalCrosshair);
+  overlay.querySelector('.chart-modal-close').focus();
+}
+
+function renderChartModalPlot() {
+  const s = chartModalState;
+  const plot = document.getElementById('chart-modal-plot');
+  if (!s || !plot) return;
+
+  const vals = s.series.map(p => p.value);
+  let mn = Math.min(...vals), mx = Math.max(...vals);
+  // Stretch the axis to include the watch line so the gap is visible. The
+  // warning line is drawn only if it already falls inside that range, so a
+  // far-off danger level does not squash the data flat.
+  if (s.cfg.warn != null) { mn = Math.min(mn, s.cfg.warn); mx = Math.max(mx, s.cfg.warn); }
+  const pad = (mx - mn) * 0.08 || Math.abs(mx) * 0.05 || 1;
+  mn -= pad; mx += pad;
+
+  const color = s.status === 'red' ? '#f85149' : s.status === 'orange' ? '#d29922' : '#3fb950';
+  const thresholds = s.cfg.warn == null ? [] : [
+    { value: s.cfg.warn,   color: '#d29922', label: `Watch ${s.fmt(s.cfg.warn)}` },
+    { value: s.cfg.danger, color: '#f85149', label: `Warning ${s.fmt(s.cfg.danger)}` }
+  ];
+  const width = Math.max(320, Math.round(plot.clientWidth || 860));
+  const { svg, meta } = axisChart(s.series, {
+    width, height: 320, color, yMin: mn, yMax: mx, yFormat: s.fmt,
+    thresholds, yTickCount: 5, crossId: 'modal', padL: 64, padR: 16
+  });
+  plot.innerHTML = svg;
+  s.meta = meta;
+}
+
+function updateChartModalCrosshair(clientX) {
+  const s = chartModalState;
+  const svg = document.querySelector('#chart-modal-plot svg');
+  if (!s || !s.meta || !svg) return;
+  const m = s.meta;
+  const rect = svg.getBoundingClientRect();
+  const frac = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+  let idx = Math.round(((frac * m.width - m.padL) / m.innerW) * (m.history.length - 1));
+  idx = Math.min(m.history.length - 1, Math.max(0, idx));
+  const p = m.history[idx];
+  setCrossLine('cross-line-modal', m.xFor(idx));
+  setCrossDot('cross-dot-modal', m.xFor(idx), m.yFor(p.value));
+  const sep = '<span style="color:var(--border)">&nbsp;&nbsp;|&nbsp;&nbsp;</span>';
+  const parts = [`<strong>${formatFullDate(p.date)}</strong>`, `${s.isYoy ? 'YoY' : 'Value'} <strong>${s.fmt(p.value)}</strong>`];
+  if (s.isYoy) parts.push(`Level <strong>${formatValue(s.id, p.raw, s.ind.unit)}</strong>`);
+  const ro = document.getElementById('chart-modal-readout');
+  if (ro) ro.innerHTML = parts.join(sep);
+}
+
+function hideChartModalCrosshair() {
+  ['cross-line-modal', 'cross-dot-modal'].forEach(id => { const el = document.getElementById(id); if (el) el.setAttribute('opacity', '0'); });
+  const ro = document.getElementById('chart-modal-readout');
+  if (ro) ro.textContent = 'Hover the chart to inspect a date';
+}
+
+function closeChartModal() {
+  const overlay = document.getElementById('chart-modal-overlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  chartModalState = null;
+}
+
 async function init() {
   try {
     const dataMap = await loadAllData();
+    DASHBOARD_DATA = dataMap;
     renderSummary(ALL_INDICATORS, dataMap);
     renderSection('leading-section', 'leading', ALL_INDICATORS, dataMap);
     renderSection('lagging-section', 'lagging', ALL_INDICATORS, dataMap);
