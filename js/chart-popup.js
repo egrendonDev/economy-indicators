@@ -99,10 +99,13 @@ function renderChartModalPlot() {
     { value: s.cfg.warn,   color: '#d29922', label: `Watch ${s.fmt(s.cfg.warn)}` },
     { value: s.cfg.danger, color: '#f85149', label: `Warning ${s.fmt(s.cfg.danger)}` }
   ];
+  // Fill the flex-sized plot area (popup is 75vw x 75vh, see .chart-modal in css).
   const width = Math.max(320, Math.round(plot.clientWidth || 860));
+  const height = Math.max(220, Math.round(plot.clientHeight || 320));
   const { svg, meta } = axisChart(s.series, {
-    width, height: 320, color, yMin: mn, yMax: mx, yFormat: s.fmt,
-    thresholds, yTickCount: 5, crossId: 'modal', padL: 64, padR: 16
+    width, height, color, yMin: mn, yMax: mx, yFormat: s.fmt,
+    thresholds, yTickCount: 5, crossId: 'modal', padL: 64, padR: 16,
+    fontSize: width > 1000 ? 13 : 10
   });
   plot.innerHTML = svg;
   s.meta = meta;

@@ -20,7 +20,7 @@ function niceTicks(min, max, count = 3) {
 // Evenly-spaced date labels plus faint vertical gridlines, so a spike in one
 // stacked chart can be lined up against the same date in the chart above or
 // below it (e.g. checking whether a VIX spike lines up with a recession).
-function xAxisMarkup(history, xFor, padT, innerH, height, count = 7) {
+function xAxisMarkup(history, xFor, padT, innerH, height, count = 7, fontSize = 10) {
   const n = history.length;
   const idxs = [];
   for (let i = 0; i < count; i++) idxs.push(Math.round((i / (count - 1)) * (n - 1)));
@@ -28,7 +28,7 @@ function xAxisMarkup(history, xFor, padT, innerH, height, count = 7) {
     const x = xFor(idx).toFixed(1);
     const anchor = k === 0 ? 'start' : k === count - 1 ? 'end' : 'middle';
     return `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + innerH}" stroke="#21262d" stroke-width="1"/>
-      <text x="${x}" y="${height - 4}" text-anchor="${anchor}" font-size="10" fill="#6b7280">${formatAxisDate(history[idx].date)}</text>`;
+      <text x="${x}" y="${height - 4}" text-anchor="${anchor}" font-size="${fontSize}" fill="#6b7280">${formatAxisDate(history[idx].date)}</text>`;
   }).join('');
 }
 
@@ -41,7 +41,7 @@ function axisChart(history, opts = {}) {
           // Optional extra threshold lines [{ value, color, label }] and y tick
           // count, used by the dashboard chart popup. Defaults leave the Buy
           // Signal charts unchanged.
-          thresholds = [], yTickCount = 3,
+          thresholds = [], yTickCount = 3, fontSize = 10,
           // Defaults match the old solo-chart look. The Buy Signal card passes
           // padL/padR = 40/44 explicitly (see renderSp500Chart/renderVixChart)
           // so its plot area lines up pixel-for-pixel with dualAxisChart's,
@@ -65,21 +65,21 @@ function axisChart(history, opts = {}) {
 
   const points = history.map((h, i) => `${xFor(i).toFixed(1)},${yFor(h.value).toFixed(1)}`).join(' ');
   const yTicks = niceTicks(mn, mx, yTickCount).map(t =>
-    `<text x="${padL - 6}" y="${(yFor(t) + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#8b949e">${yFormat(t)}</text>`
+    `<text x="${padL - 6}" y="${(yFor(t) + fontSize * 0.3).toFixed(1)}" text-anchor="end" font-size="${fontSize}" fill="#8b949e">${yFormat(t)}</text>`
   ).join('');
 
   const thresholdEl = thresholdValue != null && thresholdValue >= mn && thresholdValue <= mx
     ? `<line x1="${padL}" y1="${yFor(thresholdValue).toFixed(1)}" x2="${width - padR}" y2="${yFor(thresholdValue).toFixed(1)}" stroke="#d29922" stroke-width="1" stroke-dasharray="3,3"/>
-       <text x="${width - padR}" y="${(yFor(thresholdValue) - 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#d29922">${thresholdLabel}</text>`
+       <text x="${width - padR}" y="${(yFor(thresholdValue) - 3).toFixed(1)}" text-anchor="end" font-size="${fontSize}" fill="#d29922">${thresholdLabel}</text>`
     : '';
 
   const extraThresholdEls = thresholds
     .filter(t => t && t.value != null && t.value >= mn && t.value <= mx)
     .map(t => `<line x1="${padL}" y1="${yFor(t.value).toFixed(1)}" x2="${width - padR}" y2="${yFor(t.value).toFixed(1)}" stroke="${t.color}" stroke-width="1.5" stroke-dasharray="5,4"/>
-       <text x="${width - padR}" y="${(yFor(t.value) - 4).toFixed(1)}" text-anchor="end" font-size="11" fill="${t.color}">${t.label}</text>`)
+       <text x="${width - padR}" y="${(yFor(t.value) - 4).toFixed(1)}" text-anchor="end" font-size="${fontSize + 1}" fill="${t.color}">${t.label}</text>`)
     .join('');
 
-  const xAxis = xAxisMarkup(history, xFor, padT, innerH, height, 7);
+  const xAxis = xAxisMarkup(history, xFor, padT, innerH, height, 7, fontSize);
 
   // Hidden-by-default crosshair line + marker dot, toggled and positioned by
   // the shared hover handler (see updateBuySignalCrosshair). Kept as real SVG
