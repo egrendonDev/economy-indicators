@@ -433,7 +433,7 @@ const DATA_FILES = [
 //            'inverted' = negative is worse (yield curve specifically)
 const THRESHOLDS = {
   yield_curve:              { warn: 0,     danger: -0.5,  direction: 'inverted', avg: '+1.0%' },
-  jobless_claims:           { warn: 250,   danger: 350,   direction: 'higher',   avg: '220K' },
+  jobless_claims:           { warn: 250000, danger: 350000, direction: 'higher', avg: '220K' }, // raw FRED ICSA units (people), not thousands
   credit_spreads:           { warn: 4,     danger: 6,     direction: 'higher',   avg: '4.0%' },
   ism_pmi:                  { warn: 12500, danger: 12000, direction: 'lower',    avg: '~12,500K' },
   real_m2:                  { warn: 0,     danger: -2,    direction: 'lower',    avg: '0% to +5%',  yoy: true },
@@ -1049,6 +1049,15 @@ function computeYoY(history) {
   return ((latest.value - yearAgo.value) / Math.abs(yearAgo.value)) * 100;
 }
 
+// Single source of truth for the value a status/threshold is judged against.
+// YoY indicators are scored on % change; everything else on the latest raw value.
+// Used by the card, the cluster score, and the warning list so they cannot disagree.
+function scoringValue(id, d) {
+  if (!d || !d.latest) return null;
+  const yoy = YOY_INDICATORS.has(id) ? computeYoY(d.history || []) : null;
+  return yoy !== null ? yoy : d.latest.value;
+}
+
 function formatValue(id, value, unit) {
   if (value === null || value === undefined) return '--';
   const v = Number(value);
@@ -1137,7 +1146,7 @@ function computeClusterScores(allIndicators, dataMap) {
       const d = dataMap[id];
       if (!d || d.manual_update_required || !d.latest) continue;
       maxPts += 2;
-      const s = getStatus(id, d.latest.value);
+      const s = getStatus(id, scoringValue(id, d));
       if (s === 'red')    { pts += 2; firing.push({ label: ind.label, status: 'red' }); }
       if (s === 'orange') { pts += 1; firing.push({ label: ind.label, status: 'orange' }); }
     }
@@ -1727,7 +1736,7 @@ function renderCard(indicator, dataMap) {
 
   const isYoy = YOY_INDICATORS.has(indicator.id);
   const yoyPct = (!hasPending && isYoy) ? computeYoY(hist) : null;
-  const statusValue = yoyPct !== null ? yoyPct : value;
+  const statusValue = hasPending ? null : scoringValue(indicator.id, d);
 
   const cfg = THRESHOLDS[indicator.id] || {};
   const status = hasPending ? 'pending' : getStatus(indicator.id, statusValue);
@@ -1819,7 +1828,7 @@ function renderSummary(allIndicators, dataMap) {
     if (!d || d.manual_update_required || !d.latest) continue;
     const v = d.latest.value;
     if (d.latest.date && (!latestDate || d.latest.date > latestDate)) latestDate = d.latest.date;
-    const s = getStatus(ind.id, v);
+    const s = getStatus(ind.id, scoringValue(ind.id, d));
     if (s === 'red')    { warnings.push(ind.label); ind.type === 'leading' ? leadWarn++ : lagWarn++; }
     if (s === 'orange') { watches.push(ind.label);  ind.type === 'leading' ? leadWatch++ : lagWatch++; }
   }
