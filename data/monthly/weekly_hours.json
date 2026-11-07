@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-06T14:39:42.905Z",
+  "last_updated": "2026-11-07T13:37:13.058Z",
   "indicators": [
     {
       "id": "weekly_hours",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "macro",
       "latest": {
-        "date": "2026-09-01",
+        "date": "2026-10-01",
         "value": 34.4
       },
       "history": [
-        {
-          "date": "2023-10-01",
-          "value": 34.3
-        },
         {
           "date": "2023-11-01",
           "value": 34.4
@@ -158,6 +154,10 @@
         },
         {
           "date": "2026-09-01",
+          "value": 34.4
+        },
+        {
+          "date": "2026-10-01",
           "value": 34.4
         }
       ]
