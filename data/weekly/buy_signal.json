@@ -1,16 +1,16 @@
 {
-  "last_updated": "2026-11-03T14:41:55.533Z",
-  "last_updated_date": "2026-11-02",
+  "last_updated": "2026-11-10T15:16:12.457Z",
+  "last_updated_date": "2026-11-09",
   "signal": "calm",
   "conditions_met": 0,
   "vix": {
     "current": {
-      "date": "2026-11-02",
-      "value": 21.15
+      "date": "2026-11-09",
+      "value": 19.92
     },
     "percentile_threshold": 90,
     "percentile_window_years": 3,
-    "percentile_value": 21.93,
+    "percentile_value": 22.17,
     "condition_met": false,
     "history": [
       {
@@ -37244,30 +37244,42 @@
       {
         "date": "2026-11-02",
         "value": 21.15
+      },
+      {
+        "date": "2026-11-03",
+        "value": 20.83
+      },
+      {
+        "date": "2026-11-04",
+        "value": 16.61
+      },
+      {
+        "date": "2026-11-05",
+        "value": 28.18
+      },
+      {
+        "date": "2026-11-06",
+        "value": 25.64
+      },
+      {
+        "date": "2026-11-09",
+        "value": 19.92
       }
     ]
   },
   "sp500": {
     "current": {
-      "date": "2026-10-30",
-      "value": 7580.07
+      "date": "2026-11-05",
+      "value": 7353.73
     },
     "rolling_ath": {
       "date": "2026-10-06",
       "value": 7818.93
     },
-    "drawdown_pct": -3.0548937002889214,
+    "drawdown_pct": -5.949663189208763,
     "drawdown_threshold_pct": -20,
     "condition_met": false,
     "history": [
-      {
-        "date": "2016-11-03",
-        "value": 2088.66
-      },
-      {
-        "date": "2016-11-04",
-        "value": 2085.18
-      },
       {
         "date": "2016-11-07",
         "value": 2131.52
@@ -47303,6 +47315,22 @@
       {
         "date": "2026-10-30",
         "value": 7580.07
+      },
+      {
+        "date": "2026-11-02",
+        "value": 7541.4
+      },
+      {
+        "date": "2026-11-03",
+        "value": 7568.92
+      },
+      {
+        "date": "2026-11-04",
+        "value": 7688.62
+      },
+      {
+        "date": "2026-11-05",
+        "value": 7353.73
       }
     ]
   }
