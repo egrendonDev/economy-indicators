@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-25T07:33:11.018Z",
+  "last_updated": "2026-11-18T16:00:33.996Z",
   "indicators": [
     {
       "id": "loan_officer_survey",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "macro",
       "latest": {
-        "date": "2026-07-01",
-        "value": 0
+        "date": "2026-10-01",
+        "value": 1.7
       },
       "history": [
-        {
-          "date": "2021-10-01",
-          "value": -18.2
-        },
         {
           "date": "2022-01-01",
           "value": -14.5
@@ -95,6 +91,10 @@
         {
           "date": "2026-07-01",
           "value": 0
+        },
+        {
+          "date": "2026-10-01",
+          "value": 1.7
         }
       ]
     }

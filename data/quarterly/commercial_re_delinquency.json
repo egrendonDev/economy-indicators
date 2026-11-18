@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-25T07:33:11.018Z",
+  "last_updated": "2026-11-18T16:00:33.996Z",
   "indicators": [
     {
       "id": "commercial_re_delinquency",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "commercial",
       "latest": {
-        "date": "2026-01-01",
-        "value": 1.56
+        "date": "2026-04-01",
+        "value": 1.53
       },
       "history": [
-        {
-          "date": "2021-04-01",
-          "value": 0.93
-        },
         {
           "date": "2021-07-01",
           "value": 0.88
@@ -95,6 +91,10 @@
         {
           "date": "2026-01-01",
           "value": 1.56
+        },
+        {
+          "date": "2026-04-01",
+          "value": 1.53
         }
       ]
     }

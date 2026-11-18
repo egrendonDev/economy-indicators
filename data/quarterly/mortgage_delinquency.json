@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-25T07:33:11.018Z",
+  "last_updated": "2026-11-18T16:00:33.996Z",
   "indicators": [
     {
       "id": "mortgage_delinquency",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "residential",
       "latest": {
-        "date": "2026-01-01",
-        "value": 1.89
+        "date": "2026-04-01",
+        "value": 1.86
       },
       "history": [
-        {
-          "date": "2021-04-01",
-          "value": 2.47
-        },
         {
           "date": "2021-07-01",
           "value": 2.3
@@ -34,7 +30,7 @@
         },
         {
           "date": "2022-04-01",
-          "value": 1.95
+          "value": 1.96
         },
         {
           "date": "2022-07-01",
@@ -74,7 +70,7 @@
         },
         {
           "date": "2024-10-01",
-          "value": 1.78
+          "value": 1.77
         },
         {
           "date": "2025-01-01",
@@ -94,7 +90,11 @@
         },
         {
           "date": "2026-01-01",
-          "value": 1.89
+          "value": 1.88
+        },
+        {
+          "date": "2026-04-01",
+          "value": 1.86
         }
       ]
     }
