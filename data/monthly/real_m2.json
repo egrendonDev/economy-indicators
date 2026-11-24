@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-23T18:47:47.370Z",
+  "last_updated": "2026-11-24T18:24:36.696Z",
   "indicators": [
     {
       "id": "real_m2",
@@ -12,14 +12,10 @@
       "importance": "medium",
       "category": "macro",
       "latest": {
-        "date": "2026-09-01",
-        "value": 6962.2
+        "date": "2026-10-01",
+        "value": 6973.2
       },
       "history": [
-        {
-          "date": "2023-10-01",
-          "value": 6731.4
-        },
         {
           "date": "2023-11-01",
           "value": 6725.3
@@ -154,7 +150,11 @@
         },
         {
           "date": "2026-09-01",
-          "value": 6962.2
+          "value": 6962.4
+        },
+        {
+          "date": "2026-10-01",
+          "value": 6973.2
         }
       ]
     }
